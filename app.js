@@ -78,12 +78,3 @@ document.addEventListener("keydown", (e) => {
 });
 
 // Submit ng Add Delivery form (placeholder hanggang may backend)
-const deliveryForm = document.getElementById("deliveryForm");
-if (deliveryForm) {
-    deliveryForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        alert("Delivery added! (Connect this to your backend/database next.)");
-        closeModal();
-        deliveryForm.reset();
-    });
-}

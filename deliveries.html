@@ -54,19 +54,16 @@
                         <option value="">Status</option>
                         <option value="Pending">Pending</option>
                         <option value="Processing">Processing</option>
-                        <option value="Out">Out for Delivery</option>
+                        <option value="Out for Delivery">Out for Delivery</option>
                         <option value="Delivered">Delivered</option>
                         <option value="Cancelled">Cancelled</option>
                     </select>
                     <select name="driverName">
                         <option value="">Driver</option>
-                        <option value="Mark">Mark</option>
-                        <option value="Nep">Nep</option>
-                        <option value="John">John</option>
                     </select>
                     <input type="date" name="filterDate" aria-label="Filter by date">
-                    <button class="btnOutline" type="button">Filter</button>
-                    <button class="btnOutline" type="button">Reset</button>
+                    <button class="btnOutline" type="button" id="filterBtn">Filter</button>
+                    <button class="btnOutline" type="button" id="resetBtn">Reset</button>
                 </div>
             </div>
 
@@ -87,80 +84,100 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>DEL001</td>
-                                <td>ABC Trading</td>
-                                <td>Mark</td>
-                                <td>Sep 29, 2026</td>
-                                <td>
-                                    <span class="statusBadge deliveredBadge">Delivered</span>
-                                </td>
-                                <td>
-                                    <select aria-label="Actions">
-                                        <option value="">Actions</option>
-                                        <option value="view">View</option>
-                                        <option value="edit">Edit</option>
-                                        <option value="updateStatus">Update Status</option>
-                                        <option value="delete">Delete</option>
-                                    </select>
-                                </td>
-                            </tr>
+                            
                         </tbody>
                     </table>
                 </div>
             </div>
 
             <!-- Add Delivery Modal -->
-            <div class="modal" id="deliveryModal">
-                <div class="modalBox">
-                    <div class="modalHeader">
-                        <h2>Add Delivery</h2>
-                        <button class="modalClose" id="closeModal" aria-label="Close">&times;</button>
-                    </div>
+            <!-- Add / Edit Delivery Modal -->
+<div class="modal" id="deliveryModal">
+    <div class="modalBox">
+        <div class="modalHeader">
+            <h2 id="delModalTitle">Add Delivery</h2>
+            <button class="modalClose" id="closeModal" type="button" aria-label="Close">&times;</button>
+        </div>
 
-                    <form id="deliveryForm">
-                        <label for="delNumber">Delivery Number</label>
-                        <input type="text" id="delNumber" name="delNumber" placeholder="e.g. DEL-005">
+        <form id="deliveryForm">
+            <label for="delNumber">Delivery Number</label>
+            <input type="text" id="delNumber" name="delNumber" required>
 
-                        <label for="customerName">Customer</label>
-                        <input type="text" id="customerName" name="customerName" placeholder="Enter customer name">
+            <label for="customerName">Customer</label>
+            <select id="customerName" name="customerName" required></select>
 
-                        <label for="delAddress">Delivery Address</label>
-                        <input type="text" id="delAddress" name="delAddress" placeholder="Enter delivery address">
+            <label for="delAddress">Delivery Address</label>
+            <input type="text" id="delAddress" name="delAddress" placeholder="Enter delivery address">
 
-                        <label for="contactNumber">Contact Number</label>
-                        <input type="text" id="contactNumber" name="contactNumber" placeholder="09XXXXXXXXX">
+            <label for="contactNumber">Contact Number</label>
+            <input type="text" id="contactNumber" name="contactNumber" placeholder="09XXXXXXXXX">
 
-                        <label for="delDate">Delivery Date</label>
-                        <input type="date" id="delDate" name="delDate">
+            <label for="delDate">Delivery Date</label>
+            <input type="date" id="delDate" name="delDate">
 
-                        <label for="driverAssign">Driver Assignment</label>
-                        <input type="text" id="driverAssign" name="driverAssign" placeholder="Driver name">
+            <label for="driverAssign">Driver Assignment</label>
+            <select id="driverAssign" name="driverAssign"></select>
 
-                        <label for="vehicle">Vehicle</label>
-                        <input type="text" id="vehicle" name="vehicle" placeholder="Vehicle plate / model">
+            <label for="vehicle">Vehicle</label>
+            <input type="text" id="vehicle" name="vehicle" placeholder="Vehicle plate / model">
 
-                        <label for="itemDesc">Item / Description</label>
-                        <input type="text" id="itemDesc" name="itemDesc" placeholder="Item description">
+            <label for="itemDesc">Item / Description</label>
+            <input type="text" id="itemDesc" name="itemDesc" placeholder="Item description">
 
-                        <label for="quantity">Quantity</label>
-                        <input type="number" id="quantity" name="quantity" min="1" placeholder="0">
+            <label for="quantity">Quantity</label>
+            <input type="number" id="quantity" name="quantity" min="1" placeholder="0">
 
-                        <label for="remarks">Remarks</label>
-                        <textarea id="remarks" name="remarks" rows="3" placeholder="Optional notes"></textarea>
+            <label for="delStatusField">Status</label>
+            <select id="delStatusField" name="status">
+                <option value="Pending">Pending</option>
+                <option value="Processing">Processing</option>
+                <option value="Out for Delivery">Out for Delivery</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
 
-                        <div class="modalActions">
-                            <button type="submit" class="btnPrimary">Add Delivery</button>
-                            <button type="button" class="btnDanger" id="cancelModal">Cancel</button>
-                        </div>
-                    </form>
-                </div>
+            <label for="remarks">Remarks</label>
+            <textarea id="remarks" name="remarks" rows="3" placeholder="Optional notes"></textarea>
+
+            <div class="modalActions">
+                <button type="submit" class="btnPrimary" id="delSubmitBtn">Add Delivery</button>
+                <button type="button" class="btnDanger" id="cancelModal">Cancel</button>
             </div>
+        </form>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal" id="statusModal">
+    <div class="modalBox">
+        <div class="modalHeader">
+            <h2>Update Status</h2>
+            <button class="modalClose" id="closeStatusModal" type="button" aria-label="Close">&times;</button>
+        </div>
+
+        <form id="statusForm">
+            <label for="newStatus">Status</label>
+            <select id="newStatus" name="status">
+                <option value="Pending">Pending</option>
+                <option value="Processing">Processing</option>
+                <option value="Out for Delivery">Out for Delivery</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+
+            <div class="modalActions">
+                <button type="submit" class="btnPrimary">Update</button>
+                <button type="button" class="btnDanger" id="cancelStatusModal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
 
         </section>
 
     </main>
 
     <script src="app.js"></script>
+    <script src="deliveries.js"></script>
 </body>
 </html>

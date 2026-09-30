@@ -944,3 +944,91 @@ body {
 .profileCard button {
     margin-top: 16px;
 }
+/* ===== Icon action buttons ===== */
+.actionBtns {
+    display: flex;
+    gap: 6px;
+}
+
+.iconBtn {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.iconBtn svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.iconBtn:hover {
+    color: var(--navy);
+    border-color: var(--navy);
+    background: #f4f7fa;
+}
+
+.iconBtn.danger:hover {
+    color: var(--red);
+    border-color: var(--red);
+    background: #fbe9e7;
+}
+/* ===== Icon action buttons ===== */
+.actionBtns {
+    display: flex;
+    gap: 6px;
+}
+
+.iconBtn {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.iconBtn svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.iconBtn:hover {
+    color: var(--navy);
+    border-color: var(--navy);
+    background: #f4f7fa;
+}
+
+.iconBtn.danger:hover {
+    color: var(--red);
+    border-color: var(--red);
+    background: #fbe9e7;
+}
+.cancelledBadge {
+    background-color: #fbe9e7;
+    color: var(--red);
+}
