@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="employees.css">
+    <title>Dashboard</title>
+</head>
+<body>
+
+    <section class="headerSec">
+
+        <h2>STORAGE PROJECT</h2>
+
+        <div>
+
+            <button id="aboutButton">Home</button>
+            <button id="profileButton">Profile</button>
+            <button id="logoutButton">Logout</button>
+
+        </div>
+    </section>
+
+    <main class="mainLayout">
+
+    <section class="optionSec">
+
+            <button id="dashboardButton">Dashboard</button>
+            <button id="deliveriesButton">Deliveries</button>
+            <button id="driversButton">Drivers</button>
+            <button id="customersButton">Customers</button>
+            <button id="employeeButton">Employees</button>
+            <button id="reportsButton">Reports</button>
+
+            
+        
+
+            <button id="settingsButton">Settings</button>
+            <button id="reportsButton">Logout</button>
+
+    </section>
+
+    <section class="dashboardSec">
+
+        <div class="dashboardHead">
+            <h3>CUSTOMERS</h3>
+            <p>Manage company customers and destination</p>
+        </div>
+
+        <div class="driverAdd">
+
+            <button>[+ Add Employee ]</button>
+
+            <input type="text" id="driverName" placeholder="Search employee...">
+            <select id="driverId" name="driver">
+                <option value="">Status</option>
+                <option value="Available">Available</option>
+                <option value="On Route">On Route</option>
+            </select>
+            
+        </div>
+
+        <div class="dashboardDelOverview">
+
+            <h2>Drivers Overview</h2>
+
+            <table>
+                <tr>
+                    <td>Name</td>
+                    <td>Position</td>
+                    <td>Role</td>
+                    <td>Status</td>
+                    
+                </tr>
+                <tr>
+                    <td>Juan</td>
+                    <td>Staff</td>
+                    <td><select>
+                        <option value="employee">Employee</option>
+                        <option value="admin">Admin</option>
+                        <option value="driver">Driver</option>
+                        
+                    </select></td>
+                    <td><select>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select></td>
+                </tr>
+            </table>
+
+        </div>
+
+    </section>
+
+    </main>
+
+
+</body>
+</html>

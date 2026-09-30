@@ -3,64 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="settings.css">
-    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <title>Settings | Storage Project</title>
+<base target="_blank">
 </head>
 <body>
 
-    <section class="headerSec">
-
+    <header class="headerSec">
         <h2>STORAGE PROJECT</h2>
 
-        <div>
-
+        <div class="headerActions">
             <button id="aboutButton">Home</button>
             <button id="profileButton">Profile</button>
             <button id="logoutButton">Logout</button>
-
         </div>
-    </section>
+    </header>
 
     <main class="mainLayout">
 
-    <section class="optionSec">
+        <aside class="optionSec">
+            <div class="sidebarTitle">MENU</div>
 
-            <button id="dashboardButton">Dashboard</button>
-            <button id="deliveriesButton">Deliveries</button>
-            <button id="driversButton">Drivers</button>
-            <button id="customersButton">Customers</button>
-            <button id="employeeButton">Employees</button>
-            <button id="reportsButton">Reports</button>
+            <button id="dashboardButton" class="">Dashboard</button>
+            <button id="deliveriesButton" class="">Deliveries</button>
+            <button id="driversButton" class="">Drivers</button>
+            <button id="customersButton" class="">Customers</button>
+            <button id="employeeButton" class="">Employees</button>
+            <button id="reportsButton" class="">Reports</button>
+            <button id="settingsButton" class="active">Settings</button>
 
-            <button id="settingsButton">Settings</button>
-            <button id="reportsButton">Logout</button>
+            <div class="sidebarBottom">
+                <button id="sidebarLogoutButton">Logout</button>
+            </div>
+        </aside>
 
-    </section>
+        <section class="dashboardSec">
 
-    <section class="dashboardSec">
+            <div class="dashboardHead">
+                <div class="pageHead">
+                    <h3>Settings</h3>
+                    <p>Account and system settings</p>
+                </div>
+            </div>
 
-        <div class="dashboardHead">
-            <h3>Settings</h3>
-            <p>Account Settings</p>
-        </div>
+            <div class="settingsGrid">
+                <div class="profileCard">
+                    <h3>Profile</h3>
+                    <div class="profileRow">
+                        <span>Name</span>
+                        <strong>Admin User</strong>
+                    </div>
+                    <div class="profileRow">
+                        <span>Email</span>
+                        <strong>admin@company.com</strong>
+                    </div>
+                    <div class="profileRow">
+                        <span>Role</span>
+                        <strong>Admin</strong>
+                    </div>
+                    <button class="btnPrimary" type="button">Edit Profile</button>
+                </div>
 
-        <div class="dashboardCards">
-            <p>Profile</p>
-            <p>Name:        Admin User</p>
-            <p>Email:       admin@company.com</p>
+                <div class="profileCard">
+                    <h3>Security</h3>
+                    <div class="profileRow">
+                        <span>Password</span>
+                        <strong>********</strong>
+                    </div>
+                    <div class="profileRow">
+                        <span>Last login</span>
+                        <strong>Sep 30, 2026</strong>
+                    </div>
+                    <button class="btnOutline" type="button">Change Password</button>
+                </div>
+            </div>
 
-            <button>[Edit Profile]</button>
-
-        </div>
-
-        
-
-        
-
-    </section>
+        </section>
 
     </main>
 
-
+    <script src="app.js"></script>
 </body>
 </html>

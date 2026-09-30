@@ -3,93 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="drivers.css">
-    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <title>Drivers | Storage Project</title>
+<base target="_blank">
 </head>
 <body>
 
-    <section class="headerSec">
-
+    <header class="headerSec">
         <h2>STORAGE PROJECT</h2>
 
-        <div>
-
+        <div class="headerActions">
             <button id="aboutButton">Home</button>
             <button id="profileButton">Profile</button>
             <button id="logoutButton">Logout</button>
-
         </div>
-    </section>
+    </header>
 
     <main class="mainLayout">
 
-    <section class="optionSec">
+        <aside class="optionSec">
+            <div class="sidebarTitle">MENU</div>
 
-            <button id="dashboardButton">Dashboard</button>
-            <button id="deliveriesButton">Deliveries</button>
-            <button id="driversButton">Drivers</button>
-            <button id="customersButton">Customers</button>
-            <button id="employeeButton">Employees</button>
-            <button id="reportsButton">Reports</button>
+            <button id="dashboardButton" class="">Dashboard</button>
+            <button id="deliveriesButton" class="">Deliveries</button>
+            <button id="driversButton" class="active">Drivers</button>
+            <button id="customersButton" class="">Customers</button>
+            <button id="employeeButton" class="">Employees</button>
+            <button id="reportsButton" class="">Reports</button>
+            <button id="settingsButton" class="">Settings</button>
 
-            
-        
+            <div class="sidebarBottom">
+                <button id="sidebarLogoutButton">Logout</button>
+            </div>
+        </aside>
 
-            <button id="settingsButton">Settings</button>
-            <button id="reportsButton">Logout</button>
+        <section class="dashboardSec">
 
-    </section>
+            <div class="dashboardHead">
+                <div class="pageHead">
+                    <h3>Drivers</h3>
+                    <p>Manage company delivery drivers</p>
+                </div>
+            </div>
 
-    <section class="dashboardSec">
-
-        <div class="dashboardHead">
-            <h3>DRIVERS</h3>
-            <p>Manage company delivery drivers</p>
-        </div>
-
-        <div class="driverAdd">
-
-            <button>[+ Add Driver ]</button>
-
-            <input type="text" id="driverName" placeholder="Search driver...">
-            <select id="driverId" name="driver">
-                <option value="">Status</option>
-                <option value="Available">Available</option>
-                <option value="On Route">On Route</option>
-            </select>
-            
-        </div>
-
-        <div class="dashboardDelOverview">
-
-            <h2>Drivers Overview</h2>
-
-            <table>
-                <tr>
-                    <td>Driver</td>
-                    <td>Contact</td>
-                    <td>Deliveries</td>
-                    <td>Status</td>
-                    <td>Action</td>
-                </tr>
-                <tr>
-                    <td>Mark</td>
-                    <td>09999999999</td>
-                    <td>8</td>
-                    <td><select id="driverStatus">
-                        <option value="Availalbe">Available</option>
+            <div class="panel">
+                <div class="toolbar">
+                    <button class="btnPrimary" type="button">+ Add Driver</button>
+                    <input type="text" id="driverSearch" placeholder="Search driver...">
+                    <select id="driverStatusFilter" name="driverStatus">
+                        <option value="">Status</option>
+                        <option value="Available">Available</option>
                         <option value="On Route">On Route</option>
                         <option value="Offline">Offline</option>
-                    </select></td>
-                </tr>
-            </table>
+                    </select>
+                </div>
+            </div>
 
-        </div>
+            <div class="panel">
+                <h2>Drivers Overview</h2>
+                <p>List of all registered drivers</p>
 
-    </section>
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Driver</th>
+                                <th>Contact</th>
+                                <th>Deliveries</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Mark Reyes</td>
+                                <td>09999999999</td>
+                                <td>8</td>
+                                <td>
+                                    <select name="status" aria-label="Driver status">
+                                        <option value="Available" selected>Available</option>
+                                        <option value="On Route">On Route</option>
+                                        <option value="Offline">Offline</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select aria-label="Actions">
+                                        <option value="">Actions</option>
+                                        <option value="view">View</option>
+                                        <option value="edit">Edit</option>
+                                        <option value="delete">Delete</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
 
     </main>
 
-
+    <script src="app.js"></script>
 </body>
 </html>
