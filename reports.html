@@ -3,123 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="reports.css">
-    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <title>Employees | Storage Project</title>
+<base target="_blank">
 </head>
 <body>
 
-    <section class="headerSec">
-
+    <header class="headerSec">
         <h2>STORAGE PROJECT</h2>
 
-        <div>
-
+        <div class="headerActions">
             <button id="aboutButton">Home</button>
             <button id="profileButton">Profile</button>
             <button id="logoutButton">Logout</button>
-
         </div>
-    </section>
+    </header>
 
     <main class="mainLayout">
 
-    <section class="optionSec">
+        <aside class="optionSec">
+            <div class="sidebarTitle">MENU</div>
 
-            <button id="dashboardButton">Dashboard</button>
-            <button id="deliveriesButton">Deliveries</button>
-            <button id="driversButton">Drivers</button>
-            <button id="customersButton">Customers</button>
-            <button id="employeeButton">Employees</button>
-            <button id="reportsButton">Reports</button>
+            <button id="dashboardButton" class="">Dashboard</button>
+            <button id="deliveriesButton" class="">Deliveries</button>
+            <button id="driversButton" class="">Drivers</button>
+            <button id="customersButton" class="">Customers</button>
+            <button id="employeeButton" class="">Employees</button>
+            <button id="reportsButton" class="active">Reports</button>
+            <button id="settingsButton" class="">Settings</button>
 
-            <button id="settingsButton">Settings</button>
-            <button id="reportsButton">Logout</button>
+            <div class="sidebarBottom">
+                <button id="sidebarLogoutButton">Logout</button>
+            </div>
+        </aside>
 
-    </section>
+        <section class="dashboardSec">
 
-    <section class="dashboardSec">
-
-        <div class="dashboardHead">
-            <h3>Reports</h3>
-            <p>Reports Overview</p>
-        </div>
-
-        <div class="dashboardCards">
-            <div>
-                <h3>Total Deliveries</h3>
-                <p>P-----------</p>
+            <div class="dashboardHead">
+                <div class="pageHead">
+                    <h3>Employees</h3>
+                    <p>Manage company employees and roles</p>
+                </div>
             </div>
 
-            <div>
-                <h3>Delivered</h3>
-                <p>P-----------</p>
+            <div class="panel">
+                <div class="toolbar">
+                    <button class="btnPrimary" type="button">+ Add Employee</button>
+                    <input type="text" id="employeeSearch" placeholder="Search employee...">
+                    <select name="employeeRole">
+                        <option value="">Role</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Employee">Employee</option>
+                        <option value="Driver">Driver</option>
+                    </select>
+                    <select name="employeeStatus">
+                        <option value="">Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
             </div>
 
-            <div>
-                <h3>Failed</h3>
-                <p>P-----------</p>
+            <div class="panel">
+                <h2>Employees Overview</h2>
+                <p>List of all company employees</p>
+
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Position</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Juan Dela Cruz</td>
+                                <td>Staff</td>
+                                <td>
+                                    <select name="role" aria-label="Employee role">
+                                        <option value="Employee" selected>Employee</option>
+                                        <option value="Admin">Admin</option>
+                                        <option value="Driver">Driver</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="status" aria-label="Employee status">
+                                        <option value="Active" selected>Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select aria-label="Actions">
+                                        <option value="">Actions</option>
+                                        <option value="view">View</option>
+                                        <option value="edit">Edit</option>
+                                        <option value="delete">Delete</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-        </div>
-
-        <div>
-            <p>Date Range</p>
-            From<input type="text"> -> To<input type="text">
-
-            <select>
-                <option value="delivered">Delivered</option>
-                <option value="pending">Pending</option>
-                <option value="canceled">Canceled</option>
-            </select>
-
-            <button>[Generate Report]</button>
-        </div>
-
-        <div class="dashboardDelOverview">
-
-            <h2>Delivery Report</h2>
-
-            <div>
-                <h2>[Chart / Graph]</h2>
-            </div>
-
-            <table>
-                <tr>
-                    <td>Pending</td>
-                    <td>Processing</td>
-                    <td>Out</td>
-                    <td>Delivered</td>
-                </tr>
-            </table>
-
-            <table class="recentDeliveryTable">
-                <tr>
-                    <td>ID</td>
-                    <td>Customer</td>
-                    <td>Driver</td>
-                    <td>Date</td>
-                    <td>Status</td>
-                </tr>
-                <tr>
-                    <td>DEL001</td>
-                    <td>ABC</td>
-                    <td>Mark</td>
-                    <td>9/29/2026</td>
-                    <td>Delivered</td>
-                </tr>
-            </table>
-
-            <button>[Export PDF]</button>
-            <button>[Export Excel]</button>
-
-        </div>
-
-        
-
-    </section>
+        </section>
 
     </main>
 
-
+    <script src="app.js"></script>
 </body>
 </html>

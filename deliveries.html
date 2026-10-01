@@ -3,217 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="deliveries.css">
-    <title>Dashboard</title>
-
-    
+    <link rel="stylesheet" href="style.css">
+    <title>Deliveries | Storage Project</title>
+<base target="_blank">
 </head>
 <body>
 
-    <section class="headerSec">
+    <header class="headerSec">
+        <h2>STORAGE PROJECT</h2>
 
-        <h2>INACTIVEMED</h2>
-
-        <div>
-
+        <div class="headerActions">
             <button id="aboutButton">Home</button>
             <button id="profileButton">Profile</button>
             <button id="logoutButton">Logout</button>
-
         </div>
-    </section>
+    </header>
 
     <main class="mainLayout">
 
-    <section class="optionSec">
+        <aside class="optionSec">
+            <div class="sidebarTitle">MENU</div>
 
-            <button id="dashboardButton">Dashboard</button>
-            <button id="deliveriesButton">Deliveries</button>
-            <button id="driversButton">Drivers</button>
-            <button id="customersButton">Customers</button>
-            <button id="employeeButton">Employees</button>
-            <button id="reportsButton">Reports</button>
+            <button id="dashboardButton" class="">Dashboard</button>
+            <button id="deliveriesButton" class="active">Deliveries</button>
+            <button id="driversButton" class="">Drivers</button>
+            <button id="customersButton" class="">Customers</button>
+            <button id="employeeButton" class="">Employees</button>
+            <button id="reportsButton" class="">Reports</button>
+            <button id="settingsButton" class="">Settings</button>
 
-            
-        
-
-            <button id="settingsButton">Settings</button>
-            <button id="reportsButton">Logout</button>
-
-    </section>
-
-    <section class="dashboardSec">
-        <div class="deliveryOverview">
-
-        </div>
-
-
-
-        <div class="dashboardHead">
-            <h3>Deliveries</h3>
-        </div>
-
-        <div>
-            <button id="openAddDel">+ New Delivery</button>
-        </div>
-
-        <div class="modal" id="deliveryModal">
-            <div class="modalBox">
-                <div class="modalHeader">
-                    <h2>Add Delivery</h2>
-                    <button id="closeModal">&times;</button>
-                </div>
-                <form>
-
-                    <label>Delivery Number</label>
-                    <input type="text" placeholder="Enter customer name">
-
-                    <label>Customer</label>
-                    <input type="text" placeholder="Enter delivery address">
-
-                    <label>Delivery Address</label>
-                    <input type="text">
-
-                    <label>Contact Number</label>
-                    <input type="text">
-
-                    <label>Deliver Date</label>
-                    <input type="date">
-
-                    <label>Driver Assignment</label>
-                    <label>Driver</label>
-                    <input type="text">
-
-                    <label>Vehicle</label>
-                    <input type="text">
-
-                    <label>Delivery Details</label>
-                    <label>Item / Description</label>
-                    <input type="text">
-
-                    <label>Quantity</label>
-                    <input type="text">
-                    
-                    <label>Remarks</label>
-                    <input type="text">
-
-                    
-                    
-                    <button type="submit">Add Delivery</button>
-                    <button type="cancel">Cancel</button>
-                </form>
+            <div class="sidebarBottom">
+                <button id="sidebarLogoutButton">Logout</button>
             </div>
-        </div>
-        
-        <table>
-            <tr>
-                <td>Search Delivery...</td>
-            </tr>
-            <tr>
-                <td><Select name="delStatus">
-                    <option name="">Status</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Out">Out</option>
-                    <option value="Pending">Pending</option>
-                </Select>
-                </td>
-                <td><Select name="driverName">
-                    <option name="">Driver</option>
-                    <option value="Delivered">Mark</option>
-                    <option value="Out">Nep</option>
-                    <option value="Pending">John</option>
-                </Select>
-                </td>
-                <td><Select name="driverDate">
-                    <option name="">Date</option>
-                    <option value=""></option>
-                    <option value=""></option>
-                    <option value=""></option>
-                </Select>
-                </td>
-                <td><button>[Filter]</button>
-                </td>
-                
-            </tr> 
-        </table>
+        </aside>
 
-        <table class="deliveryTable">
-            <tr>
-                <td>
-                    <select name="Status">
+        <section class="dashboardSec">
+
+            <div class="dashboardHead">
+                <div class="pageHead">
+                    <h3>Deliveries</h3>
+                    <p>Manage all delivery transactions</p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="toolbar">
+                    <button class="btnPrimary" id="openAddDel">+ New Delivery</button>
+                    <input type="text" id="searchDelivery" placeholder="Search delivery...">
+                    <select name="delStatus">
                         <option value="">Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Out for Delivery">Out for Delivery</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
                     </select>
-                </td>
-                <td>
-                    <select name="Driver">
+                    <select name="driverName">
                         <option value="">Driver</option>
                     </select>
-                </td>
-                <td>
-                    <select name="Date">
-                        <option value="">Date</option>
-                    </select>
-                </td>
-                <td>
-                    [Filter]
-                </td>
-                <td>
-                    [Reset]
-                </td>
-            </tr>
-            <tr>
-                <td>ID</td>
-                <td>Customer</td>
-                <td>Driver</td>
-                <td>Date</td>
-                <td>Status</td>
-                <td>Action</td>
-            </tr>
-            <tr>
-                <td>DEL001</td>
-                <td>ABC</td>
-                <td>Mark</td>
-                <td>9/29/2026</td>
-                <td><select name="delStatus">
-                    <option value="">Status</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Out">Out</option>
-                    <option value="Pending">Pending</option>
-                </select></td>
-                <td><select>
-                    <option value="view">View</option>
-                    <option value="edit">Edit</option>
-                    <option value="updateStatus">Update Status</option>
-                    <option value="delete">Delete</option>
-                </select>
-                </td>
-            </tr>
-        </table>
+                    <input type="date" name="filterDate" aria-label="Filter by date">
+                    <button class="btnOutline" type="button" id="filterBtn">Filter</button>
+                    <button class="btnOutline" type="button" id="resetBtn">Reset</button>
+                </div>
+            </div>
 
-        <table>
-            <tr>
-                <td></td>
-            </tr>
-        </table>
-        
+            <div class="panel">
+                <h2>Delivery List</h2>
+                <p>All recorded deliveries</p>
 
-    </section>
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer</th>
+                                <th>Driver</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Add Delivery Modal -->
+            <!-- Add / Edit Delivery Modal -->
+<div class="modal" id="deliveryModal">
+    <div class="modalBox">
+        <div class="modalHeader">
+            <h2 id="delModalTitle">Add Delivery</h2>
+            <button class="modalClose" id="closeModal" type="button" aria-label="Close">&times;</button>
+        </div>
+
+        <form id="deliveryForm">
+            <label for="delNumber">Delivery Number</label>
+            <input type="text" id="delNumber" name="delNumber" required>
+
+            <label for="customerName">Customer</label>
+            <select id="customerName" name="customerName" required></select>
+
+            <label for="delAddress">Delivery Address</label>
+            <input type="text" id="delAddress" name="delAddress" placeholder="Enter delivery address">
+
+            <label for="contactNumber">Contact Number</label>
+            <input type="text" id="contactNumber" name="contactNumber" placeholder="09XXXXXXXXX">
+
+            <label for="delDate">Delivery Date</label>
+            <input type="date" id="delDate" name="delDate">
+
+            <label for="driverAssign">Driver Assignment</label>
+            <select id="driverAssign" name="driverAssign"></select>
+
+            <label for="vehicle">Vehicle</label>
+            <input type="text" id="vehicle" name="vehicle" placeholder="Vehicle plate / model">
+
+            <label for="itemDesc">Item / Description</label>
+            <input type="text" id="itemDesc" name="itemDesc" placeholder="Item description">
+
+            <label for="quantity">Quantity</label>
+            <input type="number" id="quantity" name="quantity" min="1" placeholder="0">
+
+            <label for="delStatusField">Status</label>
+            <select id="delStatusField" name="status">
+                <option value="Pending">Pending</option>
+                <option value="Processing">Processing</option>
+                <option value="Out for Delivery">Out for Delivery</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+
+            <label for="remarks">Remarks</label>
+            <textarea id="remarks" name="remarks" rows="3" placeholder="Optional notes"></textarea>
+
+            <div class="modalActions">
+                <button type="submit" class="btnPrimary" id="delSubmitBtn">Add Delivery</button>
+                <button type="button" class="btnDanger" id="cancelModal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal" id="statusModal">
+    <div class="modalBox">
+        <div class="modalHeader">
+            <h2>Update Status</h2>
+            <button class="modalClose" id="closeStatusModal" type="button" aria-label="Close">&times;</button>
+        </div>
+
+        <form id="statusForm">
+            <label for="newStatus">Status</label>
+            <select id="newStatus" name="status">
+                <option value="Pending">Pending</option>
+                <option value="Processing">Processing</option>
+                <option value="Out for Delivery">Out for Delivery</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+
+            <div class="modalActions">
+                <button type="submit" class="btnPrimary">Update</button>
+                <button type="button" class="btnDanger" id="cancelStatusModal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+        </section>
 
     </main>
 
-    <script>
-        const openAddDel = document.getElementById("openAddDel");
-        const closeModal = document.getElementById("closeModal");
-        const deliveryModal = document.getElementById("deliveryModal");
-
-        openAddDel.addEventListener("click", function() {
-            deliveryModal.style.display = "flex";
-        });
-
-        closeModal.addEventListener("click", function() {
-            deliveryModal.style.display = "none";
-        });
-    </script>
-
+    <script src="app.js"></script>
+    <script src="deliveries.js"></script>
 </body>
 </html>

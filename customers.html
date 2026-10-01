@@ -3,89 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="customers.css">
-    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <title>Customers | Storage Project</title>
+<base target="_blank">
 </head>
 <body>
 
-    <section class="headerSec">
-
+    <header class="headerSec">
         <h2>STORAGE PROJECT</h2>
 
-        <div>
-
+        <div class="headerActions">
             <button id="aboutButton">Home</button>
             <button id="profileButton">Profile</button>
             <button id="logoutButton">Logout</button>
-
         </div>
-    </section>
+    </header>
 
     <main class="mainLayout">
 
-    <section class="optionSec">
+        <aside class="optionSec">
+            <div class="sidebarTitle">MENU</div>
 
-            <button id="dashboardButton">Dashboard</button>
-            <button id="deliveriesButton">Deliveries</button>
-            <button id="driversButton">Drivers</button>
-            <button id="customersButton">Customers</button>
-            <button id="employeeButton">Employees</button>
-            <button id="reportsButton">Reports</button>
+            <button id="dashboardButton" class="">Dashboard</button>
+            <button id="deliveriesButton" class="">Deliveries</button>
+            <button id="driversButton" class="">Drivers</button>
+            <button id="customersButton" class="active">Customers</button>
+            <button id="employeeButton" class="">Employees</button>
+            <button id="reportsButton" class="">Reports</button>
+            <button id="settingsButton" class="">Settings</button>
 
-            
-        
+            <div class="sidebarBottom">
+                <button id="sidebarLogoutButton">Logout</button>
+            </div>
+        </aside>
 
-            <button id="settingsButton">Settings</button>
-            <button id="reportsButton">Logout</button>
+        <section class="dashboardSec">
 
-    </section>
+            <div class="dashboardHead">
+                <div class="pageHead">
+                    <h3>Customers</h3>
+                    <p>Manage company customers and destinations</p>
+                </div>
+            </div>
 
-    <section class="dashboardSec">
+            <div class="panel">
+                <div class="toolbar">
+                    <button class="btnPrimary" type="button" id="openAddCus">+ Add Customer</button>
+                    <input type="text" id="customerSearch" placeholder="Search customer...">
+                </div>
+            </div>
 
-        <div class="dashboardHead">
-            <h3>CUSTOMERS</h3>
-            <p>Manage company customers and destination</p>
-        </div>
+            <div class="panel">
+                <h2>Customers Overview</h2>
+                <p>List of all registered customers</p>
 
-        <div class="driverAdd">
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Contact</th>
+                                <th>Address</th>
+                                <th>Deliveries</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-            <button>[+ Add Customer ]</button>
+            <!-- Add / Edit Customer Modal -->
+            <div class="modal" id="customerModal">
+                <div class="modalBox">
+                    <div class="modalHeader">
+                        <h2 id="cusModalTitle">Add Customer</h2>
+                        <button class="modalClose" id="closeCusModal" type="button" aria-label="Close">&times;</button>
+                    </div>
 
-            <input type="text" id="driverName" placeholder="Search customer...">
-            <select id="driverId" name="driver">
-                <option value="">Status</option>
-                <option value="Available">Available</option>
-                <option value="On Route">On Route</option>
-            </select>
-            
-        </div>
+                    <form id="customerForm">
+                        <label for="cusName">Customer Name</label>
+                        <input type="text" id="cusName" name="name" required>
 
-        <div class="dashboardDelOverview">
+                        <label for="cusContact">Contact</label>
+                        <input type="text" id="cusContact" name="contact" placeholder="09XXXXXXXXX">
 
-            <h2>Drivers Overview</h2>
+                        <label for="cusAddress">Address</label>
+                        <input type="text" id="cusAddress" name="address">
 
-            <table>
-                <tr>
-                    <td>Customer</td>
-                    <td>Contact</td>
-                    <td>Address</td>
-                    <td>Deliveries</td>
-                    
-                </tr>
-                <tr>
-                    <td>ABC Store</td>
-                    <td>09999999999</td>
-                    <td>Pasig</td>
-                    <td>15</td>
-                </tr>
-            </table>
-
-        </div>
-
-    </section>
+                        <div class="modalActions">
+                            <button type="submit" class="btnPrimary">Save</button>
+                            <button type="button" class="btnDanger" id="cancelCusModal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+</div>            
+        </section>
 
     </main>
 
-
-</body>
+    <script src="app.js"></script>
+    <script src="customers.js"></script></body>
 </html>

@@ -3,97 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="employees.css">
-    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <title>Employees | Storage Project</title>
+<base target="_blank">
 </head>
 <body>
 
-    <section class="headerSec">
-
+    <header class="headerSec">
         <h2>STORAGE PROJECT</h2>
 
-        <div>
-
+        <div class="headerActions">
             <button id="aboutButton">Home</button>
             <button id="profileButton">Profile</button>
             <button id="logoutButton">Logout</button>
-
         </div>
-    </section>
+    </header>
 
     <main class="mainLayout">
 
-    <section class="optionSec">
+        <aside class="optionSec">
+            <div class="sidebarTitle">MENU</div>
 
-            <button id="dashboardButton">Dashboard</button>
-            <button id="deliveriesButton">Deliveries</button>
-            <button id="driversButton">Drivers</button>
-            <button id="customersButton">Customers</button>
-            <button id="employeeButton">Employees</button>
-            <button id="reportsButton">Reports</button>
+            <button id="dashboardButton" class="">Dashboard</button>
+            <button id="deliveriesButton" class="">Deliveries</button>
+            <button id="driversButton" class="">Drivers</button>
+            <button id="customersButton" class="">Customers</button>
+            <button id="employeeButton" class="active">Employees</button>
+            <button id="reportsButton" class="">Reports</button>
+            <button id="settingsButton" class="">Settings</button>
 
-            
-        
+            <div class="sidebarBottom">
+                <button id="sidebarLogoutButton">Logout</button>
+            </div>
+        </aside>
 
-            <button id="settingsButton">Settings</button>
-            <button id="reportsButton">Logout</button>
+        <section class="dashboardSec">
 
-    </section>
+            <div class="dashboardHead">
+                <div class="pageHead">
+                    <h3>Employees</h3>
+                    <p>Manage company employees and roles</p>
+                </div>
+            </div>
 
-    <section class="dashboardSec">
-
-        <div class="dashboardHead">
-            <h3>CUSTOMERS</h3>
-            <p>Manage company customers and destination</p>
-        </div>
-
-        <div class="driverAdd">
-
-            <button>[+ Add Employee ]</button>
-
-            <input type="text" id="driverName" placeholder="Search employee...">
-            <select id="driverId" name="driver">
-                <option value="">Status</option>
-                <option value="Available">Available</option>
-                <option value="On Route">On Route</option>
-            </select>
-            
-        </div>
-
-        <div class="dashboardDelOverview">
-
-            <h2>Drivers Overview</h2>
-
-            <table>
-                <tr>
-                    <td>Name</td>
-                    <td>Position</td>
-                    <td>Role</td>
-                    <td>Status</td>
-                    
-                </tr>
-                <tr>
-                    <td>Juan</td>
-                    <td>Staff</td>
-                    <td><select>
-                        <option value="employee">Employee</option>
-                        <option value="admin">Admin</option>
-                        <option value="driver">Driver</option>
-                        
-                    </select></td>
-                    <td><select>
+            <div class="panel">
+                <div class="toolbar">
+                    <button class="btnPrimary" type="button" id="openAddEmp">+ Add Employee</button>
+                    <input type="text" id="employeeSearch" placeholder="Search employee...">
+                    <select name="employeeRole">
+                        <option value="">Role</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Employee">Employee</option>
+                        <option value="Driver">Driver</option>
+                    </select>
+                    <select name="employeeStatus">
+                        <option value="">Status</option>
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
-                    </select></td>
-                </tr>
-            </table>
+                    </select>
+                </div>
+            </div>
 
-        </div>
+            <div class="panel">
+                <h2>Employees Overview</h2>
+                <p>List of all company employees</p>
 
-    </section>
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Position</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>  
+                    </table>
+                </div>
+            </div>
+
+            <!-- Add / Edit Employee Modal -->
+            <div class="modal" id="employeeModal">
+                <div class="modalBox">
+                    <div class="modalHeader">
+                        <h2 id="empModalTitle">Add Employee</h2>
+                        <button class="modalClose" id="closeEmpModal" type="button" aria-label="Close">&times;</button>
+                    </div>
+
+                    <form id="employeeForm">
+                        <label for="empCode">Employee Code</label>
+                        <input type="text" id="empCode" name="emp_code" placeholder="e.g. EMP-006" required>
+
+                        <label for="empFirst">First Name</label>
+                        <input type="text" id="empFirst" name="first_name" required>
+
+                        <label for="empLast">Last Name</label>
+                        <input type="text" id="empLast" name="last_name" required>
+
+                        <label for="empPosition">Position</label>
+                        <input type="text" id="empPosition" name="position">
+
+                        <label for="empDept">Department</label>
+                        <input type="text" id="empDept" name="department">
+
+                        <label for="empContact">Contact</label>
+                        <input type="text" id="empContact" name="contact" placeholder="09XXXXXXXXX">
+
+                        <label for="empEmail">Email</label>
+                        <input type="email" id="empEmail" name="email">
+
+                        <label for="empHired">Date Hired</label>
+                        <input type="date" id="empHired" name="date_hired">
+
+                        <label for="empRole">Role</label>
+                        <select id="empRole" name="role">
+                            <option value="Employee">Employee</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Driver">Driver</option>
+                        </select>
+
+                        <label for="empStatus">Status</label>
+                        <select id="empStatus" name="status">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+
+                        <div class="modalActions">
+                            <button type="submit" class="btnPrimary">Save</button>
+                            <button type="button" class="btnDanger" id="cancelEmpModal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
 
     </main>
 
-
+    <script src="app.js"></script>
+    <script src="employees.js"></script>
 </body>
 </html>
