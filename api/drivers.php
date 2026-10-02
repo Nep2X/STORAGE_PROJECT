@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/auth1.php';
+require_login(ROLES_STAFF);
 header('Content-Type: application/json');
 
 $method   = $_SERVER['REQUEST_METHOD'];
