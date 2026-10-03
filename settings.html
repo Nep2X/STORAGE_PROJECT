@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Settings | Storage Project</title>
+</head>
+<body>
+
+    <header class="headerSec">
+        <h2>STORAGE PROJECT</h2>
+
+        <div class="headerActions">
+            <button id="aboutButton">Home</button>
+            <button id="profileButton">Profile</button>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </header>
+
+    <main class="mainLayout">
+
+        <aside class="optionSec">
+            <div class="sidebarTitle">MENU</div>
+
+            <button id="dashboardButton" class="">Dashboard</button>
+            <button id="deliveriesButton" class="">Deliveries</button>
+            <button id="driversButton" class="">Drivers</button>
+            <button id="customersButton" class="">Customers</button>
+            <button id="employeeButton" class="">Employees</button>
+            <button id="reportsButton" class="">Reports</button>
+            <button id="riderButton" class="">Rider Report</button>
+            <button id="settingsButton" class="active">Settings</button>
+
+            <div class="sidebarBottom">
+                <button id="sidebarLogoutButton">Logout</button>
+            </div>
+        </aside>
+
+        <section class="dashboardSec">
+
+            <div class="dashboardHead">
+                <div class="pageHead">
+                    <h3>Settings</h3>
+                    <p>Account and system settings</p>
+                </div>
+            </div>
+
+            <div class="settingsGrid">
+                <div class="profileCard">
+                    <h3>Profile</h3>
+                    <div class="profileRow"><span>Name</span><strong id="pName">-</strong></div>
+                    <div class="profileRow"><span>Username</span><strong id="pUsername">-</strong></div>
+                    <div class="profileRow"><span>Email</span><strong id="pEmail">-</strong></div>
+                    <div class="profileRow"><span>Role</span><strong id="pRole">-</strong></div>
+                    <button class="btnPrimary" type="button" id="editProfileBtn">Edit Profile</button>
+                </div>
+
+                <div class="profileCard">
+                    <h3>Security</h3>
+                    <div class="profileRow"><span>Password</span><strong>********</strong></div>
+                    <div class="profileRow"><span>Last login</span><strong id="pLastLogin">-</strong></div>
+                    <button class="btnOutline" type="button" id="changePwBtn">Change Password</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="toolbar">
+                    <button class="btnPrimary" type="button" id="openAddUser">+ Add User</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>User Accounts</h2>
+                <p>Admins, employees, and riders who can log in to the system</p>
+            
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Contact</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userRows"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Edit Profile Modal -->
+            <div class="modal" id="profileModal">
+                <div class="modalBox">
+                    <div class="modalHeader">
+                        <h2>Edit Profile</h2>
+                        <button class="modalClose" type="button" data-close="profileModal" aria-label="Close">&times;</button>
+                    </div>
+                    <form id="profileForm">
+                        <label for="profName">Full Name</label>
+                        <input type="text" id="profName" name="full_name" required>
+
+                        <label for="profEmail">Email</label>
+                        <input type="email" id="profEmail" name="email">
+
+                        <div class="modalActions">
+                            <button type="submit" class="btnPrimary">Save</button>
+                            <button type="button" class="btnDanger" data-close="profileModal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Password Modal -->
+            <div class="modal" id="passwordModal">
+                <div class="modalBox">
+                    <div class="modalHeader">
+                        <h2>Change Password</h2>
+                        <button class="modalClose" type="button" data-close="passwordModal" aria-label="Close">&times;</button>
+                    </div>
+                    <form id="passwordForm">
+                        <label for="curPw">Current Password</label>
+                        <input type="password" id="curPw" autocomplete="current-password" required>
+
+                        <label for="newPw">New Password (min. 8 characters)</label>
+                        <input type="password" id="newPw" autocomplete="new-password" required>
+
+                        <label for="confPw">Confirm New Password</label>
+                        <input type="password" id="confPw" autocomplete="new-password" required>
+
+                        <div class="modalActions">
+                            <button type="submit" class="btnPrimary">Update Password</button>
+                            <button type="button" class="btnDanger" data-close="passwordModal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            
+
+                        <!-- Add / Edit User Modal -->
+            <div class="modal" id="userModal">
+                <div class="modalBox">
+                    <div class="modalHeader">
+                        <h2 id="userModalTitle">Add User</h2>
+                        <button class="modalClose" type="button" data-close="userModal" aria-label="Close">&times;</button>
+                    </div>
+
+                    <form id="userForm">
+                        <label for="uUsername">Username</label>
+                        <input type="text" id="uUsername" name="username" autocomplete="off" required>
+
+                        <div id="uPasswordGroup">
+                            <label for="uPassword">Password</label>
+                            <input type="password" id="uPassword" name="password" minlength="8" autocomplete="new-password">
+                            <small>Minimum of 8 characters</small>
+                        </div>
+
+                        <label for="uName">Full Name</label>
+                        <input type="text" id="uName" name="full_name" required>
+
+                        <label for="uEmail">Email</label>
+                        <input type="email" id="uEmail" name="email">
+
+                        <label for="uRole">Role</label>
+                        <select id="uRole" name="role" required>
+                            <option value="Employee">Employee</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Driver">Driver</option>
+                            <option value="Rider">Rider</option>
+                        </select>
+
+                        <label for="uContact">Contact Number</label>
+                        <input type="tel" id="uContact" name="contact_number" placeholder="09XXXXXXXXX" maxlength="20">
+
+                        <div id="uActiveGroup">
+                            <label for="uActive">Status</label>
+                            <select id="uActive" name="is_active">
+                                <option value="1">Active</option>
+                                <option value="0">Disabled</option>
+                            </select>
+                        </div>
+
+                        <div class="modalActions">
+                            <button type="submit" class="btnPrimary">Save</button>
+                            <button type="button" class="btnDanger" data-close="userModal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Reset Password Modal -->
+            <div class="modal" id="resetModal">
+                <div class="modalBox">
+                    <div class="modalHeader">
+                        <h2 id="resetTitle">Reset Password</h2>
+                        <button class="modalClose" type="button" data-close="resetModal" aria-label="Close">&times;</button>
+                    </div>
+                    <form id="resetForm">
+                        <label for="resetPw">New Password (min. 8 characters)</label>
+                        <input type="password" id="resetPw" autocomplete="new-password" required>
+
+                        <div class="modalActions">
+                            <button type="submit" class="btnPrimary">Reset Password</button>
+                            <button type="button" class="btnDanger" data-close="resetModal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+    <script src="settings.js"></script>
+</body>
+</html>

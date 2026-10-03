@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Employees | Storage Project</title>
+</head>
+<body>
+
+<header class="headerSec">
+    <h2>STORAGE PROJECT</h2>
+
+    <div class="headerActions">
+        <button id="aboutButton">Home</button>
+        <button id="profileButton">Profile</button>
+        <button id="logoutButton">Logout</button>
+    </div>
+</header>
+
+<main class="mainLayout">
+    <aside class="optionSec">
+        <div class="sidebarTitle">MENU</div>
+    
+        <button id="dashboardButton">Dashboard</button>
+        <button id="deliveriesButton">Deliveries</button>
+        <button id="driversButton">Drivers</button>
+        <button id="customersButton">Customers</button>
+        <button id="employeeButton" class="active">Employees</button>
+        <button id="reportsButton">Reports</button>
+        <button id="riderButton">Rider Report</button>
+        <button id="settingsButton">Settings</button>
+    
+        <div class="sidebarBottom">
+            <button id="sidebarLogoutButton">Logout</button>
+        </div>
+    </aside>
+    <section class="dashboardSec">
+        <div class="dashboardHead">
+            <div class="pageHead">
+                <h3>Employees</h3>
+                <p>Manage company employees and roles</p>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="toolbar">
+                <input type="text" id="employeeSearch" placeholder="Search employee...">
+
+                <select id="employeeRole">
+                    <option value="">All Roles</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Employee">Employee</option>
+                    <option value="Driver">Driver</option>
+                    <option value="Rider">Rider</option>
+                </select>
+
+                <select id="employeeStatus">
+                    <option value="">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Disabled">Disabled</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Employees Overview</h2>
+            <p>List of all users and employees in the system</p>
+
+            <div class="tableWrapper">
+                <table class="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Employee ID</th>
+                            <th>Full Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Contact Number</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeeRows"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="app.js"></script>
+<script src="employees.js"></script>
+</body>
+</html>
