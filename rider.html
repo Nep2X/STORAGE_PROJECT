@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Rider Report | Storage Project</title>
+    <style>
+        .riderWrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 40px; }
+        .riderWrap .panel { margin-bottom: 16px; }
+        .riderWrap label { display: block; margin: 14px 0 6px; font-weight: 600; }
+        .riderWrap select,
+        .riderWrap input[type="file"],
+        .riderWrap textarea { width: 100%; box-sizing: border-box; padding: 10px; font: inherit; }
+        .riderWrap button[type="submit"] { width: 100%; margin-top: 18px; padding: 12px; }
+        #proofPreview { display: none; width: 100%; max-height: 320px; object-fit: contain;
+                        margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; }
+        #msg { display: none; margin-top: 14px; padding: 10px 12px; border-radius: 8px; }
+        #msg.ok  { display: block; background: #e4f5ec; color: #1b6b43; }
+        #msg.err { display: block; background: #fbe9e7; color: var(--red); }
+        #details { display: none; }
+        .hint { color: var(--muted); font-size: 0.9rem; margin: 4px 0 0; }
+    </style>
+</head>
+<body>
+
+    <header class="headerSec">
+        <h2>STORAGE PROJECT</h2>
+        <div class="headerActions">
+            <button type="button" id="backBtn" style="display:none;">&larr; Back</button>
+            <span id="whoami">Rider Report</span>
+            <button type="button" id="logoutBtn">Logout</button>
+        </div>
+    </header>
+
+    <div class="riderWrap">
+
+        <div class="panel">
+            <h2>Report a Delivery</h2>
+            <p>Select your name and the delivery you completed, then upload the proof of delivery photo.</p>
+
+            <label for="riderSelect">Your Name</label>
+            <select id="riderSelect"><option value="">Loading...</option></select>
+
+            <label for="deliverySelect">Delivery ID</label>
+            <select id="deliverySelect" disabled><option value="">Select your name first</option></select>
+            <p class="hint" id="deliveryHint"></p>
+        </div>
+
+        <div class="panel" id="details">
+            <h2>Delivery Details</h2>
+            <div class="profileRow"><span>Delivery ID</span><strong id="dID"></strong></div>
+            <div class="profileRow"><span>Customer</span><strong id="dCustomer"></strong></div>
+            <div class="profileRow"><span>Address</span><strong id="dAddress"></strong></div>
+            <div class="profileRow"><span>Contact</span><strong id="dContact"></strong></div>
+            <div class="profileRow"><span>Date</span><strong id="dDate"></strong></div>
+            <div class="profileRow"><span>Vehicle</span><strong id="dVehicle"></strong></div>
+            <div class="profileRow"><span>Item</span><strong id="dItem"></strong></div>
+            <div class="profileRow"><span>Quantity</span><strong id="dQty"></strong></div>
+            <div class="profileRow"><span>Status</span><strong id="dStatus"></strong></div>
+            <div class="profileRow"><span>Remarks</span><strong id="dRemarks"></strong></div>
+        </div>
+
+        <form class="panel" id="reportForm">
+            <h2>Proof of Delivery</h2>
+
+            <label for="proofInput">Photo</label>
+            <input type="file" id="proofInput" accept="image/*" capture="environment">
+            <p class="hint">Take a clear photo of the delivered item or the signed receipt.</p>
+            <img id="proofPreview" alt="Proof of delivery preview">
+
+            <label for="notes">Notes (optional)</label>
+            <textarea id="notes" rows="3" placeholder="e.g. Received by the guard"></textarea>
+
+            <button type="submit" class="btnPrimary" id="submitBtn" disabled>Submit Report</button>
+            <div id="msg" role="status"></div>
+        </form>
+
+    </div>
+
+    <script src="rider.js"></script>
+</body>
+</html>

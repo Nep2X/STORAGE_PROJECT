@@ -15,6 +15,8 @@ let drivers = [];
 let editingDrvId = null;
 
 // ---------- HELPERS ----------
+const driverCode = (id) => "DRV-" + String(id).padStart(4, "0");
+
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -45,7 +47,7 @@ async function loadDrivers() {
         renderDrivers();
     } catch (err) {
         console.error(err);
-        drvBody.innerHTML = `<tr><td colspan="5">Failed to load: ${esc(err.message)}</td></tr>`;
+        drvBody.innerHTML = `<tr><td colspan="6">Failed to load: ${esc(err.message)}</td></tr>`;
     }
 }
 
@@ -54,17 +56,18 @@ function renderDrivers() {
     const status = drvStatusFilter.value;
 
     const list = drivers.filter((d) =>
-        (!q || `${d.name} ${d.contact ?? ""}`.toLowerCase().includes(q)) &&
+        (!q || `${driverCode(d.id)} ${d.name} ${d.contact ?? ""}`.toLowerCase().includes(q)) &&
         (!status || d.status === status)
     );
 
     if (!list.length) {
-        drvBody.innerHTML = `<tr><td colspan="5">No drivers found.</td></tr>`;
+        drvBody.innerHTML = `<tr><td colspan="6">No drivers found.</td></tr>`;
         return;
     }
 
     drvBody.innerHTML = list.map((d) => `
         <tr data-id="${d.id}">
+            <td>${driverCode(d.id)}</td>
             <td>${esc(d.name)}</td>
             <td>${esc(d.contact)}</td>
             <td>${esc(d.deliveries)}</td>
@@ -151,7 +154,7 @@ drvBody.addEventListener("click", async (e) => {
 
     if (action === "view") {
         alert(
-            `${drv.name}\nContact: ${drv.contact ?? "-"}\n` +
+            `${driverCode(drv.id)}\n${drv.name}\nContact: ${drv.contact ?? "-"}\n` +
             `Deliveries: ${drv.deliveries}\nStatus: ${drv.status}`
         );
     } else if (action === "edit") {

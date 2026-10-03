@@ -1,0 +1,8 @@
+# Mga litrato ng proof of delivery (hindi dapat nasa GitHub)
+uploads/
+
+# Mga file ng editor / system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <title>Employees | Storage Project</title>
-<base target="_blank">
+    <title>Reports | Storage Project</title>
 </head>
 <body>
 
@@ -30,6 +29,7 @@
             <button id="customersButton" class="">Customers</button>
             <button id="employeeButton" class="">Employees</button>
             <button id="reportsButton" class="active">Reports</button>
+            <button id="riderButton">Rider Report</button>
             <button id="settingsButton" class="">Settings</button>
 
             <div class="sidebarBottom">
@@ -41,71 +41,85 @@
 
             <div class="dashboardHead">
                 <div class="pageHead">
-                    <h3>Employees</h3>
-                    <p>Manage company employees and roles</p>
+                    <h3>Reports</h3>
+                    <p>Delivery summaries by driver, customer, and month</p>
                 </div>
             </div>
 
             <div class="panel">
                 <div class="toolbar">
-                    <button class="btnPrimary" type="button">+ Add Employee</button>
-                    <input type="text" id="employeeSearch" placeholder="Search employee...">
-                    <select name="employeeRole">
-                        <option value="">Role</option>
-                        <option value="Admin">Admin</option>
-                        <option value="Employee">Employee</option>
-                        <option value="Driver">Driver</option>
-                    </select>
-                    <select name="employeeStatus">
-                        <option value="">Status</option>
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
+                    <label for="fromDate">From</label>
+                    <input type="date" id="fromDate">
+                    <label for="toDate">To</label>
+                    <input type="date" id="toDate">
+                    <button class="btnPrimary" type="button" id="genBtn">Generate</button>
+                    <button class="btnOutline" type="button" id="resetBtn">Reset</button>
+                    <button class="btnOutline" type="button" id="exportBtn">Export CSV</button>
+                    <button class="btnOutline" type="button" id="printBtn">Print</button>
+                </div>
+            </div>
+
+            <div class="dashboardCards">
+                <div class="dashboardCard totalCard">
+                    <div class="cardLabel">Total Deliveries</div>
+                    <div class="cardValue" id="repTotal">0</div>
+                    <div class="cardNote">In selected period</div>
+                </div>
+
+                <div class="dashboardCard deliveredCard">
+                    <div class="cardLabel">Delivered</div>
+                    <div class="cardValue" id="repDelivered">0</div>
+                    <div class="cardNote">Successfully completed</div>
+                </div>
+
+                <div class="dashboardCard cancelledCard">
+                    <div class="cardLabel">Cancelled</div>
+                    <div class="cardValue" id="repCancelled">0</div>
+                    <div class="cardNote">Cancelled deliveries</div>
+                </div>
+
+                <div class="dashboardCard outCard">
+                    <div class="cardLabel">Delivered Rate</div>
+                    <div class="cardValue" id="repRate">0%</div>
+                    <div class="cardNote">Delivered &divide; Total</div>
                 </div>
             </div>
 
             <div class="panel">
-                <h2>Employees Overview</h2>
-                <p>List of all company employees</p>
-
+                <h2>By Driver</h2>
+                <p>Deliveries handled per driver</p>
                 <div class="tableWrapper">
                     <table class="dataTable">
                         <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Position</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
+                            <tr><th>Driver</th><th>Total</th><th>Delivered</th><th>Cancelled</th></tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>Juan Dela Cruz</td>
-                                <td>Staff</td>
-                                <td>
-                                    <select name="role" aria-label="Employee role">
-                                        <option value="Employee" selected>Employee</option>
-                                        <option value="Admin">Admin</option>
-                                        <option value="Driver">Driver</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select name="status" aria-label="Employee status">
-                                        <option value="Active" selected>Active</option>
-                                        <option value="Inactive">Inactive</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select aria-label="Actions">
-                                        <option value="">Actions</option>
-                                        <option value="view">View</option>
-                                        <option value="edit">Edit</option>
-                                        <option value="delete">Delete</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        </tbody>
+                        <tbody id="driverRows"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>By Customer</h2>
+                <p>Deliveries per customer</p>
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                            <tr><th>Customer</th><th>Total</th><th>Delivered</th><th>Cancelled</th></tr>
+                        </thead>
+                        <tbody id="customerRows"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>By Month</h2>
+                <p>Deliveries per month</p>
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                            <tr><th>Month</th><th>Total</th><th>Delivered</th><th>Cancelled</th></tr>
+                        </thead>
+                        <tbody id="monthRows"></tbody>
                     </table>
                 </div>
             </div>
@@ -115,5 +129,6 @@
     </main>
 
     <script src="app.js"></script>
+    <script src="reports.js"></script>
 </body>
 </html>
