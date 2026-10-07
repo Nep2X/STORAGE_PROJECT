@@ -71,10 +71,16 @@ try {
     // ---------- Buong listahan (para sa CSV export) ----------
     $deliveries = rows($pdo,
         "SELECT del_number, customer_name, address, contact, del_date, driver_name,
-                vehicle, item_desc, quantity, status, remarks
+                vehicle, item_desc, quantity, status, remarks,
+                delivered_at, proof_image, rider_notes
          FROM deliveries $w
          ORDER BY del_date DESC, id DESC", $params);
-
+        // ---------- Rider reports (may proof picture) ----------
+    $w3 = $where ? $w . ' AND proof_image IS NOT NULL' : 'WHERE proof_image IS NOT NULL';
+    $riderReports = rows($pdo,
+        "SELECT del_number, customer_name, del_date, delivered_at, driver_name, proof_image, rider_notes
+         FROM deliveries $w3
+         ORDER BY del_date DESC, id DESC", $params);
     echo json_encode([
         'ok'          => true,
         'total'       => $total,
@@ -83,8 +89,10 @@ try {
         'by_customer' => $byCustomer,
         'by_month'    => $byMonth,
         'deliveries'  => $deliveries,
+        'rider_reports' => $riderReports
     ]);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+    error_log('reports.php: ' . $e->getMessage());
+    echo json_encode(['ok' => false, 'error' => 'Server error. Please try again later.']);
 }

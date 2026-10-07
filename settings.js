@@ -3,6 +3,7 @@ const USERS_API = "api/users.php";
 
 let me = null;
 let users = [];
+let drivers = [];
 let editingUserId = null;
 let resetUserId = null;
 
@@ -81,6 +82,20 @@ document.addEventListener("keydown", event => {
 
 // Ang Driver ID ay awtomatikong ginagawa ng server para sa Driver / Rider na account
 const driverCode = (id) => "DRV-" + String(id).padStart(4, "0");
+const RIDER_ROLES = ["Driver", "Rider"];
+
+async function loadDrivers() {
+    try {
+        const data = await api("api/drivers.php");
+        drivers = Array.isArray(data) ? data : [];
+    } catch (error) {
+        drivers = [];
+    }
+}
+
+function toggleDriverField() {
+    $("uDriverGroup").style.display = RIDER_ROLES.includes($("uRole").value) ? "block" : "none";
+}
 
 const ICONS = {
     edit: `<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>`,
@@ -163,6 +178,7 @@ async function loadUsers() {
                 <td>${esc(user.full_name)}</td>
                 <td>${esc(user.username)}</td>
                 <td>${esc(user.role)}${user.driver_id ? ` &middot; ${driverCode(user.driver_id)}` : ""}</td>
+                <td>${esc(user.role)}${user.driver_name ? ` (${esc(user.driver_name)})` : ""}</td>
                 <td>${esc(user.contact_number) || "-"}</td>
                 <td>
                     <span class="statusBadge ${user.is_active ? "deliveredBadge" : "pendingBadge"}">
@@ -184,6 +200,8 @@ async function loadUsers() {
 }
 
 function openUserModal(user = null) {
+async function openUserModal(user = null) {
+    await loadDrivers();
     editingUserId = user?.id ?? null;
 
     $("userModalTitle").textContent = user ? "Edit User" : "Add User";
@@ -193,12 +211,16 @@ function openUserModal(user = null) {
     $("uActiveGroup").style.display = user ? "block" : "none";
     $("uPassword").required = !user;
 
+    $("uDriver").innerHTML = `<option value="">Select driver</option>` +
+        drivers.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join("");
+
     if (user) {
         $("uUsername").value = user.username;
         $("uName").value = user.full_name;
         $("uEmail").value = user.email ?? "";
         $("uRole").value = user.role;
         $("uContact").value = user.contact_number ?? "";
+        $("uDriver").value = user.driver_id ?? "";
         $("uActive").value = user.is_active ? "1" : "0";
     } else {
         $("uRole").value = "Employee";
@@ -207,6 +229,12 @@ function openUserModal(user = null) {
 
     openDialog("userModal");
 }
+    toggleDriverField();
+
+    openDialog("userModal");
+}
+$("uRole").addEventListener("change", toggleDriverField);
+
 const openAddUser = document.getElementById("openAddUser");
 
 if (openAddUser) {
@@ -223,6 +251,7 @@ $("userForm").addEventListener("submit", async event => {
         email: $("uEmail").value.trim(),
         role: $("uRole").value,
         contact_number: $("uContact").value.trim()
+        driver_id: RIDER_ROLES.includes($("uRole").value) ? $("uDriver").value : ""
     };
 
     try {

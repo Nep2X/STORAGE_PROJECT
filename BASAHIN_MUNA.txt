@@ -1,0 +1,8 @@
+I-extract ang ZIP na ito sa loob ng C:\xampp\htdocs\NEPNEP_PROJECT\ at i-overwrite ang mga file.
+
+BURAHIN ANG MGA ITO sa project folder:
+  - api\employees.php        (luma na, nakasalalay sa _auth.php na wala na)
+  - dashScript.js             (hindi ginagamit, nagkokonflikto sa app.js)
+  - api\setupAdmin.php        (kapag nakagawa ka na ng admin account)
+
+Pagkatapos: i-Ctrl + F5 ang bawat page.
