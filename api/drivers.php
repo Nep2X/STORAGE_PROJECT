@@ -29,10 +29,10 @@ try {
         case 'POST':
             if (empty(trim($input['name'] ?? ''))) fail(400, 'Missing field: name');
             $status = in_array($input['status'] ?? '', $STATUSES) ? $input['status'] : 'Available';
+            if ($status === 'On Route') $status = 'Available';   // awtomatiko lang ang On Route
 
             $stmt = $pdo->prepare("INSERT INTO drivers (name, contact, status) VALUES (?,?,?)");
-            $stmt->execute([trim($input['name']), $input['contact'] ?? null, $status]);
-            echo json_encode(['ok' => true, 'id' => $pdo->lastInsertId()]);
+            $stmt->execute([trim($input['name']), $input['contact'] ?? null, $status]);            echo json_encode(['ok' => true, 'id' => $pdo->lastInsertId()]);
             break;
 
         case 'PUT':
@@ -49,7 +49,7 @@ try {
                 $stmt->execute([$id]);
                 $oldName = $stmt->fetchColumn();
                 if ($oldName === false) fail(404, 'Driver not found.');
-
+                if ($err = driver_status_error($pdo, $oldName, $status)) fail(409, $err);
                 $pdo->beginTransaction();
 
                 $stmt = $pdo->prepare("UPDATE drivers SET name=?, contact=?, status=? WHERE id=?");
@@ -66,8 +66,14 @@ try {
                 $pdo->commit();
             } elseif (isset($input['status']) && in_array($input['status'], $STATUSES)) {
                 // Status lang (galing sa dropdown sa row)
+                $stmt = $pdo->prepare("SELECT name FROM drivers WHERE id = ?");
+                $stmt->execute([$id]);
+                $name = $stmt->fetchColumn();
+                if ($name === false) fail(404, 'Driver not found.');
+                if ($err = driver_status_error($pdo, $name, $input['status'])) fail(409, $err);
+
                 $pdo->prepare("UPDATE drivers SET status=? WHERE id=?")->execute([$input['status'], $id]);
-            } else {
+                        } else {
                 fail(400, 'Nothing to update');
             }
             echo json_encode(['ok' => true]);

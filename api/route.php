@@ -37,16 +37,12 @@ require_login(ROLES_STAFF);
 
 // Return: [lat,lng] kung may nakita, null kung walang match, false kung walang internet
 function geocode(string $q) {
-    $url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ph&q=' . urlencode($q);
-    $ctx = stream_context_create(['http' => [
-        'timeout' => 6,
-        'header'  => "User-Agent: DeliveryProject/1.0 (XAMPP)\r\n",
-    ]]);
-    $json = @file_get_contents($url, false, $ctx);
-    if ($json === false) return false;
+    $json = http_get('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ph&q=' . urlencode($q));
+    if ($json === false || $json === '') return false;   // walang internet
     $r = json_decode($json, true);
+    if (!is_array($r)) return false;                     // hindi JSON (hal. na-block), subukan ulit mamaya
     if (!empty($r[0]['lat']) && !empty($r[0]['lon'])) return [(float)$r[0]['lat'], (float)$r[0]['lon']];
-    return null;
+    return null;                                         // walang nakitang match
 }
 
 try {

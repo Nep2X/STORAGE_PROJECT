@@ -9,6 +9,7 @@ const CUS_API = "api/customers.php";
 const DRV_API = "api/drivers.php";
 
 const STATUS_LIST = ["Pending", "Processing", "Out for Delivery", "Delivered", "Cancelled"];
+const ACTIVE_STATUSES = ["Pending", "Processing", "Out for Delivery"];
 const BADGE = {
     "Pending": "pendingBadge",
     "Processing": "processingBadge",
@@ -177,8 +178,21 @@ async function prepareForm(del = null) {
         ok.customersOk ? (customers.length ? "Select customer" : "No customers yet - add one in Customers page") : "Failed to load customers",
         del?.customer_name ?? "");
     fillSelect(delForm.elements.driverAssign, drivers.map((r) => r.name),
-        ok.driversOk ? (drivers.length ? "Select driver" : "No drivers yet - add one in Drivers page") : "Failed to load drivers",
-        del?.driver_name ?? "");
+    ok.driversOk ? (drivers.length ? "Select driver" : "No drivers yet - add one in Drivers page") : "Failed to load drivers",
+    del?.driver_name ?? "");
+
+// Isang delivery lang bawat driver: naka-disable ang driver na may active delivery na
+const busy = new Set(
+    deliveries
+        .filter((d) => ACTIVE_STATUSES.includes(d.status) && d.driver_name && (!del || d.id !== del.id))
+        .map((d) => d.driver_name)
+);
+[...delForm.elements.driverAssign.options].forEach((o) => {
+    if (o.value && busy.has(o.value) && o.value !== (del?.driver_name ?? "")) {
+        o.disabled = true;
+        o.textContent = `${o.value} (has active delivery)`;
+    }
+});
 
     if (del) {
         delForm.elements.delNumber.value = del.del_number ?? "";

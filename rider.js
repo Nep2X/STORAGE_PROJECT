@@ -422,7 +422,8 @@ function startAutoShare() {
                 await sendLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
                 showLocMsg("Auto-shared ang location mo.", "ok");
             } catch (err) {
-                showLocMsg("Auto-share failed: " + err.message, "err");
+                const idle = /no active delivery/i.test(err.message);
+                showLocMsg(idle ? "Walang active delivery, kaya hindi muna ibinabahagi ang location mo." : "Auto-share failed: " + err.message, idle ? "ok" : "err");
             }
         },
         (err) => showLocMsg(gpsErrorText(err), "err"),

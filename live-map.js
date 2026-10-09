@@ -6,7 +6,9 @@ const OSRM_URL = "https://router.project-osrm.org/route/v1/driving/";
 const LOCATION_REFRESH_MS = 10000;
 const DELIVERY_REFRESH_MS = 60000;
 const STALE_SECONDS = 5 * 60;      // mas luma rito = grey
-const MOVE_REDRAW_METERS = 30;     // saka lang iguguhit ulit ang ruta
+const MOVE_REDRAW_METERS = 100;     // saka lang iguguhit ulit ang ruta
+const REMAINING_COLOR = "#2f6df6"; // kulay ng natitirang ruta papunta sa customer
+const MAX_ROUTED_STOPS = 5;        // para hindi ma-overload ang libreng OSRM server
 
 // PALITAN ng totoong company ninyo 
 const COMPANY = { name: "Company", address: "Campanilla, Quezon City, 1112 Metro Manila", lat: 14.624556610241402, lng: 121.03696233024351 };
@@ -50,12 +52,22 @@ function pin(bg, label) {
         iconSize: [28, 28], iconAnchor: [14, 14],
     });
 }
-
 function icon(fresh) {
     return L.divIcon({
         className: "",
         html: `<div class="location-marker ${fresh ? "fresh" : "stale"}"></div>`,
         iconSize: [18, 18], iconAnchor: [9, 9],
+    });
+}
+
+// Pin ng customer address (walang bilog at walang delivery ID)
+function destPin(color) {
+    return L.divIcon({
+        className: "",
+        html: `<svg width="30" height="40" viewBox="0 0 30 40" style="display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))">` +
+              `<path d="M15 39C15 39 2 24.5 2 14.5C2 7.04 7.82 1 15 1s13 6.04 13 13.5C28 24.5 15 39 15 39z" fill="${color}" stroke="#fff" stroke-width="2"/>` +
+              `<circle cx="15" cy="14.5" r="4.5" fill="#fff"/></svg>`,
+        iconSize: [30, 40], iconAnchor: [15, 39], popupAnchor: [0, -36], tooltipAnchor: [16, -22],
     });
 }
 
@@ -129,8 +141,18 @@ function renderInfo() {
     const loc = locations[selectedId];
     if (!loc || !currentRoute) { infoEl.hidden = true; return; }
     infoEl.hidden = false;
-    infoEl.innerHTML = `<b>${escH(loc.name)}</b> · ${currentRoute.km.toFixed(1)} km from company` +
+
+    let html = `<b>${escH(loc.name)}</b> · ${currentRoute.km.toFixed(1)} km from company` +
         `${currentRoute.road ? "" : " (straight line)"} · updated ${ago(loc.seconds_ago)}`;
+
+    (currentRoute.stops || []).forEach(({ s, km, road }) => {
+        html += `<br><span style="color:${REMAINING_COLOR}">&#9679;</span> ${escH(s.customer_name)} · ` +
+            `${km.toFixed(1)} km remaining${road ? "" : " (straight line)"}`;
+    });
+    if ((currentRoute.missing || []).length) {
+        html += `<br>&#9888; Address not on the map yet: ${currentRoute.missing.map((s) => escH(s.customer_name)).join(", ")}`;
+    }
+    infoEl.innerHTML = html;
 }
 
 // Ruta sa kalsada (OSRM). Kung walang sagot, straight line na lang.
@@ -161,23 +183,45 @@ async function showSelected(fit) {
     riderMarker = L.marker(here, { icon: icon(fresh), zIndexOffset: 1000 }).addTo(selectionLayer)
         .bindPopup(`<b>${escH(loc.name)}</b><br>Last report: ${escH(loc.reported_at)} (${ago(loc.seconds_ago)})`);
 
+    // Mga customer address na nakita sa mapa (may coordinates)
+    const stops = rider.stops.filter((s) => s.lat != null && s.lng != null).slice(0, MAX_ROUTED_STOPS);
+    const missing = rider.stops.filter((s) => s.lat == null || s.lng == null);
     const bounds = [company, here];
-    rider.stops.forEach((s) => {
-        if (s.lat == null || s.lng == null) return;
+
+    stops.forEach((s) => {
         const dest = L.latLng(s.lat, s.lng);
         bounds.push(dest);
-        L.polyline([here, dest], { color: "#6b7280", weight: 3, dashArray: "2 10" }).addTo(selectionLayer);
-        L.marker(dest, { icon: pin("#7e57c2", "&#128230;") }).addTo(selectionLayer)
-            .bindPopup(`<b>${escH(s.customer_name)}</b><br>${escH(s.del_number)}<br>${escH(s.address)}`);
+        L.marker(dest, { icon: destPin(REMAINING_COLOR) }).addTo(selectionLayer)
+            .bindTooltip(
+                `<div style="white-space:normal;max-width:200px"><b>${escH(s.customer_name)}</b><br>${escH(s.address)}</div>`,
+                { permanent: true, direction: "right" }
+            )
+            .bindPopup(`<b>${escH(s.customer_name)}</b><br>${escH(s.address)}<br>Delivery ${escH(s.del_number)}`);
     });
     if (fit) map.fitBounds(L.latLngBounds(bounds).pad(0.2), { maxZoom: 16 });
 
-    const route = await getRoadRoute(company, here);
+    // Sabay na hinahanap: company -> rider (itim) at rider -> bawat customer (asul, natitirang daraanan)
+    const [route, ...remaining] = await Promise.all([
+        getRoadRoute(company, here),
+        ...stops.map((s) => getRoadRoute(here, L.latLng(s.lat, s.lng))),
+    ]);
     if (token !== drawToken) return;   // ibang rider na ang napili
+
     L.polyline(route.points, route.road
         ? { color: "#161616", weight: 5, opacity: 0.9 }
         : { color: "#161616", weight: 4, dashArray: "6 8" }).addTo(roadLayer);
-    currentRoute = route;
+
+    remaining.forEach((r) => {
+        L.polyline(r.points, r.road
+            ? { color: REMAINING_COLOR, weight: 5, opacity: 0.9 }
+            : { color: REMAINING_COLOR, weight: 4, dashArray: "6 8" }).addTo(roadLayer);
+    });
+
+    currentRoute = {
+        ...route,
+        stops: stops.map((s, i) => ({ s, km: remaining[i].km, road: remaining[i].road })),
+        missing,
+    };
     renderInfo();
 }
 
@@ -209,6 +253,7 @@ async function refreshLocations() {
 async function refreshDeliveries() {
     try {
         await loadDeliveries();
+        if (selectedId) showSelected(false);
         renderList();
     } catch (err) {
         updatedEl.textContent = "Error: " + err.message;

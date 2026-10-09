@@ -91,7 +91,7 @@ try {
         $place = trim((string)($in['address'] ?? ''));
         if ($place !== '' && ($lat === false || $lng === false)) {
             $pt = geocode_place($place);
-            if ($pt === false) fail(502, 'Hindi maabot ng server ang map search (walang internet?). Ilagay na lang ang Latitude at Longitude.');
+            if ($pt === false) fail(502, 'Hindi maabot ng server ang map search (walang internet?). Subukan ulit mamaya, o gamitin ang GPS button.');
             if (!$pt)          fail(404, 'Hindi makita ang lugar na iyon. Subukan ang mas kumpletong pangalan, hal. "Pasig City Public Market, Pasig".');
             [$lat, $lng] = $pt;
             $acc = null;
@@ -104,6 +104,12 @@ try {
         $driverId = (int)$stmt->fetchColumn();
         if (!$driverId) fail(403, 'Your account is not linked to a driver. Please contact the admin.');
 
+        // Naka-share lang ang location kapag may active delivery na naka-assign sa rider
+        $stmt = $pdo->prepare("SELECT name FROM drivers WHERE id = ?");
+        $stmt->execute([$driverId]);
+        if (!active_delivery_of($pdo, (string)$stmt->fetchColumn())) {
+            fail(409, 'You have no active delivery, so your location is not shared.');
+        }
         $stmt = $pdo->prepare(
             "INSERT INTO rider_locations (driver_id, latitude, longitude, accuracy, reported_at)
              VALUES (?,?,?,?,?)"

@@ -132,6 +132,8 @@ try {
             fail(409, 'This delivery was already updated.');
         }
 
+        sync_driver_status($pdo, $driver);   // wala nang active delivery = Available na ulit
+
         echo json_encode(['ok' => true, 'proof' => $path]);
         exit;
     }
