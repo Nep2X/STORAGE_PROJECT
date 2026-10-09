@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Live Map | Delivery Project</title>
+</head>
+<body>
+
+    <header class="headerSec">
+        <h2>DELIVERY PROJECT</h2>
+        <div class="headerActions">
+            <button id="aboutButton">Home</button>
+            <button id="profileButton">Profile</button>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </header>
+
+    <main class="mainLayout">
+
+        <aside class="optionSec">
+            <div class="sidebarTitle">MENU</div>
+
+            <button id="dashboardButton">Dashboard</button>
+            <button id="deliveriesButton">Deliveries</button>
+            <button id="driversButton">Drivers</button>
+            <button id="mapButton" class="active">Live Map</button>
+            <button id="customersButton">Customers</button>
+            <button id="employeeButton">Employees</button>
+            <button id="reportsButton">Reports</button>
+            <button id="riderButton">Submit Delivery</button>
+            <button id="settingsButton">Settings</button>
+
+            <div class="sidebarBottom">
+                <button id="sidebarLogoutButton">Logout</button>
+            </div>
+        </aside>
+
+        <section class="dashboardSec">
+            <div class="dashboardHead">
+                <div>
+                    <h3>Live Map</h3>
+                    <p>Makikita ang huling location ng bawat rider, kahit walang active delivery. I-click ang rider para sa ruta mula sa company.</p>
+                </div>
+                <span class="liveStatus" id="updated" role="status">Loading…</span>
+            </div>
+
+            <div class="liveGrid">
+                <aside class="liveList">
+                    <div class="liveListHead"><span>Riders</span><span id="riderCount">0</span></div>
+                    <div id="list" aria-label="Riders on delivery"></div>
+                </aside>
+
+                <div class="liveMapWrap">
+                    <div id="map" aria-label="Rider map"></div>
+                    <div id="routeInfo" class="routeInfo" hidden></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+    <script src="live-map.js"></script>
+</body>
+</html>

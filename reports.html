@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Reports | Delivery Project</title>
+</head>
+<body>
+
+    <header class="headerSec">
+        <h2>DELIVERY PROJECT</h2>
+
+        <div class="headerActions">
+            <button id="aboutButton">Home</button>
+            <button id="profileButton">Profile</button>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </header>
+
+    <main class="mainLayout">
+
+        <aside class="optionSec">
+            <div class="sidebarTitle">MENU</div>
+
+            <button id="dashboardButton" class="">Dashboard</button>
+            <button id="deliveriesButton" class="">Deliveries</button>
+            <button id="driversButton" class="">Drivers</button>
+            <button id="mapButton">Live Map</button>
+            <button id="customersButton" class="">Customers</button>
+            <button id="employeeButton" class="">Employees</button>
+            <button id="reportsButton" class="active">Reports</button>
+            <button id="riderButton">Submit Delivery</button>
+            <button id="settingsButton" class="">Settings</button>
+
+            <div class="sidebarBottom">
+                <button id="sidebarLogoutButton">Logout</button>
+            </div>
+        </aside>
+
+        <section class="dashboardSec">
+
+            <div class="dashboardHead">
+                <div class="pageHead">
+                    <h3>Reports</h3>
+                    <p>Delivery summaries by driver, customer, and month</p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="toolbar">
+                    <label for="fromDate">From</label>
+                    <input type="date" id="fromDate">
+                    <label for="toDate">To</label>
+                    <input type="date" id="toDate">
+                    <button class="btnPrimary" type="button" id="genBtn">Generate</button>
+                    <button class="btnOutline" type="button" id="resetBtn">Reset</button>
+                    <button class="btnOutline" type="button" id="exportBtn">Export CSV</button>
+                    <button class="btnOutline" type="button" id="printBtn">Print</button>
+                </div>
+            </div>
+
+            <div id="repMessage" class="repMessage" role="alert" hidden></div>
+
+            <div class="printInfo">
+                <h1>Delivery Report</h1>
+                <p id="printPeriod"></p>
+                <p id="printRider"></p>
+                <p id="printedOn"></p>
+            </div>
+
+            <div class="dashboardCards">
+                <div class="dashboardCard totalCard">
+                    <div class="cardLabel">Total Deliveries</div>
+                    <div class="cardValue" id="repTotal">0</div>
+                    <div class="cardNote">In selected period</div>
+                </div>
+
+                <div class="dashboardCard deliveredCard">
+                    <div class="cardLabel">Delivered</div>
+                    <div class="cardValue" id="repDelivered">0</div>
+                    <div class="cardNote">Successfully completed</div>
+                </div>
+
+                <div class="dashboardCard cancelledCard">
+                    <div class="cardLabel">Cancelled</div>
+                    <div class="cardValue" id="repCancelled">0</div>
+                    <div class="cardNote">Cancelled deliveries</div>
+                </div>
+
+                <div class="dashboardCard outCard">
+                    <div class="cardLabel">Delivered Rate</div>
+                    <div class="cardValue" id="repRate">0%</div>
+                    <div class="cardNote">Delivered &divide; Total</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Rider Report</h2>
+                <p>Proof of delivery and notes submitted by riders</p>
+                <div class="toolbar" style="margin-bottom: 14px;">
+                    <label for="riderFilter">Rider</label>
+                    <select id="riderFilter">
+                        <option value="">All riders</option>
+                    </select>
+                </div>
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                        <tr><th>Delivery ID</th><th>Customer</th><th>Delivery Date</th><th>Delivered At</th><th>Rider Name</th><th>Proof Picture</th><th>Notes</th></tr>                        </thead>
+                        <tbody id="riderRows"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>By Driver</h2>
+                <p>Deliveries handled per driver</p>
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                            <tr><th>Driver</th><th>Total</th><th>Delivered</th><th>Cancelled</th></tr>
+                        </thead>
+                        <tbody id="driverRows"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>By Customer</h2>
+                <p>Deliveries per customer</p>
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                            <tr><th>Customer</th><th>Total</th><th>Delivered</th><th>Cancelled</th></tr>
+                        </thead>
+                        <tbody id="customerRows"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>By Month</h2>
+                <p>Deliveries per month</p>
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                            <tr><th>Month</th><th>Total</th><th>Delivered</th><th>Cancelled</th></tr>
+                        </thead>
+                        <tbody id="monthRows"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+    <script src="reports.js"></script>
+</body>
+</html>

@@ -1,0 +1,1252 @@
+/* =====================================================================
+   DELIVERY PROJECT - style.css
+
+   TABLE OF CONTENTS
+   1.  Design tokens (kulay, shadow)
+   2.  Base
+   3.  App shell      (header, main layout, sidebar)
+   4.  Page content   (page head, dashboard, panels)
+   5.  Components     (buttons, forms, tables, badges, modal, icon buttons, photo viewer)
+   6.  Pages          (reports, settings, live map, rider)
+   7.  Responsive     (1250 > 900 > 850 > 650 > 430)
+   8.  Print / accessibility
+
+   Pagpapalit ng kulay? Sa seksyon 1 lang. Hex ang gamit (hindi oklch)
+   para gumana kahit sa lumang browser.
+===================================================================== */
+
+
+/* =====================================================================
+   1. DESIGN TOKENS
+===================================================================== */
+:root {
+    color-scheme: light;                 /* iwas auto-dark / baligtad na kulay ng browser */
+
+    /* Surfaces */
+    --background: #ECECE8;               /* background ng buong page (dati #EFEFEC) */
+    --card: #FFFFFF;                     /* sidebar, header, cards, modal */
+    --secondary: #F1F0ED;                /* table head, hover, rider card (dati #F4F3F1) */
+
+    /* Text */
+    --foreground: #1D1D19;
+    --primary: #22221E;                  /* dark buttons / dark chips */
+    --primary-foreground: #FFFFFF;
+    --muted-foreground: #66665F;         /* dati #72726D, mas malinaw ang maliliit na text */
+    --text-soft: #4A4A46;                /* labels */
+
+    /* Lines */
+    --border: #D6D6D1;                    /* dati #DEDEDC, kita kahit sa maliwanag na monitor */
+    --border-soft: #E6E6E2;              /* hati ng rows sa listahan */
+
+    /* Brand / status */
+    --accent: #BFF100;                   /* lime */
+    --accent-foreground: #202413;
+    --packed: #E2CBFF;                   /* lilac (Pending / Processing) */
+    --packed-foreground: #45335B;
+    --ring: #87A148;                     /* focus ring */
+    --destructive: #D33B39;
+    --destructive-soft: #FBE9E7;
+    --green: #2F8F4E;
+    --orange: #D98A00;
+    --blue: #1F66CC;
+    --violet: #7C3AED;
+
+    --shadow-panel: 0 8px 36px rgba(0, 0, 0, 0.05);
+
+    /* Lumang pangalan, ginagamit pa ng inline <style> sa ibang HTML */
+    --navy: var(--primary);
+    --navy-dark: var(--foreground);
+    --light-bg: var(--background);
+    --white: var(--card);
+    --text: var(--foreground);
+    --muted: var(--muted-foreground);
+    --red: var(--destructive);
+}
+
+
+/* =====================================================================
+   2. BASE
+===================================================================== */
+* {
+    box-sizing: border-box;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+    font-family: 'DM Sans', Arial, Helvetica, sans-serif;
+    letter-spacing: 0;
+}
+
+body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+}
+
+/* Default na itsura ng lahat ng form field (mas tiyak na rules ang nag-o-override) */
+input,
+select,
+textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--foreground);
+}
+
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+}
+
+
+/* =====================================================================
+   3. APP SHELL
+===================================================================== */
+
+/* ---------- Header ---------- */
+.headerSec {
+    position: relative;
+    z-index: 1000;
+    min-height: 76px;
+    padding: 10px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card);
+    color: var(--foreground);
+    border-bottom: 1px solid var(--border);
+}
+
+.headerSec h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--foreground);
+}
+
+.headerActions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.headerSec button {
+    padding: 9px 14px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--foreground);
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.headerSec button:hover {
+    background: var(--secondary);
+}
+
+/* ---------- Main layout ---------- */
+.mainLayout {
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 24px;
+    padding: 24px;
+    min-height: calc(100vh - 76px);
+}
+
+/* ---------- Sidebar (icon rail) ---------- */
+.optionSec {
+    position: sticky;
+    top: 24px;
+    height: calc(100vh - 124px);
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.sidebarTitle {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 28px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    font-size: 0;                        /* nakatago ang "MENU", logo lang ang kita */
+    font-weight: 700;                    /* para sa ◈ na logo */
+    letter-spacing: 1.5px;
+    border: 1px solid var(--foreground);
+    border-radius: 50%;
+}
+
+.sidebarTitle::after {
+    content: '◈';
+    font-size: 25px;
+    color: var(--foreground);
+}
+
+.optionSec button {
+    width: 40px;
+    height: 40px;
+    margin: 2px 0;
+    padding: 10px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--foreground);
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.optionSec button:hover,
+.optionSec button.active {
+    background: var(--secondary);
+}
+
+.optionSec svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.sidebarBottom {
+    width: 100%;
+    margin-top: auto;
+    padding-top: 15px;
+    display: grid;
+    place-items: center;
+    border-top: 1px solid var(--border);
+}
+
+.sidebarBottom button:hover {
+    color: var(--destructive);           /* Logout: pula kapag hover */
+}
+
+
+/* =====================================================================
+   4. PAGE CONTENT
+===================================================================== */
+
+/* ---------- Content card (puting kahon sa kanan ng sidebar) ---------- */
+.dashboardSec {
+    min-width: 0;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+/* ---------- Page titles ---------- */
+.dashboardHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+}
+
+.dashboardHead h3,
+.pageHead h3 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--foreground);
+}
+
+.dashboardHead p,
+.pageHead p {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: 14px;
+}
+
+/* ---------- Panel (Deliveries, Drivers, etc.) ---------- */
+.panel,
+.dashboardDelOverview {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.panel h2,
+.sectionHeader h2,
+.recentDeliveryHeader h2 {
+    margin: 0 0 5px;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--foreground);
+}
+
+.panel > p,
+.sectionHeader p,
+.recentDeliveryHeader p {
+    margin: 0 0 16px;
+    color: var(--muted-foreground);
+    font-size: 13px;
+}
+
+.sectionHeader p,
+.recentDeliveryHeader p {
+    margin-bottom: 0;
+}
+
+/* ---------- Dashboard: summary cards ---------- */
+.dashboardCards {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(150px, 1fr));
+    gap: 16px;
+}
+
+.dashboardCard,
+.reportCard,
+.profileCard {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    box-shadow: none;
+}
+
+.dashboardCard {
+    min-height: 135px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cardLabel {
+    color: var(--muted-foreground);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.cardValue {
+    margin-top: 10px;
+    color: var(--foreground);
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.cardNote {
+    margin-top: 5px;
+    color: var(--muted-foreground);
+    font-size: 11px;
+}
+
+.newDeliveryBtn {
+    padding: 11px 17px;
+    border: none;
+    border-radius: 6px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.newDeliveryBtn:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+/* ---------- Dashboard: overview (chart + status list) ---------- */
+.sectionHeader,
+.recentDeliveryHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.sectionHeader select {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--foreground);
+}
+
+.overviewContent {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(230px, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.chartBox,
+.statusSummary {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+}
+
+.chartTitle,
+.summaryTitle {
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--foreground);
+}
+
+.fakeChart {
+    height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.chartBars {
+    height: 175px;
+    padding: 0 15px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    gap: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+.chartBars span {
+    width: 30px;
+    max-width: 45px;
+    background: var(--primary);
+    border-radius: 5px 5px 0 0;
+    opacity: 0.9;
+}
+
+.chartDays {
+    padding-top: 9px;
+    display: flex;
+    justify-content: space-around;
+    color: var(--muted-foreground);
+    font-size: 11px;
+}
+
+.statusSummary {
+    display: flex;
+    flex-direction: column;
+}
+
+.statusRow {
+    padding: 13px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 13px;
+}
+
+.statusRow:last-child {
+    border-bottom: none;
+}
+
+.statusRow span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.statusRow strong {
+    color: var(--foreground);
+}
+
+.statusDot {
+    width: 8px;
+    height: 8px;
+    display: inline-block;
+    border-radius: 50%;
+    background: var(--primary);
+}
+
+.statusDot.pending    { background: var(--orange); }
+.statusDot.processing { background: var(--blue); }
+.statusDot.out        { background: var(--violet); }
+.statusDot.delivered  { background: var(--green); }
+.statusDot.cancelled  { background: var(--destructive); }
+
+/* ---------- Dashboard: recent deliveries ---------- */
+.recentDeliveryHeader {
+    margin-top: 28px;
+    margin-bottom: 14px;
+}
+
+.viewAllBtn {
+    padding: 8px 13px;
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--primary);
+    cursor: pointer;
+}
+
+.viewAllBtn:hover {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+
+/* =====================================================================
+   5. COMPONENTS
+===================================================================== */
+
+/* ---------- Buttons ---------- */
+.btnPrimary,
+.btnOutline,
+.btnDanger {
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btnPrimary {
+    padding: 11px 20px;
+    border: none;
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.btnPrimary:hover {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.btnOutline {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--foreground);
+}
+
+.btnOutline:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.btnDanger {
+    padding: 10px 16px;
+    border: 1px solid var(--destructive);
+    background: var(--card);
+    color: var(--destructive);
+}
+
+.btnDanger:hover {
+    background: var(--destructive);
+    color: var(--primary-foreground);
+}
+
+/* ---------- Toolbar (add button + search + filters) ---------- */
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.toolbar input[type="text"],
+.toolbar select {
+    min-width: 160px;
+    font-size: 13px;
+}
+
+/* ---------- Tables ---------- */
+.tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.dataTable,
+.recentDeliveryTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.dataTable th,
+.recentDeliveryTable th {
+    padding: 13px 14px;
+    background: var(--secondary);
+    color: var(--muted-foreground);
+    text-align: left;
+    font-weight: 400;
+    border-bottom: 1px solid var(--border);
+}
+
+.dataTable td,
+.recentDeliveryTable td {
+    padding: 18px 14px;
+    color: var(--foreground);
+    border-bottom: 1px solid var(--border);
+}
+
+.dataTable tbody tr:hover,
+.recentDeliveryTable tbody tr:hover {
+    background: var(--secondary);
+}
+
+.dataTable select {
+    padding: 6px 9px;
+    font-size: 12px;
+}
+
+.statusText {
+    font-weight: 700;
+}
+
+/* ---------- Status badges ---------- */
+.statusBadge {
+    display: inline-block;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.pendingBadge,
+.processingBadge {
+    background: var(--packed);
+    color: var(--packed-foreground);
+}
+
+.outBadge {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.deliveredBadge {
+    background: var(--secondary);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+}
+
+.cancelledBadge {
+    background: var(--destructive-soft);
+    color: var(--destructive);
+}
+
+/* ---------- Icon buttons (edit / delete sa table) ---------- */
+.actionBtns {
+    display: flex;
+    gap: 6px;
+}
+
+.iconBtn {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card);
+    color: var(--muted-foreground);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.iconBtn svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.iconBtn:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: var(--secondary);
+}
+
+.iconBtn.danger:hover {
+    color: var(--destructive);
+    border-color: var(--destructive);
+    background: var(--destructive-soft);
+}
+
+/* ---------- Modal ---------- */
+.modal {
+    display: none;                       /* JS ang nagpapakita (display: flex) */
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    justify-content: center;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.5);
+    z-index: 1000;
+}
+
+.modalBox {
+    width: 520px;
+    max-width: 92vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 24px;
+    background: var(--card);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modalHeader h2 {
+    margin: 0;
+    font-size: 20px;
+    color: var(--foreground);
+}
+
+.modalClose {
+    border: none;
+    background: none;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--muted-foreground);
+    cursor: pointer;
+}
+
+.modalClose:hover {
+    color: var(--destructive);
+}
+
+.modalBox form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modalBox label {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-soft);
+}
+
+.modalBox input,
+.modalBox select,
+.modalBox textarea {
+    font-size: 13px;
+}
+
+.modalBox input:focus,
+.modalBox select:focus,
+.modalBox textarea:focus {
+    outline: 2px solid var(--ring);
+    border-color: var(--primary);
+}
+
+.modalActions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* ---------- Proof photo + viewer ---------- */
+.proofThumb {
+    width: 64px;
+    height: 64px;
+    display: block;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.proofMissing {
+    color: var(--muted-foreground);
+    font-size: 13px;
+    font-style: italic;
+}
+
+.photoViewer {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 16px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+}
+
+.photoViewer.open {
+    display: flex;
+}
+
+.photoViewerImg {
+    max-width: 100%;
+    max-height: calc(100vh - 90px);
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.photoViewerClose {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.photoViewerClose:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.photoViewerClose:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+
+/* =====================================================================
+   6. PAGES
+===================================================================== */
+
+/* ---------- Reports ---------- */
+.reportCards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.reportControls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.reportControls label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-soft);
+}
+
+.reportControls input,
+.reportControls select {
+    font-size: 13px;
+}
+
+.chartPlaceholder {
+    height: 220px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    color: var(--muted-foreground);
+    font-size: 14px;
+}
+
+.reportActions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.repMessage {
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    background: #FDECEA;
+    border: 1px solid #F5C2BD;
+    border-radius: 6px;
+    color: #8A1F17;
+    font-size: 14px;
+}
+
+.repMessage[hidden] {
+    display: none;
+}
+
+/* ---------- Settings ---------- */
+.settingsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.profileCard {
+    padding: 24px;
+}
+
+.profileCard h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    color: var(--foreground);
+}
+
+.profileCard button {
+    margin-top: 16px;
+}
+
+.profileRow {
+    padding: 11px 0;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 13px;
+}
+
+.profileRow:last-of-type {
+    border-bottom: none;
+}
+
+.profileRow span {
+    color: var(--muted-foreground);
+}
+
+.profileRow strong {
+    color: var(--foreground);
+}
+
+/* ---------- Live Map ---------- */
+.liveStatus {
+    color: var(--muted-foreground);
+    font-size: 12px;
+}
+
+.liveGrid {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 20px;
+}
+
+.liveList,
+.liveMapWrap {
+    height: calc(100vh - 300px);
+    min-height: 460px;
+}
+
+.liveList {
+    display: flex;
+    flex-direction: column;
+}
+
+.liveListHead {
+    margin-bottom: 12px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.liveMapWrap {
+    position: relative;
+}
+
+.liveGrid #map {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: auto;
+    z-index: 0;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.routeInfo {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    z-index: 500;
+    padding: 10px 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-panel);
+    font-size: 13px;
+}
+
+#list {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rider {
+    width: 100%;
+    padding: 16px 13px;
+    background: var(--secondary);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-align: left;
+    font-size: 13px;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.rider:hover,
+.rider[aria-pressed="true"] {
+    background: var(--card);
+    border-color: var(--foreground);
+}
+
+.rider[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.rider small {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted-foreground);
+    font-size: 11px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    margin-right: 7px;
+    display: inline-block;
+    border-radius: 50%;
+}
+
+.fresh { background: var(--accent); }
+.stale { background: var(--muted-foreground); }
+
+.location-marker {
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--card);
+    border-radius: 50%;
+    box-shadow: var(--shadow-panel);
+}
+
+.leaflet-control-zoom {
+    border: 1px solid var(--border) !important;
+    box-shadow: var(--shadow-panel) !important;
+}
+
+.leaflet-control-zoom a {
+    background: var(--card) !important;
+    color: var(--foreground) !important;
+}
+
+/* ---------- Rider page (rider.html) ---------- */
+.riderWrap .panel {
+    padding: 22px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+
+/* =====================================================================
+   7. RESPONSIVE  (pinakamalaki > pinakamaliit)
+===================================================================== */
+@media (max-width: 1250px) {
+    .dashboardCards {
+        grid-template-columns: repeat(3, minmax(160px, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .liveGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .liveList {
+        height: auto;
+        min-height: 0;
+        max-height: 260px;
+    }
+
+    .liveMapWrap {
+        height: 420px;
+        min-height: 0;
+    }
+}
+
+@media (max-width: 850px) {
+    .mainLayout {
+        grid-template-columns: 56px minmax(0, 1fr);
+        gap: 14px;
+        padding: 14px;
+    }
+
+    .optionSec {
+        width: 56px;
+        padding: 16px 6px;
+    }
+
+    .dashboardSec {
+        padding: 20px;
+    }
+
+    .overviewContent {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .headerSec {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px 14px;
+    }
+
+    .headerSec h2 {
+        font-size: 17px;
+    }
+
+    .headerActions {
+        gap: 2px;
+    }
+
+    .headerSec button {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .mainLayout {
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .optionSec {
+        top: 10px;
+        width: 48px;
+        height: calc(100vh - 20px);
+        height: calc(100dvh - 20px);     /* para sa mobile address bar */
+        padding: 14px 4px;
+        gap: 6px;
+    }
+
+    .sidebarTitle {
+        margin-bottom: 12px;
+    }
+
+    .dashboardSec {
+        padding: 18px 12px;
+    }
+
+    .dashboardHead {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dashboardCards,
+    .reportCards,
+    .settingsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .toolbar > * {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 430px) {
+    .sectionHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+
+/* =====================================================================
+   8. PRINT / ACCESSIBILITY
+===================================================================== */
+.printInfo {
+    display: none;
+}
+
+@media print {
+    .headerSec,
+    .optionSec {
+        display: none;
+    }
+
+    .mainLayout {
+        display: block;
+        padding: 0;
+    }
+
+    .dashboardSec {
+        padding: 0;
+        border: 0;
+    }
+
+    .printInfo {
+        display: block;
+        margin-bottom: 14px;
+    }
+
+    .printInfo h1 {
+        margin: 0 0 6px;
+        font-size: 20px;
+    }
+
+    .printInfo p {
+        margin: 2px 0;
+        font-size: 12px;
+        color: #444;
+    }
+
+    .printInfo p:empty {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}

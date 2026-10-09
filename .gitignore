@@ -1,0 +1,16 @@
+# Mga litrato ng proof of delivery (hindi dapat nasa GitHub)
+uploads/
+
+# Mga file ng editor / system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local settings at credentials (huwag i-upload)
+config.php
+
+# Mga zip / backup
+*.zip
+config.php
+*.zip

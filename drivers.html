@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Drivers | Delivery Project</title>
+</head>
+<body>
+
+    <header class="headerSec">
+        <h2>DELIVERY PROJECT</h2>
+
+        <div class="headerActions">
+            <button id="aboutButton">Home</button>
+            <button id="profileButton">Profile</button>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </header>
+
+    <main class="mainLayout">
+
+        <aside class="optionSec">
+            <div class="sidebarTitle">MENU</div>
+
+            <button id="dashboardButton" class="">Dashboard</button>
+            <button id="deliveriesButton" class="">Deliveries</button>
+            <button id="driversButton" class="active">Drivers</button>
+            <button id="mapButton">Live Map</button>
+            <button id="customersButton" class="">Customers</button>
+            <button id="employeeButton" class="">Employees</button>
+            <button id="reportsButton" class="">Reports</button>
+            <button id="riderButton">Submit Delivery</button>
+            <button id="settingsButton" class="">Settings</button>
+
+            <div class="sidebarBottom">
+                <button id="sidebarLogoutButton">Logout</button>
+            </div>
+        </aside>
+
+        <section class="dashboardSec">
+
+            <div class="dashboardHead">
+                <div class="pageHead">
+                    <h3>Drivers</h3>
+                    <p>Manage company delivery drivers</p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="toolbar">
+                    <button class="btnPrimary" type="button" id="openAddDrv">+ Add Driver</button>
+                    <input type="text" id="driverSearch" placeholder="Search driver...">
+                    <select id="driverStatusFilter" name="driverStatus">
+                        <option value="">Status</option>
+                        <option value="Available">Available</option>
+                        <option value="On Route">On Route</option>
+                        <option value="Offline">Offline</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Drivers Overview</h2>
+                <p>List of all registered drivers</p>
+
+                <div class="tableWrapper">
+                    <table class="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Driver ID</th>
+                                <th>Driver</th>
+                                <th>Contact</th>
+                                <th>Deliveries</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+                        <!-- Add / Edit Driver Modal -->
+            <div class="modal" id="driverModal">
+                <div class="modalBox">
+                    <div class="modalHeader">
+                        <h2 id="drvModalTitle">Add Driver</h2>
+                        <button class="modalClose" id="closeDrvModal" type="button" aria-label="Close">&times;</button>
+                    </div>
+
+                    <form id="driverForm">
+                        <label for="drvName">Driver Name</label>
+                        <input type="text" id="drvName" name="name" required>
+
+                        <label for="drvContact">Contact</label>
+                        <input type="text" id="drvContact" name="contact" placeholder="09XXXXXXXXX">
+
+                        <label for="drvStatus">Status</label>
+                        <select id="drvStatus" name="status">
+                            <option value="Available">Available</option>
+                            <option value="On Route">On Route</option>
+                            <option value="Offline">Offline</option>
+                        </select>
+
+                        <div class="modalActions">
+                            <button type="submit" class="btnPrimary">Save</button>
+                            <button type="button" class="btnDanger" id="cancelDrvModal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+    <script src="drivers.js"></script></body>
+</html>
