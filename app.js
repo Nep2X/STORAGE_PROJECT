@@ -139,3 +139,77 @@ Object.entries(uiNavIcons).forEach(([id, paths]) => {
  button.setAttribute('aria-label', label);
  button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>`;
 });
+// =========================
+//   MGA MENSAHE (pamalit sa alert at confirm)
+// =========================
+function alert(message, type) {
+    const text = String(message ?? "");
+    if (!type) {
+        type = /^error|failed|cannot|invalid|not match/i.test(text) ? "error"
+            : /updated|saved|reset|deleted|created|success/i.test(text) ? "success"
+            : "info";
+    }
+
+    let host = document.getElementById("toastHost");
+    if (!host) {
+        host = document.createElement("div");
+        host.id = "toastHost";
+        host.setAttribute("aria-live", "polite");
+        document.body.appendChild(host);
+    }
+
+    const toast = document.createElement("div");
+    toast.className = "toast " + type;
+    toast.setAttribute("role", type === "error" ? "alert" : "status");
+
+    const msg = document.createElement("div");
+    msg.className = "toastMsg";
+    msg.textContent = text;            // textContent: ligtas kahit may < o > sa laman
+
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "toastClose";
+    close.setAttribute("aria-label", "Close");
+    close.textContent = "\u00d7";
+
+    const remove = () => toast.remove();
+    close.addEventListener("click", remove);
+    toast.append(msg, close);
+    host.appendChild(toast);
+
+    // Maikli: kusang nawawala. Maraming linya (detalye): hintayin ang Close.
+    if (!text.includes("\n")) setTimeout(remove, type === "error" ? 7000 : 4000);
+}
+
+function confirmBox(message) {
+    return new Promise((resolve) => {
+        const text = String(message ?? "");
+        const danger = /^delete/i.test(text);
+        const overlay = document.createElement("div");
+        overlay.className = "confirmOverlay";
+        overlay.innerHTML = `
+            <div class="confirmBox" role="dialog" aria-modal="true">
+                <p class="confirmText"></p>
+                <div class="confirmActions">
+                    <button type="button" class="btnOutline" data-answer="no">Cancel</button>
+                    <button type="button" class="${danger ? "btnDanger" : "btnPrimary"}" data-answer="yes">${danger ? "Delete" : "Confirm"}</button>
+                </div>
+            </div>`;
+        overlay.querySelector(".confirmText").textContent = text;
+
+        const onKey = (e) => { if (e.key === "Escape") finish(false); };
+        const finish = (answer) => {
+            document.removeEventListener("keydown", onKey);
+            overlay.remove();
+            resolve(answer);
+        };
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) return finish(false);
+            const btn = e.target.closest("[data-answer]");
+            if (btn) finish(btn.dataset.answer === "yes");
+        });
+        document.addEventListener("keydown", onKey);
+        document.body.appendChild(overlay);
+        overlay.querySelector('[data-answer="no"]').focus();   // ligtas na default: Cancel
+    });
+}

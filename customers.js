@@ -122,7 +122,8 @@ cusBody.addEventListener("click", async (e) => {
     const action = btn.dataset.action;
 
     if (action === "view") {
-        alert(
+          alert(
+  
             `${cus.name}\nContact: ${cus.contact ?? "-"}\n` +
             `Address: ${cus.address ?? "-"}\nDeliveries: ${cus.deliveries}`
         );

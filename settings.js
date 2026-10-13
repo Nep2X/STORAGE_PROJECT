@@ -118,7 +118,8 @@ $("profileForm").addEventListener("submit", async event => {
         await loadProfile();
         if (me.role === "Admin") await loadUsers();
     } catch (error) {
-        alert(`Error: ${error.message}`);
+          alert(
+  `Error: ${error.message}`);
     }
 });
 
@@ -131,7 +132,8 @@ $("passwordForm").addEventListener("submit", async event => {
     event.preventDefault();
 
     if ($("newPw").value !== $("confPw").value) {
-        alert("The new passwords do not match.");
+          alert(
+  "The new passwords do not match.");
         return;
     }
 
@@ -142,9 +144,11 @@ $("passwordForm").addEventListener("submit", async event => {
         });
 
         closeDialog("passwordModal");
-        alert("Password updated.");
+          alert(
+  "Password updated.");
     } catch (error) {
-        alert(`Error: ${error.message}`);
+          alert(
+  `Error: ${error.message}`);
     }
 });
 
@@ -238,7 +242,8 @@ $("userForm").addEventListener("submit", async event => {
         closeDialog("userModal");
         await loadUsers();
     } catch (error) {
-        alert(`Error: ${error.message}`);
+          alert(
+  `Error: ${error.message}`);
     }
 });
 
@@ -251,9 +256,11 @@ $("resetForm").addEventListener("submit", async event => {
         }, "PUT");
 
         closeDialog("resetModal");
-        alert("Password has been reset.");
+          alert(
+  "Password has been reset.");
     } catch (error) {
-        alert(`Error: ${error.message}`);
+          alert(
+  `Error: ${error.message}`);
     }
 });
 
@@ -287,7 +294,8 @@ $("userRows").addEventListener("click", async event => {
             await api(`${USERS_API}?id=${id}`, { method: "DELETE" });
             await loadUsers();
         } catch (error) {
-            alert(`Error: ${error.message}`);
+              alert(
+  `Error: ${error.message}`);
         }
     }
 });

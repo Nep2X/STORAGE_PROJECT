@@ -232,7 +232,8 @@ delForm.addEventListener("submit", async (e) => {
         body: JSON.stringify(body),
     });
     const out = await res.json();
-    if (!out.ok) return alert("Error: " + out.error);
+    if (!out.ok) return   alert(
+  "Error: " + out.error);
 
     closeModal(); // galing sa app.js
     editingDelId = null;
@@ -264,7 +265,8 @@ statusForm.addEventListener("submit", async (e) => {
         body: JSON.stringify({ status: statusForm.elements.status.value }),
     });
     const out = await res.json();
-    if (!out.ok) return alert("Error: " + out.error);
+    if (!out.ok) return   alert(
+  "Error: " + out.error);
     closeStatusModal();
     reloadDeliveries();
 });
@@ -281,7 +283,8 @@ delBody.addEventListener("click", async (e) => {
     const action = btn.dataset.action;
 
     if (action === "view") {
-        alert(
+          alert(
+  
             `${del.del_number}\n` +
             `Customer: ${del.customer_name}\nAddress: ${del.address ?? "-"}\n` +
             `Contact: ${del.contact ?? "-"}\nDate: ${fmtDate(del.del_date) || "-"}\n` +

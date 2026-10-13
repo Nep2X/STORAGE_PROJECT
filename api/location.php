@@ -99,6 +99,10 @@ try {
         if ($lat === false || $lng === false || $lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
             fail(400, 'Invalid coordinates.');
         }
+        // Huwag tanggapin ang malabong GPS (hal. tantiya ng desktop na ±100 km ang layo)
+        if ($acc !== false && $acc > 1500) {
+            fail(422, 'Masyadong malabo ang GPS ng device na ito (±' . round($acc / 1000, 1) . ' km). Gumamit ng phone na may GPS, o i-type ang lugar mo.');
+        }
         $stmt = $pdo->prepare("SELECT driver_id FROM users WHERE id = ?");
         $stmt->execute([$user['id']]);
         $driverId = (int)$stmt->fetchColumn();

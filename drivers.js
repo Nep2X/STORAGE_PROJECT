@@ -120,7 +120,8 @@ drvForm.addEventListener("submit", async (e) => {
         body: JSON.stringify(body),
     });
     const out = await res.json();
-    if (!out.ok) return alert("Error: " + out.error);
+    if (!out.ok) return   alert(
+  "Error: " + out.error);
 
     closeDrvModal();
     loadDrivers();
@@ -137,7 +138,8 @@ drvBody.addEventListener("change", async (e) => {
         body: JSON.stringify({ status: e.target.value }),
     });
     const out = await res.json();
-    if (!out.ok) alert("Error: " + out.error);
+    if (!out.ok)   alert(
+  "Error: " + out.error);
     loadDrivers();
 });
 
@@ -153,7 +155,8 @@ drvBody.addEventListener("click", async (e) => {
     const action = btn.dataset.action;
 
     if (action === "view") {
-        alert(
+          alert(
+  
             `${driverCode(drv.id)}\n${drv.name}\nContact: ${drv.contact ?? "-"}\n` +
             `Deliveries: ${drv.deliveries}\nStatus: ${drv.status}`
         );

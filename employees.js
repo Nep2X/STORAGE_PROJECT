@@ -117,7 +117,8 @@ empBody.addEventListener("click", event => {
     const employee = employees.find(item => String(item.id) === id);
     if (!employee) return;
 
-    alert(
+      alert(
+  
         `Employee ID: EMP-${String(employee.id).padStart(4, "0")}\n` +
         `Full Name: ${employee.full_name}\n` +
         `Username: ${employee.username}\n` +

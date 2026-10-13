@@ -42,14 +42,16 @@ document.getElementById("profileButton").addEventListener("click", () => {
 // --- New Delivery button ---
 document.getElementById("newDeliveryBtn").addEventListener("click", () => {
     // Palitan ng redirect sa delivery form page
-    alert("Redirect to New Delivery form...");
+      alert(
+  "Redirect to New Delivery form...");
     // window.location.href = "new-delivery.html";
 });
 
 // --- View All button ---
 document.getElementById("viewAllBtn").addEventListener("click", () => {
     // Palitan ng redirect sa full deliveries page
-    alert("Redirect to all deliveries...");
+      alert(
+  "Redirect to all deliveries...");
     // window.location.href = "deliveries.html";
 });
 
