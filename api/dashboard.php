@@ -16,6 +16,35 @@ try {
     }
     $total = array_sum($counts);
 
+    // ---------- Dashboard KPI metrics ----------
+    $todayKey = date('Y-m-d');
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM deliveries WHERE del_date = ?");
+    $stmt->execute([$todayKey]);
+    $todayTotal = (int)$stmt->fetchColumn();
+
+    $stmt = $pdo->prepare(
+        "SELECT COUNT(*) FROM deliveries
+         WHERE status = 'Delivered' AND DATE(delivered_at) = ?"
+    );
+    $stmt->execute([$todayKey]);
+    $todayDelivered = (int)$stmt->fetchColumn();
+
+    $active = $counts['Pending'] + $counts['Processing'] + $counts['Out for Delivery'];
+
+    $stmt = $pdo->prepare(
+        "SELECT COUNT(*) FROM deliveries
+         WHERE status IN (" . active_status_sql() . ")
+           AND del_date IS NOT NULL AND del_date < ?"
+    );
+    $stmt->execute([$todayKey]);
+    $overdue = (int)$stmt->fetchColumn();
+
+    $driverCounts = ['Available' => 0, 'On Route' => 0, 'Offline' => 0];
+    foreach ($pdo->query("SELECT status, COUNT(*) AS c FROM drivers GROUP BY status") as $r) {
+        $driverCounts[$r['status']] = (int)$r['c'];
+    }
+
     // ---------- Pinakabagong deliveries ----------
     $recent = $pdo->query(
         "SELECT del_number, customer_name, driver_name, del_date, status
@@ -82,6 +111,11 @@ try {
         'ok'     => true,
         'total'  => $total,
         'counts' => $counts,
+        'active' => $active,
+        'overdue' => $overdue,
+        'today_total' => $todayTotal,
+        'today_delivered' => $todayDelivered,
+        'drivers' => $driverCounts,
         'recent' => $recent,
         'chart'  => ['labels' => $labels, 'values' => $values],
     ]);

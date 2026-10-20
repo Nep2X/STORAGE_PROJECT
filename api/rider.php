@@ -30,6 +30,8 @@ $action = $_GET['action'] ?? '';
 $activeSql = "'" . implode("','", ACTIVE) . "'";
 
 try {
+    ensure_delivery_events($pdo);
+
     // ---------- Sino ang naka-login ----------
     if ($method === 'GET' && $action === 'me') {
         echo json_encode([
@@ -131,6 +133,13 @@ try {
             @unlink($dir . '/' . $filename);
             fail(409, 'This delivery was already updated.');
         }
+
+        log_delivery_event(
+            $pdo,
+            $id,
+            'Delivered',
+            'Delivered with proof photo' . ($notes !== '' ? ': ' . $notes : '')
+        );
 
         sync_driver_status($pdo, $driver);   // wala nang active delivery = Available na ulit
 

@@ -39,189 +39,137 @@
             </div>
         </aside>
 
-        <section class="dashboardSec">
+        <section class="dashboardSec dashPage">
 
-            <div class="dashboardHead">
-                <div>
-                    <h3>Dashboard</h3>
-                    <p>Welcome to your dashboard!</p>
+            <div class="dashTopbar">
+                <div class="dashWelcome">
+                    <div class="dashMeta">
+                        <span id="dashDate">—</span>
+                        <span class="dashMetaDot"></span>
+                        <span id="dashUpdated">Loading…</span>
+                    </div>
+                    <h3 id="dashGreeting">Welcome back</h3>
+                    <p>Here’s what’s happening with your deliveries today.</p>
                 </div>
 
-                <button class="newDeliveryBtn" id="newDeliveryBtn">+ New Delivery</button>
+                <div class="dashActions">
+                    <button type="button" class="btnOutline" id="openMapBtn">Live Map</button>
+                    <button type="button" class="newDeliveryBtn" id="newDeliveryBtn">+ New Delivery</button>
+                </div>
             </div>
 
-            <div class="dashboardCards">
+            <div class="kpiGrid">
 
-                <div class="dashboardCard totalCard">
-                    <div class="cardLabel">Total Deliveries</div>
-                    <div class="cardValue">128</div>
-                    <div class="cardNote">All delivery records</div>
-                </div>
+                <article class="kpiCard kpiTotal" style="--kpi-accent: var(--primary)">
+                    <div class="kpiTop">
+                        <span class="kpiIcon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M4 7.5 12 3l8 4.5-8 4.5-8-4.5Z"/><path d="M4 12l8 4.5 8-4.5"/><path d="M4 16.5 12 21l8-4.5"/></svg>
+                        </span>
+                        <span class="kpiLabel">Total deliveries</span>
+                    </div>
+                    <div class="kpiValue" id="kpiTotal">0</div>
+                    <div class="kpiFoot"><span id="kpiTotalFoot">All records</span></div>
+                </article>
 
-                <div class="dashboardCard pendingCard">
-                    <div class="cardLabel">Pending</div>
-                    <div class="cardValue">18</div>
-                    <div class="cardNote">Waiting for processing</div>
-                </div>
+                <article class="kpiCard kpiActive" style="--kpi-accent: var(--blue)">
+                    <div class="kpiTop">
+                        <span class="kpiIcon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M2.5 7.5h11v8h-11z"/><path d="M13.5 10h3.8l3.2 3.1v2.4h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17.5" cy="17.5" r="1.8"/></svg>
+                        </span>
+                        <span class="kpiLabel">Active now</span>
+                    </div>
+                    <div class="kpiValue" id="kpiActive">0</div>
+                    <div class="kpiFoot"><span id="kpiActiveFoot">Pending, processing, and on the road</span></div>
+                </article>
 
-                <div class="dashboardCard processingCard">
-                    <div class="cardLabel">Processing</div>
-                    <div class="cardValue">12</div>
-                    <div class="cardNote">Currently processing</div>
-                </div>
+                <article class="kpiCard kpiRate" style="--kpi-accent: var(--green)">
+                    <div class="kpiTop">
+                        <span class="kpiIcon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.2 2.4 2.4 4.8-5"/></svg>
+                        </span>
+                        <span class="kpiLabel">Success rate</span>
+                    </div>
+                    <div class="kpiValue" id="kpiRate">0%</div>
+                    <div class="kpiFoot"><span id="kpiRateFoot">No deliveries yet</span></div>
+                </article>
 
-                <div class="dashboardCard outCard">
-                    <div class="cardLabel">Out for Delivery</div>
-                    <div class="cardValue">25</div>
-                    <div class="cardNote">Currently on the road</div>
-                </div>
-
-                <div class="dashboardCard deliveredCard">
-                    <div class="cardLabel">Delivered</div>
-                    <div class="cardValue">85</div>
-                    <div class="cardNote">Successfully completed</div>
-                </div>
-
-                <div class="dashboardCard cancelledCard">
-                    <div class="cardLabel">Cancelled</div>
-                    <div class="cardValue">6</div>
-                    <div class="cardNote">Cancelled deliveries</div>
-                </div>
+                <article class="kpiCard kpiOverdue" style="--kpi-accent: var(--destructive)">
+                    <div class="kpiTop">
+                        <span class="kpiIcon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.8v4.7l3 1.8"/><path d="M12 17.1v.1"/></svg>
+                        </span>
+                        <span class="kpiLabel">Overdue</span>
+                    </div>
+                    <div class="kpiValue" id="kpiOverdue">0</div>
+                    <div class="kpiFoot"><span id="kpiOverdueFoot">All active deliveries on time</span></div>
+                </article>
 
             </div>
 
-            <div class="dashboardDelOverview">
+            <div class="dashGrid">
 
-                <div class="sectionHeader">
+                <section class="dashPanel activityPanel">
+                    <header class="dashPanelHead">
+                        <div>
+                            <h2>Delivery activity</h2>
+                            <p id="chartSub">Last 7 days</p>
+                        </div>
+                        <select id="periodSelect" aria-label="Chart period">
+                            <option value="7">Last 7 days</option>
+                            <option value="30">Last 30 days</option>
+                            <option value="year">This year</option>
+                        </select>
+                    </header>
+
+                    <div class="activityMeta">
+                        <strong id="chartTotal">0</strong>
+                        <span>deliveries in this period</span>
+                    </div>
+
+                    <div class="activityChart">
+                        <div class="activityBars" id="chartBars" role="img" aria-label="Delivery activity chart"></div>
+                        <div class="activityDays" id="chartDays"></div>
+                    </div>
+                </section>
+
+                <section class="dashPanel breakdownPanel">
+                    <header class="dashPanelHead">
+                        <div>
+                            <h2>Status breakdown</h2>
+                            <p>Where every delivery stands</p>
+                        </div>
+                    </header>
+
+                    <div class="breakdownList" id="statusList"></div>
+                    <div class="breakdownFoot" id="driverFoot">—</div>
+                </section>
+
+            </div>
+
+            <section class="dashPanel recentPanel">
+                <header class="dashPanelHead">
                     <div>
-                        <h2>Delivery Overview</h2>
-                        <p>Current delivery status summary</p>
+                        <h2>Recent deliveries</h2>
+                        <p>Latest transactions in the system</p>
                     </div>
-
-                    <select id="periodSelect" name="period">
-                        <option>Last 7 Days</option>
-                        <option>Last 30 Days</option>
-                        <option>This Year</option>
-                    </select>
-                </div>
-
-                <div class="overviewContent">
-
-                    <div class="chartBox">
-                        <div class="chartTitle">Delivery Activity</div>
-
-                        <div class="fakeChart">
-                            <div class="chartBars">
-                                <span style="height: 45%;"></span>
-                                <span style="height: 70%;"></span>
-                                <span style="height: 55%;"></span>
-                                <span style="height: 85%;"></span>
-                                <span style="height: 62%;"></span>
-                                <span style="height: 92%;"></span>
-                                <span style="height: 76%;"></span>
-                            </div>
-
-                            <div class="chartDays">
-                                <span>Mon</span>
-                                <span>Tue</span>
-                                <span>Wed</span>
-                                <span>Thu</span>
-                                <span>Fri</span>
-                                <span>Sat</span>
-                                <span>Sun</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="statusSummary">
-                        <div class="summaryTitle">Status Summary</div>
-
-                        <div class="statusRow">
-                            <span><i class="statusDot pending"></i>Pending</span>
-                            <strong>18</strong>
-                        </div>
-
-                        <div class="statusRow">
-                            <span><i class="statusDot processing"></i>Processing</span>
-                            <strong>12</strong>
-                        </div>
-
-                        <div class="statusRow">
-                            <span><i class="statusDot out"></i>Out for Delivery</span>
-                            <strong>25</strong>
-                        </div>
-
-                        <div class="statusRow">
-                            <span><i class="statusDot delivered"></i>Delivered</span>
-                            <strong>85</strong>
-                        </div>
-
-                        <div class="statusRow">
-                            <span><i class="statusDot cancelled"></i>Cancelled</span>
-                            <strong>6</strong>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="recentDeliveryHeader">
-                    <div>
-                        <h2>Recent Deliveries</h2>
-                        <p>Latest delivery transactions</p>
-                    </div>
-
-                    <button class="viewAllBtn" id="viewAllBtn">View All</button>
-                </div>
+                    <button type="button" class="btnOutline" id="viewAllBtn">View all</button>
+                </header>
 
                 <div class="tableWrapper">
                     <table class="recentDeliveryTable">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>Delivery</th>
                                 <th>Customer</th>
                                 <th>Driver</th>
                                 <th>Date</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
-
-                        <tbody>
-                            <tr>
-                                <td>#DEL-001</td>
-                                <td>ABC Trading</td>
-                                <td>Juan Dela Cruz</td>
-                                <td>Sep 29, 2026</td>
-                                <td><span class="statusBadge deliveredBadge">Delivered</span></td>
-                            </tr>
-
-                            <tr>
-                                <td>#DEL-002</td>
-                                <td>XYZ Corporation</td>
-                                <td>Pedro Santos</td>
-                                <td>Sep 29, 2026</td>
-                                <td><span class="statusBadge outBadge">Out for Delivery</span></td>
-                            </tr>
-
-                            <tr>
-                                <td>#DEL-003</td>
-                                <td>Metro Supplies</td>
-                                <td>Mark Reyes</td>
-                                <td>Sep 28, 2026</td>
-                                <td><span class="statusBadge processingBadge">Processing</span></td>
-                            </tr>
-
-                            <tr>
-                                <td>#DEL-004</td>
-                                <td>Prime Store</td>
-                                <td>Jose Garcia</td>
-                                <td>Sep 28, 2026</td>
-                                <td><span class="statusBadge pendingBadge">Pending</span></td>
-                            </tr>
-                        </tbody>
+                        <tbody id="recentRows"></tbody>
                     </table>
                 </div>
-
-            </div>
+            </section>
 
         </section>
 

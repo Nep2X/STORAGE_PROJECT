@@ -47,6 +47,14 @@ const fmtDate = (d) => {
         { month: "short", day: "numeric", year: "numeric" });
 };
 
+// Overdue: active pa ang delivery pero nakalipas na ang delivery date
+const todayKey = () => {
+    const t = new Date();
+    return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+};
+const isOverdue = (d) =>
+    ACTIVE_STATUSES.includes(d.status) && !!d.del_date && d.del_date < todayKey();
+
 // Punuin ang <select> ng mga pangalan; panatilihin ang current kahit wala na sa listahan
 function fillSelect(select, names, placeholder, current = "") {
     const list = [...names];
@@ -56,11 +64,18 @@ function fillSelect(select, names, placeholder, current = "") {
         list.map((n) => `<option value="${esc(n)}" ${n === current ? "selected" : ""}>${esc(n)}</option>`).join("");
 }
 
+const fmtDateTime = (s) => {
+    if (!s) return "-";
+    const d = new Date(String(s).replace(" ", "T"));
+    return isNaN(d) ? s : d.toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "short" });
+};
+
 // ---------- ICONS ----------
 const ICONS = {
     view: `<svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>`,
     edit: `<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>`,
-    status: `<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>`,
+        status: `<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>`,
+    history: `<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>`,
     delete: `<svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>`,
 };
 
@@ -69,6 +84,7 @@ const actionButtons = () => `
         <button type="button" class="iconBtn" data-action="view" title="View" aria-label="View">${ICONS.view}</button>
         <button type="button" class="iconBtn" data-action="edit" title="Edit" aria-label="Edit">${ICONS.edit}</button>
         <button type="button" class="iconBtn" data-action="status" title="Update Status" aria-label="Update Status">${ICONS.status}</button>
+        <button type="button" class="iconBtn" data-action="history" title="History" aria-label="History">${ICONS.history}</button>
         <button type="button" class="iconBtn danger" data-action="delete" title="Delete" aria-label="Delete">${ICONS.delete}</button>
     </div>`;
 
@@ -138,7 +154,7 @@ function renderDeliveries() {
             <td>${esc(d.del_number)}</td>
             <td>${esc(d.customer_name)}</td>
             <td>${esc(d.driver_name)}</td>
-            <td>${esc(fmtDate(d.del_date))}</td>
+                        <td>${esc(fmtDate(d.del_date))}${isOverdue(d) ? ' <span class="statusBadge lateBadge">Overdue</span>' : ""}</td>
             <td><span class="statusBadge ${BADGE[d.status] ?? ""}">${esc(d.status) || "No status"}</span></td>
             <td>${actionButtons()}</td>
         </tr>`).join("");
@@ -271,6 +287,48 @@ statusForm.addEventListener("submit", async (e) => {
     reloadDeliveries();
 });
 
+// ---------- HISTORY ----------
+const historyModal = document.getElementById("historyModal");
+const historyList = document.getElementById("historyList");
+
+function closeHistory() {
+    historyModal.style.display = "none";
+}
+
+async function openHistory(del) {
+    document.getElementById("historyTitle").textContent = "History — " + del.del_number;
+    historyList.innerHTML = `<p class="historyEmpty">Loading...</p>`;
+    historyModal.style.display = "flex";
+
+    try {
+        const res = await fetch(`${DEL_API}?action=events&id=${del.id}`);
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || "Invalid response");
+
+        if (!data.events.length) {
+            historyList.innerHTML = `<p class="historyEmpty">No history yet. Changes will appear here.</p>`;
+            return;
+        }
+
+        historyList.innerHTML = data.events.map((e) => `
+            <div class="historyItem">
+                <span class="statusBadge ${BADGE[e.status] ?? ""}">${esc(e.status)}</span>
+                <div class="historyMeta">
+                    <b>${esc(e.username || "System")}</b>
+                    <span>${esc(fmtDateTime(e.created_at))}</span>
+                </div>
+                ${e.note ? `<p>${esc(e.note)}</p>` : ""}
+            </div>`).join("");
+    } catch (err) {
+        historyList.innerHTML = `<p class="historyEmpty">Failed to load: ${esc(err.message)}</p>`;
+    }
+}
+
+document.getElementById("closeHistoryModal")?.addEventListener("click", closeHistory);
+document.getElementById("closeHistoryBtn")?.addEventListener("click", closeHistory);
+historyModal?.addEventListener("click", (e) => { if (e.target === historyModal) closeHistory(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeHistory(); });
+
 // ---------- VIEW / EDIT / STATUS / DELETE ----------
 delBody.addEventListener("click", async (e) => {
     const btn = e.target.closest(".iconBtn");
@@ -302,6 +360,8 @@ delBody.addEventListener("click", async (e) => {
         openModal(); // galing sa app.js
     } else if (action === "status") {
         openStatusModal(del);
+    } else if (action === "history") {
+        openHistory(del);
     } else if (action === "delete") {
         if (confirm(`Delete delivery ${del.del_number}?`)) {
             await fetch(`${DEL_API}?id=${id}`, { method: "DELETE" });
@@ -311,3 +371,11 @@ delBody.addEventListener("click", async (e) => {
 });
 
 loadAll();
+
+// Auto-refresh tuwing 30s para makita agad ang update ng rider.
+// Naka-pause habang bukas ang modal para hindi mawala ang ginagawa.
+setInterval(() => {
+    if (document.hidden) return;
+            if (delModal.style.display === "flex" || statusModal.style.display === "flex" || historyModal?.style.display === "flex") return;
+    reloadDeliveries().catch(() => {});
+}, 30000);

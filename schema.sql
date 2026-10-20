@@ -63,3 +63,14 @@ CREATE TABLE IF NOT EXISTS rider_locations (
     reported_at DATETIME NOT NULL,
     INDEX idx_driver_time (driver_id, reported_at)
 );
+
+CREATE TABLE IF NOT EXISTS delivery_events (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    delivery_id INT NOT NULL,
+    status VARCHAR(30) NOT NULL,
+    note VARCHAR(500) NULL,
+    user_id INT UNSIGNED NULL,
+    username VARCHAR(50) NULL,
+    created_at DATETIME NOT NULL,
+    INDEX idx_delivery (delivery_id, id)
+);

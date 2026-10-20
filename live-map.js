@@ -7,7 +7,17 @@ const LOCATION_REFRESH_MS = 10000;
 const DELIVERY_REFRESH_MS = 60000;
 const STALE_SECONDS = 5 * 60;      // mas luma rito = grey
 const MOVE_REDRAW_METERS = 100;     // saka lang iguguhit ulit ang ruta
-const REMAINING_COLOR = "#2f6df6"; // kulay ng natitirang ruta papunta sa customer
+const ROUTE_ANIM_MS_PER_KM = 450;  // bilis ng pag-guhit ng ruta
+const ROUTE_ANIM_MIN_MS = 900;
+const ROUTE_ANIM_MAX_MS = 3500;
+
+// Kulay ng ruta ay galing sa napiling theme (--route-a / --route-b sa style.css)
+function themeColor(name, fallback) {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || fallback;
+}
+const routeFromColor = () => themeColor("--route-a", "#161616");   // company -> rider
+const routeToColor = () => themeColor("--route-b", "#2f6df6");     // rider -> customer
 const MAX_ROUTED_STOPS = 5;        // para hindi ma-overload ang libreng OSRM server
 
 // PALITAN ng totoong company ninyo 
@@ -34,6 +44,8 @@ let selectedId = null;
 let riderMarker = null;
 let currentRoute = null;
 let drawToken = 0;
+let routeLines = [];     // para ma-recolor kapag nagpalit ng theme
+let destMarkers = [];
 
 const escH = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -134,6 +146,8 @@ function clearSelection() {
     roadLayer.clearLayers();
     riderMarker = null;
     currentRoute = null;
+    routeLines = [];
+    destMarkers = [];
     infoEl.hidden = true;
 }
 
@@ -146,7 +160,7 @@ function renderInfo() {
         `${currentRoute.road ? "" : " (straight line)"} · updated ${ago(loc.seconds_ago)}`;
 
     (currentRoute.stops || []).forEach(({ s, km, road }) => {
-        html += `<br><span style="color:${REMAINING_COLOR}">&#9679;</span> ${escH(s.customer_name)} · ` +
+        html += `<br><span style="color:${routeToColor()}">&#9679;</span> ${escH(s.customer_name)} · ` +
             `${km.toFixed(1)} km remaining${road ? "" : " (straight line)"}`;
     });
     if ((currentRoute.missing || []).length) {
@@ -169,7 +183,36 @@ async function getRoadRoute(from, to) {
     }
 }
 
+// Iguhit ang linya mula umpisa hanggang dulo (stroke-dashoffset)
+function hideLine({ line }) {
+    const el = line.getElement();
+    if (el) el.style.opacity = "0";
+}
+function animateLine({ line, road }, duration) {
+    const el = line.getElement();
+    if (!el || !el.animate) return Promise.resolve();
+    el.style.opacity = "";
+    if (!road) {   // putol-putol na straight line: fade in na lang
+        return el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, easing: "ease-out" }).finished.catch(() => {});
+    }
+    el.setAttribute("pathLength", "1");
+    el.style.strokeDasharray = "1";
+    const anim = el.animate(
+        [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }],
+        { duration, easing: "ease-in-out", fill: "both" }
+    );
+    return anim.finished.then(() => { el.style.strokeDasharray = ""; anim.cancel(); }).catch(() => {});
+}
+
+// Kapag nagpalit ng theme, palitan agad ang kulay ng ruta at pin
+new MutationObserver(() => {
+    routeLines.forEach(({ line, kind }) => line.setStyle({ color: kind === "from" ? routeFromColor() : routeToColor() }));
+    destMarkers.forEach((m) => m.setIcon(destPin(routeToColor())));
+    if (currentRoute) renderInfo();
+}).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
 async function showSelected(fit) {
+    const animate = !!fit;   // animation lang kapag bagong piling rider (hindi sa auto-refresh)
     clearSelection();
     const token = drawToken;
     const loc = locations[selectedId];
@@ -191,12 +234,13 @@ async function showSelected(fit) {
     stops.forEach((s) => {
         const dest = L.latLng(s.lat, s.lng);
         bounds.push(dest);
-        L.marker(dest, { icon: destPin(REMAINING_COLOR) }).addTo(selectionLayer)
+                const destMarker = L.marker(dest, { icon: destPin(routeToColor()) }).addTo(selectionLayer)
             .bindTooltip(
                 `<div style="white-space:normal;max-width:200px"><b>${escH(s.customer_name)}</b><br>${escH(s.address)}</div>`,
                 { permanent: true, direction: "right" }
             )
             .bindPopup(`<b>${escH(s.customer_name)}</b><br>${escH(s.address)}<br>Delivery ${escH(s.del_number)}`);
+        destMarkers.push(destMarker);
     });
     if (fit) map.fitBounds(L.latLngBounds(bounds).pad(0.2), { maxZoom: 16 });
 
@@ -207,15 +251,28 @@ async function showSelected(fit) {
     ]);
     if (token !== drawToken) return;   // ibang rider na ang napili
 
-    L.polyline(route.points, route.road
-        ? { color: "#161616", weight: 5, opacity: 0.9 }
-        : { color: "#161616", weight: 4, dashArray: "6 8" }).addTo(roadLayer);
+        const mkLine = (r, kind) => {
+        const color = kind === "from" ? routeFromColor() : routeToColor();
+        const line = L.polyline(r.points, r.road
+            ? { color, weight: 5, opacity: 0.9, className: "route-line" }
+            : { color, weight: 4, dashArray: "6 8", className: "route-line" }).addTo(roadLayer);
+        routeLines.push({ line, kind, road: r.road });
+        return { line, km: r.km, road: r.road };
+    };
+    const first = mkLine(route, "from");
+    const rest = remaining.map((r) => mkLine(r, "to"));
 
-    remaining.forEach((r) => {
-        L.polyline(r.points, r.road
-            ? { color: REMAINING_COLOR, weight: 5, opacity: 0.9 }
-            : { color: REMAINING_COLOR, weight: 4, dashArray: "6 8" }).addTo(roadLayer);
-    });
+    if (animate) {
+        // 1) Company -> rider, 2) pagkatapos, rider -> customer
+        const ms = (km) => Math.min(ROUTE_ANIM_MAX_MS, Math.max(ROUTE_ANIM_MIN_MS, km * ROUTE_ANIM_MS_PER_KM));
+        rest.forEach((x) => hideLine(x));
+        destMarkers.forEach((m) => m.setOpacity(0));
+        animateLine(first, ms(first.km)).then(() => {
+            if (token !== drawToken) return;
+            destMarkers.forEach((m) => m.setOpacity(1));
+            rest.forEach((x) => animateLine(x, ms(x.km)));
+        });
+    }
 
     currentRoute = {
         ...route,

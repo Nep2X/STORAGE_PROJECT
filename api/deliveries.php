@@ -3,6 +3,7 @@ require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/auth1.php';
 require_login(ROLES_STAFF);
 header('Content-Type: application/json');
+date_default_timezone_set('Asia/Manila');
 
 $method   = $_SERVER['REQUEST_METHOD'];
 $input    = json_decode(file_get_contents('php://input'), true) ?? [];
@@ -20,8 +21,26 @@ function fail($code, $msg) {
 }
 
 try {
+    ensure_delivery_events($pdo);
+
     switch ($method) {
         case 'GET':
+            // History ng isang delivery: api/deliveries.php?action=events&id=123
+            if (($_GET['action'] ?? '') === 'events') {
+                $eventId = (int)($_GET['id'] ?? 0);
+                if (!$eventId) fail(400, 'Missing id');
+
+                $stmt = $pdo->prepare(
+                    "SELECT status, note, username, created_at
+                     FROM delivery_events
+                     WHERE delivery_id = ?
+                     ORDER BY id DESC"
+                );
+                $stmt->execute([$eventId]);
+                echo json_encode(['ok' => true, 'events' => $stmt->fetchAll()]);
+                break;
+            }
+
             $rows = $pdo->query(
                 "SELECT * FROM deliveries ORDER BY del_date DESC, id DESC"
             )->fetchAll();
@@ -58,6 +77,7 @@ try {
                     $input['remarks'] ?? null, $status,
                 ]);
                 $newId = $pdo->lastInsertId();
+                log_delivery_event($pdo, (int)$newId, $status, 'Delivery created');
     
                 sync_driver_status($pdo, $driver);   // may na-assign = On Route
                 $pdo->commit();
@@ -112,10 +132,20 @@ try {
                         }
         
                         $pdo->prepare("UPDATE deliveries SET status=? WHERE id=?")->execute([$status, $id]);
-                    } else {
+                                        } else {
                         fail(400, 'Nothing to update');
                     }
+
+                    // Itala ang oras ng pagka-Delivered; burahin kapag binuksan ulit
+                    $pdo->prepare(
+                        "UPDATE deliveries SET delivered_at = IF(? = 'Delivered', COALESCE(delivered_at, ?), NULL) WHERE id = ?"
+                    )->execute([$status, date('Y-m-d H:i:s'), $id]);
         
+                    // Itala sa history kung nagbago ang status
+                    if ($status !== $old['status']) {
+                        log_delivery_event($pdo, $id, $status, 'Status changed from ' . $old['status'] . ' to ' . $status);
+                    }
+
                     // Ihanay ang status ng dating driver at ng bagong driver
                     sync_driver_status($pdo, $old['driver_name']);
                     sync_driver_status($pdo, $driver);
@@ -134,6 +164,7 @@ try {
                         if (!$old) fail(404, 'Delivery not found.');
             
                         $pdo->beginTransaction();
+                        $pdo->prepare("DELETE FROM delivery_events WHERE delivery_id = ?")->execute([$id]);
                         $pdo->prepare("DELETE FROM deliveries WHERE id = ?")->execute([$id]);
             
                         $driver = $old['driver_name'];

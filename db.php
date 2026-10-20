@@ -126,3 +126,59 @@ if (!function_exists('http_get')) {
         return @file_get_contents($url, false, $ctx);
     }
 }
+
+// =====================================================
+// DELIVERY HISTORY (log ng pagbabago ng status)
+// =====================================================
+date_default_timezone_set('Asia/Manila');
+
+if (!function_exists('ensure_delivery_events')) {
+    function ensure_delivery_events(PDO $pdo): void {
+        try {
+            $pdo->exec(
+                "CREATE TABLE IF NOT EXISTS delivery_events (
+                    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                    delivery_id INT NOT NULL,
+                    status VARCHAR(30) NOT NULL,
+                    note VARCHAR(500) NULL,
+                    user_id INT UNSIGNED NULL,
+                    username VARCHAR(50) NULL,
+                    created_at DATETIME NOT NULL,
+                    INDEX idx_delivery (delivery_id, id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+            );
+        } catch (Throwable $e) {
+            error_log('ensure_delivery_events: ' . $e->getMessage());
+        }
+    }
+}
+
+if (!function_exists('log_delivery_event')) {
+    function log_delivery_event(PDO $pdo, int $deliveryId, string $status, ?string $note = null): void {
+        try {
+            $user = function_exists('current_user') ? current_user() : null;
+
+            if ($note !== null) {
+                $note = function_exists('mb_substr')
+                    ? mb_substr($note, 0, 480)
+                    : substr($note, 0, 480);
+            }
+
+            $stmt = $pdo->prepare(
+                "INSERT INTO delivery_events (delivery_id, status, note, user_id, username, created_at)
+                 VALUES (?,?,?,?,?,?)"
+            );
+            $stmt->execute([
+                $deliveryId,
+                $status,
+                $note,
+                $user['id'] ?? null,
+                $user['username'] ?? 'System',
+                date('Y-m-d H:i:s'),
+            ]);
+        } catch (Throwable $e) {
+            // Huwag ipa-crash ang pangunahing request kung nabigo ang logging.
+            error_log('log_delivery_event: ' . $e->getMessage());
+        }
+    }
+}

@@ -40,6 +40,8 @@
 
     /* Brand / status */
     --accent: #BFF100;                   /* lime */
+    --route-a: #22221E;                  /* ruta: company -> rider */
+    --route-b: #6E9A00;                  /* ruta: rider -> customer */
     --accent-foreground: #202413;
     --packed: #E2CBFF;                   /* lilac (Pending / Processing) */
     --packed-foreground: #45335B;
@@ -1273,6 +1275,8 @@ a:focus-visible {
 
 /* OCEAN */
 :root[data-theme="ocean"] {
+    --route-a: #16324F;
+    --route-b: #0EA5D9;
     --background: #E8EEF4;
     --card: #FFFFFF;
     --secondary: #EEF3F8;
@@ -1292,6 +1296,8 @@ a:focus-visible {
 
 /* SUNSET */
 :root[data-theme="sunset"] {
+    --route-a: #3B2A1E;
+    --route-b: #E8890C;
     --background: #F2EBE3;
     --card: #FFFDFA;
     --secondary: #F7F1EA;
@@ -1311,6 +1317,8 @@ a:focus-visible {
 
 /* MIDNIGHT (dark) */
 :root[data-theme="midnight"] {
+    --route-a: #ECEFF4;
+    --route-b: #BFF100;
     color-scheme: dark;
     --background: #0E1014;
     --card: #161A21;
@@ -1433,4 +1441,562 @@ a:focus-visible {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+}
+/* Animation ng route line sa Live Map */
+.route-line { stroke-linecap: round; stroke-linejoin: round; }
+@media (prefers-reduced-motion: reduce) { .route-line { animation: none !important; } }
+/* ---------- Overdue badge (Deliveries page) ---------- */
+.statusBadge.lateBadge {
+    margin-left: 6px;
+    background: var(--destructive-soft);
+    color: var(--destructive);
+}
+/* ---------- Delivery history ---------- */
+.historyList {
+    display: grid;
+    gap: 10px;
+    max-height: 55vh;
+    overflow-y: auto;
+    margin: 4px 0 16px;
+}
+
+.historyItem {
+    padding: 10px 12px;
+    background: var(--secondary);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+}
+
+.historyMeta {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--muted-foreground);
+}
+
+.historyItem p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: var(--text-soft);
+}
+
+.historyEmpty {
+    margin: 8px 0;
+    font-size: 14px;
+    color: var(--muted-foreground);
+}
+
+/* =====================================================================
+   DASHBOARD (redesigned)
+===================================================================== */
+
+.dashPage {
+    gap: 20px;
+    padding: 4px 0 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+/* ---------- Topbar ---------- */
+.dashTopbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+}
+
+.dashMeta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--muted-foreground);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.dashMetaDot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--muted-foreground);
+    opacity: 0.6;
+}
+
+.dashWelcome h3 {
+    margin: 0 0 6px;
+    color: var(--foreground);
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+}
+
+.dashWelcome p {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: 14px;
+}
+
+.dashActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.dashActions .btnOutline {
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: var(--card);
+}
+
+/* ---------- KPI cards ---------- */
+.kpiGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.kpiCard {
+    position: relative;
+    padding: 18px 20px 17px;
+    overflow: hidden;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.kpiCard::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: var(--kpi-accent, var(--primary));
+}
+
+.kpiTop {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--muted-foreground);
+}
+
+.kpiIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--secondary);
+    color: var(--foreground);
+}
+
+.kpiIcon svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kpiLabel {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+}
+
+.kpiValue {
+    margin: 14px 0 7px;
+    color: var(--foreground);
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.kpiFoot {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.kpiCard.is-overdue {
+    background: var(--destructive-soft);
+    border-color: transparent;
+}
+
+.kpiCard.is-overdue .kpiValue {
+    color: var(--destructive);
+}
+
+.kpiCard.is-clear::before {
+    background: var(--green);
+}
+
+/* ---------- Panels ---------- */
+.dashGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.75fr) minmax(280px, 1fr);
+    gap: 16px;
+}
+
+.dashPanel {
+    min-width: 0;
+    padding: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.dashPanelHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.dashPanelHead h2 {
+    margin: 0 0 4px;
+    color: var(--foreground);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.dashPanelHead p {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: 12px;
+}
+
+.dashPanelHead select {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.dashPanelHead select:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+}
+
+/* ---------- Activity chart ---------- */
+.activityPanel {
+    display: flex;
+    flex-direction: column;
+}
+
+.activityMeta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.activityMeta strong {
+    color: var(--foreground);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.activityMeta span {
+    color: var(--muted-foreground);
+    font-size: 12px;
+}
+
+.activityChart {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    margin-top: 4px;
+}
+
+.activityBars {
+    display: flex;
+    flex: 1;
+    align-items: flex-end;
+    gap: 10px;
+    min-height: 190px;
+    padding: 8px 4px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.activityCol {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    height: 100%;
+}
+
+.activityValue {
+    min-height: 12px;
+    color: var(--muted-foreground);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+}
+
+.activityBar {
+    width: min(38px, 72%);
+    min-height: 2px;
+    border-radius: 6px 6px 0 0;
+    background: var(--primary);
+    opacity: 0.85;
+    transition: height 0.45s ease, background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.activityCol:hover .activityBar {
+    background: var(--accent);
+    opacity: 1;
+}
+
+.activityDays {
+    display: flex;
+    gap: 10px;
+    padding: 8px 4px 0;
+}
+
+.activityDays span {
+    flex: 1 1 0;
+    overflow: hidden;
+    color: var(--muted-foreground);
+    font-size: 11px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------- Status breakdown ---------- */
+.breakdownList {
+    display: flex;
+    flex-direction: column;
+}
+
+.breakdownRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.breakdownRow:first-child {
+    padding-top: 0;
+}
+
+.breakdownRow:last-of-type {
+    border-bottom: 0;
+}
+
+.breakdownTop {
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.breakdownName {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-soft);
+}
+
+.breakdownTop strong {
+    color: var(--foreground);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.breakdownTrack {
+    height: 7px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: var(--secondary);
+}
+
+.breakdownFill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--primary);
+    transition: width 0.5s ease;
+}
+
+.breakdownFill.pending    { background: var(--orange); }
+.breakdownFill.processing { background: var(--blue); }
+.breakdownFill.out        { background: var(--violet); }
+.breakdownFill.delivered  { background: var(--green); }
+.breakdownFill.cancelled  { background: var(--destructive); }
+
+.breakdownPct {
+    align-self: center;
+    color: var(--muted-foreground);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+
+.breakdownFoot {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-soft);
+    color: var(--muted-foreground);
+    font-size: 12px;
+}
+
+/* ---------- Recent deliveries ---------- */
+.recentPanel {
+    padding-bottom: 8px;
+}
+
+.recentPanel .tableWrapper {
+    width: 100%;
+}
+
+.recentPanel .recentDeliveryTable {
+    min-width: 640px;
+}
+
+.recentPanel .recentDeliveryTable th:first-child,
+.recentPanel .recentDeliveryTable td:first-child {
+    padding-left: 0;
+}
+
+.recentPanel .recentDeliveryTable th:last-child,
+.recentPanel .recentDeliveryTable td:last-child {
+    padding-right: 0;
+}
+
+.recentPanel .recentDeliveryTable th {
+    background: transparent;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+}
+
+.recentPanel .recentDeliveryTable td {
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+.recentPanel .recentDeliveryTable tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.recentPanel .recentDeliveryTable tbody tr:hover {
+    background: var(--secondary);
+}
+
+.emptyRow {
+    padding: 24px 0 !important;
+    color: var(--muted-foreground);
+    text-align: center;
+}
+
+.mutedText {
+    color: var(--muted-foreground);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1150px) {
+    .kpiGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .dashTopbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dashWelcome h3 {
+        font-size: 24px;
+    }
+
+    .dashActions {
+        width: 100%;
+    }
+
+    .dashActions > * {
+        flex: 1;
+        text-align: center;
+    }
+
+    .kpiGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .kpiValue {
+        font-size: 30px;
+    }
+
+    .dashPanel {
+        padding: 16px;
+    }
+
+    .activityBars {
+        gap: 6px;
+        min-height: 160px;
+    }
+
+    .activityDays {
+        gap: 6px;
+    }
+}
+
+@media print {
+    .dashActions,
+    .dashPanelHead select {
+        display: none;
+    }
+
+    .dashPage {
+        gap: 12px;
+    }
+
+    .kpiCard,
+    .dashPanel {
+        box-shadow: none;
+    }
+}
+
+/* Midnight theme: keep the app header dark (--primary is light in this theme) */
+:root[data-theme="midnight"] .headerSec {
+    background: #0B0D11;
+    color: var(--foreground);
+}
+
+:root[data-theme="midnight"] .headerSec h2,
+:root[data-theme="midnight"] .headerSec button {
+    color: var(--foreground);
 }
