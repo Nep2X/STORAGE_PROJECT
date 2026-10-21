@@ -94,10 +94,214 @@ function showFormError(message, fields = []) {
     if (fields.length && cusForm.elements[fields[0]]) cusForm.elements[fields[0]].focus();
 }
 
-// Kapag binago ang laman ng field, alisin ang pula
-ADDR_FIELDS.forEach((f) => cusForm.elements[f].addEventListener("input", () => {
-    cusForm.elements[f].classList.remove("fieldInvalid");
-}));
+// ---------- MAP + ADDRESS PICKER ----------
+const searchInput = document.getElementById("cusAddressSearch");
+const suggestBox = document.getElementById("cusSuggestions");
+const MAP_CENTER = [12.8797, 121.7740];
+
+let cusMap = null;
+let pinMarker = null;
+let suggestions = [];
+let searchTimer = null;
+let searchToken = 0;
+
+const themeVar = (name, fallback) =>
+    getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+
+function pinIcon() {
+    const accent = themeVar("--accent", "#BFF100");
+    return L.divIcon({
+        className: "",
+        html: `<svg width="30" height="40" viewBox="0 0 30 40" style="display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))">` +
+              `<path d="M15 39C15 39 2 24.5 2 14.5C2 7.04 7.82 1 15 1s13 6.04 13 13.5C28 24.5 15 39 15 39z" fill="${accent}" stroke="#fff" stroke-width="2"/>` +
+              `<circle cx="15" cy="14.5" r="4.5" fill="#fff"/></svg>`,
+        iconSize: [30, 40],
+        iconAnchor: [15, 39],
+    });
+}
+
+function ensureMap() {
+    if (cusMap) return true;
+    if (typeof L === "undefined") return false;
+    cusMap = L.map("cusMap", { scrollWheelZoom: false }).setView(MAP_CENTER, 6);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(cusMap);
+    return true;
+}
+
+function setPin(lat, lng, pan = false) {
+    lat = Number(lat);
+    lng = Number(lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || !ensureMap()) return;
+
+    cusForm.elements.lat.value = lat.toFixed(7);
+    cusForm.elements.lng.value = lng.toFixed(7);
+
+    const at = [lat, lng];
+    if (!pinMarker) {
+        pinMarker = L.marker(at, { icon: pinIcon(), draggable: true }).addTo(cusMap);
+        pinMarker.on("dragend", onPinDrag);
+    } else {
+        pinMarker.setLatLng(at);
+        pinMarker.setIcon(pinIcon());
+    }
+    if (pan) cusMap.setView(at, Math.max(cusMap.getZoom(), 15));
+}
+
+function clearPin() {
+    if (pinMarker && cusMap) cusMap.removeLayer(pinMarker);
+    pinMarker = null;
+    cusForm.elements.lat.value = "";
+    cusForm.elements.lng.value = "";
+}
+
+async function onPinDrag() {
+    if (!pinMarker) return;
+    const { lat, lng } = pinMarker.getLatLng();
+    cusForm.elements.lat.value = lat.toFixed(7);
+    cusForm.elements.lng.value = lng.toFixed(7);
+
+    // Punan lang ang blangkong address fields; huwag i-overwrite ang tinype.
+    try {
+        const res = await fetch(`api/geocode.php?reverse=1&lat=${lat}&lng=${lng}`);
+        const out = await res.json();
+        if (!out.ok || !out.result) return;
+        const a = out.result.address || {};
+        if (!cusForm.elements.street.value.trim() && a.street) cusForm.elements.street.value = a.street;
+        if (!cusForm.elements.city.value.trim() && a.city) cusForm.elements.city.value = a.city;
+        if (!cusForm.elements.province.value.trim() && a.province) cusForm.elements.province.value = a.province;
+        if (!searchInput.value.trim() && out.result.label) searchInput.value = out.result.label;
+    } catch (_) {
+        // okay lang; naka-save pa rin ang coordinates
+    }
+}
+
+function hideSuggestions() {
+    suggestions = [];
+    suggestBox.hidden = true;
+    suggestBox.innerHTML = "";
+}
+
+function localSuggestions(q) {
+    const t = q.toLowerCase();
+    return customers
+        .filter((c) => c.lat != null && c.lng != null)
+        .filter((c) => `${c.name} ${c.contact ?? ""} ${c.address ?? ""}`.toLowerCase().includes(t))
+        .slice(0, 5)
+        .map((c) => ({
+            label: c.name,
+            sub: c.address || "",
+            lat: Number(c.lat),
+            lng: Number(c.lng),
+            address: splitAddress(c.address),
+            kind: "Saved customer",
+        }));
+}
+
+function renderSuggestions(items, message = "") {
+    suggestions = items;
+    if (!items.length) {
+        suggestBox.innerHTML = `<div class="addressSuggestion empty">${esc(message || "No matching address found.")}</div>`;
+    } else {
+        suggestBox.innerHTML = items.map((it, i) =>
+            `<button type="button" class="addressSuggestion" data-idx="${i}">` +
+            `<b>${esc(it.label)}</b>` +
+            `<small>${esc(it.kind)}${it.sub ? " · " + esc(it.sub) : ""}</small>` +
+            `</button>`
+        ).join("") + (message ? `<div class="addressSuggestion empty">${esc(message)}</div>` : "");
+    }
+    suggestBox.hidden = false;
+}
+
+async function searchRemote(q, local) {
+    const token = ++searchToken;
+    try {
+        const res = await fetch(`api/geocode.php?q=${encodeURIComponent(q)}`);
+        const out = await res.json();
+        if (token !== searchToken) return;
+
+        if (!out.ok) {
+            renderSuggestions(local, out.error || "Map search is unavailable. You can still drag the pin.");
+            return;
+        }
+
+        const remote = (out.results || []).map((r) => ({
+            label: r.address?.street || (r.label || "").split(",")[0],
+            sub: r.label || "",
+            lat: Number(r.lat),
+            lng: Number(r.lng),
+            address: r.address || {},
+            kind: "OpenStreetMap",
+        }));
+
+        const seen = new Set();
+        const merged = [...local, ...remote].filter((x) => {
+            const k = `${Number(x.lat).toFixed(4)},${Number(x.lng).toFixed(4)}`;
+            if (seen.has(k)) return false;
+            seen.add(k);
+            return true;
+        }).slice(0, 8);
+
+        renderSuggestions(merged, merged.length ? "" : "No matching address found.");
+    } catch (_) {
+        if (token === searchToken) {
+            renderSuggestions(local, "Map search is unavailable. You can still drag the pin.");
+        }
+    }
+}
+
+searchInput.addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchToken++;
+
+    const q = searchInput.value.trim();
+    if (q.length < 2) {
+        hideSuggestions();
+        return;
+    }
+
+    const local = localSuggestions(q);
+    renderSuggestions(local);
+
+    if (q.length < 3) return;
+    searchTimer = setTimeout(() => searchRemote(q, local), 600);
+});
+
+searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        e.stopPropagation();
+        hideSuggestions();
+    }
+});
+
+suggestBox.addEventListener("click", (e) => {
+    const btn = e.target.closest(".addressSuggestion[data-idx]");
+    if (!btn) return;
+
+    const it = suggestions[Number(btn.dataset.idx)];
+    if (!it) return;
+
+    if (it.address?.street) cusForm.elements.street.value = it.address.street;
+    if (it.address?.city) cusForm.elements.city.value = it.address.city;
+    if (it.address?.province) cusForm.elements.province.value = it.address.province;
+
+    searchInput.value = it.sub || it.label;
+    if (Number.isFinite(it.lat) && Number.isFinite(it.lng)) setPin(it.lat, it.lng, true);
+    hideSuggestions();
+});
+
+document.addEventListener("click", (e) => {
+    if (!e.target.closest(".addressSearchWrap")) hideSuggestions();
+});
+
+// Kapag ginamit muli ang street/city/province, huwag nang gamitin ang lumang pin.
+ADDR_FIELDS.forEach((f) => cusForm.elements[f].addEventListener("input", clearPin));
+
+new MutationObserver(() => {
+    if (pinMarker) pinMarker.setIcon(pinIcon());
+}).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
 // ---------- MODAL ----------
 function openCusModal(cus = null) {
@@ -105,6 +309,9 @@ function openCusModal(cus = null) {
     document.getElementById("cusModalTitle").textContent = cus ? "Edit Customer" : "Add Customer";
     cusForm.reset();
     clearFormError();
+    hideSuggestions();
+    searchInput.value = "";
+
     if (cus) {
         cusForm.elements.name.value = cus.name ?? "";
         cusForm.elements.contact.value = cus.contact ?? "";
@@ -114,10 +321,25 @@ function openCusModal(cus = null) {
         cusForm.elements.city.value = a.city;
         cusForm.elements.province.value = a.province;
     }
+
     cusModal.style.display = "flex";
+
+    if (ensureMap()) {
+        setTimeout(() => cusMap.invalidateSize(), 100);
+
+        if (cus && cus.lat != null && cus.lng != null) {
+            setPin(cus.lat, cus.lng, true);
+        } else {
+            clearPin();
+            cusMap.setView(MAP_CENTER, 6);
+        }
+    }
 }
 
 function closeCusModal() {
+    searchToken++;
+    hideSuggestions();
+    searchInput.value = "";
     cusModal.style.display = "none";
     editingCusId = null;
 }

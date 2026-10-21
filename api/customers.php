@@ -61,6 +61,29 @@ function address_on_map(array $a) {
     return null;
 }
 
+// Pin mula sa mini-map. Null kung walang pin; 422 kung invalid.
+function read_coords(array $input): ?array {
+    $lat = $input['lat'] ?? null;
+    $lng = $input['lng'] ?? null;
+
+    if ($lat === null || $lng === null || $lat === '' || $lng === '') {
+        return null;
+    }
+
+    if (!is_numeric($lat) || !is_numeric($lng)) {
+        fail_fields(422, 'Invalid map pin.', ['street']);
+    }
+
+    $lat = (float)$lat;
+    $lng = (float)$lng;
+
+    if ($lat < 4 || $lat > 22 || $lng < 116 || $lng > 127) {
+        fail_fields(422, 'The map pin must be inside the Philippines.', ['street']);
+    }
+
+    return ['lat' => $lat, 'lng' => $lng];
+}
+
 function check_address_or_fail(array $a): array {
     $found = address_on_map($a);
     if ($found === false) {
@@ -88,7 +111,8 @@ try {
             if (empty(trim($input['name'] ?? ''))) fail(400, 'Missing field: name');
 
             $addr = read_address($input);
-            $pt = check_address_or_fail($addr);    // hanapin sa mapa bago i-save
+            $picked = read_coords($input);
+            $pt = $picked ?? check_address_or_fail($addr);    // pin kung meron, else geocode
 
             $stmt = $pdo->prepare("INSERT INTO customers (name, contact, address, lat, lng) VALUES (?,?,?,?,?)");
             $stmt->execute([trim($input['name']), $input['contact'] ?? null, $addr['full'], $pt['lat'], $pt['lng']]);
@@ -101,16 +125,20 @@ try {
             if (empty(trim($input['name'] ?? ''))) fail(400, 'Missing field: name');
 
             $addr = read_address($input);
+            $picked = read_coords($input);
 
             $stmt = $pdo->prepare("SELECT address, lat, lng FROM customers WHERE id = ?");
             $stmt->execute([$id]);
             $current = $stmt->fetch();
             if (!$current) fail(404, 'Customer not found.');
 
-            $lat = $current['lat'];
+                $lat = $current['lat'];
             $lng = $current['lng'];
-            // i-check sa mapa kung nagbago ang address o wala pang coordinates
-            if ($current['address'] !== $addr['full'] || $lat === null || $lng === null) {
+            // Pin mula sa mini-map ang priority; kung wala, geocode kapag nagbago ang address.
+            if ($picked) {
+                $lat = $picked['lat'];
+                $lng = $picked['lng'];
+            } elseif ($current['address'] !== $addr['full'] || $lat === null || $lng === null) {
                 $pt = check_address_or_fail($addr);
                 $lat = $pt['lat'];
                 $lng = $pt['lng'];

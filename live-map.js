@@ -18,6 +18,7 @@ function themeColor(name, fallback) {
 }
 const routeFromColor = () => themeColor("--route-a", "#161616");   // company -> rider
 const routeToColor = () => themeColor("--route-b", "#2f6df6");     // rider -> customer
+const stopColor = (i) => themeColor(`--stop-${(i % 5) + 1}`, "#2f6df6"); // bawat customer
 const MAX_ROUTED_STOPS = 5;        // para hindi ma-overload ang libreng OSRM server
 
 // PALITAN ng totoong company ninyo 
@@ -193,7 +194,7 @@ function renderInfo() {
         const dist = i === 0
             ? `${km.toFixed(1)} km from rider`
             : `+${km.toFixed(1)} km from previous · ${total.toFixed(1)} km total`;
-        html += `<br><span style="color:${routeToColor()}">&#9679;</span> ${num}${escH(s.customer_name)} · ` +
+                html += `<br><span style="color:${stopColor(i)}">&#9679;</span> ${num}${escH(s.customer_name)} · ` +
             `${dist}${road ? "" : " (straight line)"}`;
     });
     if ((currentRoute.missing || []).length) {
@@ -239,8 +240,10 @@ function animateLine({ line, road }, duration) {
 
 // Kapag nagpalit ng theme, palitan agad ang kulay ng ruta at pin
 new MutationObserver(() => {
-    routeLines.forEach(({ line, kind }) => line.setStyle({ color: kind === "from" ? routeFromColor() : routeToColor() }));
-    destMarkers.forEach((m) => m.setIcon(destPin(routeToColor(), m._n)));
+        routeLines.forEach(({ line, kind, stopIndex }) => line.setStyle({
+        color: kind === "from" ? routeFromColor() : stopColor(stopIndex),
+    }));
+    destMarkers.forEach((m) => m.setIcon(destPin(stopColor(m._stopIndex), m._n)));
     if (currentRoute) renderInfo();
 }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
@@ -267,14 +270,11 @@ async function showSelected(fit) {
     stops.forEach((s, i) => {
         const dest = L.latLng(s.lat, s.lng);
         bounds.push(dest);
-                const destMarker = L.marker(dest, { icon: destPin(routeToColor(), stops.length > 1 ? i + 1 : null) }).addTo(selectionLayer)
-            .bindTooltip(
-                `<div style="white-space:normal;max-width:200px"><b>${escH(s.customer_name)}</b><br>${escH(s.address)}</div>`,
-                { permanent: true, direction: "right" }
-            )
-            .bindPopup(`<b>${escH(s.customer_name)}</b><br>${escH(s.address)}<br>Delivery ${escH(s.del_number)}`);
-            destMarker._n = stops.length > 1 ? i + 1 : null;
-            destMarkers.push(destMarker);
+        const destMarker = L.marker(dest, { icon: destPin(stopColor(i), stops.length > 1 ? i + 1 : null) }).addTo(selectionLayer)
+        .bindPopup(`<b>${escH(s.customer_name)}</b><br>${escH(s.address)}<br>Delivery ${escH(s.del_number)}`);
+        destMarker._n = stops.length > 1 ? i + 1 : null;
+        destMarker._stopIndex = i;
+        destMarkers.push(destMarker);
     });
     if (fit) map.fitBounds(L.latLngBounds(bounds).pad(0.2), { maxZoom: 16 });
 
@@ -287,16 +287,16 @@ async function showSelected(fit) {
         ]);
     if (token !== drawToken) return;   // ibang rider na ang napili
 
-        const mkLine = (r, kind) => {
-        const color = kind === "from" ? routeFromColor() : routeToColor();
+        const mkLine = (r, kind, stopIndex = 0) => {
+        const color = kind === "from" ? routeFromColor() : stopColor(stopIndex);
         const line = L.polyline(r.points, r.road
             ? { color, weight: 5, opacity: 0.9, className: "route-line" }
             : { color, weight: 4, dashArray: "6 8", className: "route-line" }).addTo(roadLayer);
-        routeLines.push({ line, kind, road: r.road });
+        routeLines.push({ line, kind, stopIndex, road: r.road });
         return { line, km: r.km, road: r.road };
     };
     const first = mkLine(route, "from");
-    const rest = remaining.map((r) => mkLine(r, "to"));
+    const rest = remaining.map((r, i) => mkLine(r, "to", i));
 
     if (animate) {
         // 1) Company -> rider, 2) pagkatapos, rider -> customer

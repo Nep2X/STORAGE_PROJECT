@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS customers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     contact VARCHAR(20),
-    address VARCHAR(255)
+    address VARCHAR(255),
+    lat DECIMAL(10,7) NULL,
+    lng DECIMAL(10,7) NULL
 );
 
 CREATE TABLE IF NOT EXISTS deliveries (

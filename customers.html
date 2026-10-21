@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-             <link rel="stylesheet" href="style.css"><script src="theme.js"></script>
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
       
     <title>Customers | Delivery Project</title>
 </head>
@@ -85,12 +87,18 @@
                         <button class="modalClose" id="closeCusModal" type="button" aria-label="Close">&times;</button>
                     </div>
 
-                    <form id="customerForm">
+                                        <form id="customerForm">
                         <label for="cusName">Customer Name</label>
                         <input type="text" id="cusName" name="name" required>
 
                         <label for="cusContact">Contact</label>
                         <input type="text" id="cusContact" name="contact" placeholder="09XXXXXXXXX" required>
+
+                        <label for="cusAddressSearch">Find address on map</label>
+                        <div class="addressSearchWrap">
+                            <input type="text" id="cusAddressSearch" placeholder="Type a street, building, or city..." autocomplete="off">
+                            <div id="cusSuggestions" class="addressSuggestions" hidden></div>
+                        </div>
 
                         <label for="cusStreet">Street / Building *</label>
                         <input type="text" id="cusStreet" name="street" placeholder="e.g. 123 Shaw Blvd, Unit 4B" autocomplete="off" required>
@@ -100,6 +108,14 @@
 
                         <label for="cusProvince">Province *</label>
                         <input type="text" id="cusProvince" name="province" placeholder="e.g. Metro Manila" autocomplete="off" required>
+
+                        <div class="addressMapHead">
+                            <span>Pin location</span>
+                            <small>Search above or drag the pin to the exact spot.</small>
+                        </div>
+                        <div id="cusMap" class="customerMap" aria-label="Customer location map"></div>
+                        <input type="hidden" name="lat" id="cusLat">
+                        <input type="hidden" name="lng" id="cusLng">
 
                         <p id="cusFormError" class="formError" role="alert" hidden></p>
 
@@ -114,6 +130,7 @@
 
     </main>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="app.js"></script>
     <script src="customers.js"></script></body>
 </html>

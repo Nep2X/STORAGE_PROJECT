@@ -42,6 +42,11 @@
     --accent: #BFF100;                   /* lime */
     --route-a: #22221E;                  /* ruta: company -> rider */
     --route-b: #6E9A00;                  /* ruta: rider -> customer */
+    --stop-1: #2E7D32;
+    --stop-2: #1F66CC;
+    --stop-3: #7C3AED;
+    --stop-4: #C2410C;
+    --stop-5: #BE185D;
     --accent-foreground: #202413;
     --packed: #E2CBFF;                   /* lilac (Pending / Processing) */
     --packed-foreground: #45335B;
@@ -1277,6 +1282,11 @@ a:focus-visible {
 :root[data-theme="ocean"] {
     --route-a: #16324F;
     --route-b: #0EA5D9;
+    --stop-1: #0E7490;
+    --stop-2: #1D4ED8;
+    --stop-3: #0F766E;
+    --stop-4: #6D28D9;
+    --stop-5: #E11D48;
     --background: #E8EEF4;
     --card: #FFFFFF;
     --secondary: #EEF3F8;
@@ -1298,6 +1308,11 @@ a:focus-visible {
 :root[data-theme="sunset"] {
     --route-a: #3B2A1E;
     --route-b: #E8890C;
+    --stop-1: #C2410C;
+    --stop-2: #B91C1C;
+    --stop-3: #A16207;
+    --stop-4: #9D174D;
+    --stop-5: #6D28D9;
     --background: #F2EBE3;
     --card: #FFFDFA;
     --secondary: #F7F1EA;
@@ -1319,6 +1334,11 @@ a:focus-visible {
 :root[data-theme="midnight"] {
     --route-a: #ECEFF4;
     --route-b: #BFF100;
+    --stop-1: #BFF100;
+    --stop-2: #4CC9F0;
+    --stop-3: #FFB547;
+    --stop-4: #FF6B9A;
+    --stop-5: #A98BFF;
     color-scheme: dark;
     --background: #0E1014;
     --card: #161A21;
@@ -2195,3 +2215,92 @@ textarea[readonly] {
 .toast.detail .toastMsg::first-line { font-size: inherit; font-weight: 600; }
 .toastMsg   { font-size: 14px; }
 .toastClose { top: 8px; right: 8px; border-radius: 6px; }
+/* ===== CUSTOMER ADDRESS PICKER ===== */
+.addressSearchWrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.addressSuggestions {
+    max-height: 210px;
+    overflow-y: auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-panel);
+}
+
+.addressSuggestion {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-bottom: 1px solid var(--border-soft);
+    background: transparent;
+    color: var(--foreground);
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.addressSuggestion:last-child {
+    border-bottom: 0;
+}
+
+.addressSuggestion:hover,
+.addressSuggestion:focus-visible {
+    background: var(--secondary);
+}
+
+.addressSuggestion b {
+    display: block;
+    font-size: 13px;
+}
+
+.addressSuggestion small {
+    display: block;
+    margin-top: 2px;
+    color: var(--muted-foreground);
+    font-size: 11px;
+}
+
+.addressSuggestion.empty {
+    cursor: default;
+    color: var(--muted-foreground);
+}
+
+.addressMapHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.addressMapHead span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-soft);
+}
+
+.addressMapHead small {
+    font-size: 11px;
+    color: var(--muted-foreground);
+    text-align: right;
+}
+
+.customerMap {
+    height: 220px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--secondary);
+}
+
+@media (max-width: 650px) {
+    .customerMap {
+        height: 180px;
+    }
+}
