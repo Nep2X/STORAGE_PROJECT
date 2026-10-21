@@ -152,9 +152,9 @@ function renderDeliveries() {
     delBody.innerHTML = list.map((d) => `
         <tr data-id="${d.id}">
             <td>${esc(d.del_number)}</td>
-            <td>${esc(d.customer_name)}</td>
+            <td>${esc(d.customer_name)}${Number(d.stop_count) > 1 ? ` <span class="statusBadge">+${Number(d.stop_count) - 1} more</span>` : ""}</td>
             <td>${esc(d.driver_name)}</td>
-                        <td>${esc(fmtDate(d.del_date))}${isOverdue(d) ? ' <span class="statusBadge lateBadge">Overdue</span>' : ""}</td>
+            <td>${esc(fmtDate(d.del_date))}${isOverdue(d) ? ' <span class="statusBadge lateBadge">Overdue</span>' : ""}</td>
             <td><span class="statusBadge ${BADGE[d.status] ?? ""}">${esc(d.status) || "No status"}</span></td>
             <td>${actionButtons()}</td>
         </tr>`).join("");
@@ -184,17 +184,22 @@ function nextDeliveryNumber() {
 }
 
 async function prepareForm(del = null) {
+    // Naka-lock ang Delivery Number at Address kapag nagdadagdag (automatic ang laman)
+    delForm.elements.delNumber.readOnly = !del;
+    delForm.elements.delAddress.readOnly = !del;
     const ok = await refreshLists();
     editingDelId = del ? del.id : null;
     document.getElementById("delModalTitle").textContent = del ? "Edit Delivery" : "Add Delivery";
     document.getElementById("delSubmitBtn").textContent = del ? "Save Changes" : "Add Delivery";
     delForm.reset();
+    extraStops.innerHTML = "";
+    extraStopsBox.style.display = del ? "none" : "";
 
     fillSelect(delForm.elements.customerName, customers.map((c) => c.name),
         ok.customersOk ? (customers.length ? "Select customer" : "No customers yet - add one in Customers page") : "Failed to load customers",
         del?.customer_name ?? "");
     fillSelect(delForm.elements.driverAssign, drivers.map((r) => r.name),
-    ok.driversOk ? (drivers.length ? "Select driver" : "No drivers yet - add one in Drivers page") : "Failed to load drivers",
+    ok.driversOk ? (drivers.length ? "Select driver" : "No drivers yet - create a Driver account in Settings") : "Failed to load drivers",
     del?.driver_name ?? "");
 
 // Isang delivery lang bawat driver: naka-disable ang driver na may active delivery na
@@ -240,6 +245,11 @@ delForm.elements.customerName.addEventListener("change", (e) => {
 delForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(delForm));
+    body.extraCustomers = [...extraStops.querySelectorAll(".extraStopRow")].map((row) => ({
+        customerName: row.querySelector(".xsCustomer").value,
+        itemDesc: row.querySelector(".xsItem").value.trim(),
+        quantity: row.querySelector(".xsQty").value,
+    }));
     const url = editingDelId ? `${DEL_API}?id=${editingDelId}` : DEL_API;
 
     const res = await fetch(url, {
@@ -352,9 +362,6 @@ delBody.addEventListener("click", async (e) => {
             (del.delivered_at ? `\nDelivered at: ${del.delivered_at}` : "") +
             (del.rider_notes ? `\nRider notes: ${del.rider_notes}` : "")
         );
-        if (del.proof_image && confirm("Open the proof of delivery photo?")) {
-            window.open(del.proof_image, "_blank");
-        }
     } else if (action === "edit") {
         await prepareForm(del);
         openModal(); // galing sa app.js
@@ -363,7 +370,7 @@ delBody.addEventListener("click", async (e) => {
     } else if (action === "history") {
         openHistory(del);
     } else if (action === "delete") {
-        if (confirm(`Delete delivery ${del.del_number}?`)) {
+        if (await confirmBox(`Delete delivery ${del.del_number}?`)) {
             await fetch(`${DEL_API}?id=${id}`, { method: "DELETE" });
             reloadDeliveries();
         }
@@ -379,3 +386,52 @@ setInterval(() => {
             if (delModal.style.display === "flex" || statusModal.style.display === "flex" || historyModal?.style.display === "flex") return;
     reloadDeliveries().catch(() => {});
 }, 30000);
+// ---------- DAGDAG NA CUSTOMER (isang batch) ----------
+const MAX_STOPS = 5;
+const extraStopsBox = document.getElementById("extraStopsBox");
+const extraStops = document.getElementById("extraStops");
+
+function refreshStopChoices() {
+    extraStops.querySelectorAll(".xsTitle").forEach((t, i) => (t.textContent = "Customer " + (i + 2)));
+    const selects = [...extraStops.querySelectorAll(".xsCustomer")];
+    const chosen = [delForm.elements.customerName.value, ...selects.map((s) => s.value)].filter(Boolean);
+    selects.forEach((sel) => {
+        [...sel.options].forEach((o) => {
+            o.disabled = !!o.value && o.value !== sel.value && chosen.includes(o.value);
+        });
+    });
+}
+
+function addStopRow() {
+    if (extraStops.children.length >= MAX_STOPS - 1) {
+        alert("A delivery can have at most " + MAX_STOPS + " customers.");
+        return;
+    }
+    const row = document.createElement("div");
+    row.className = "extraStopRow";
+    row.style.cssText = "display:grid;gap:8px;margin:10px 0;padding:10px;border:1px solid var(--border);border-radius:8px;";
+    row.innerHTML = `
+    <b class="xsTitle"></b>
+    <select class="xsCustomer" required></select>
+    <small class="xsAddress"></small>
+        <input type="text" class="xsItem" placeholder="Item description" required>
+        <input type="number" class="xsQty" min="1" placeholder="Quantity" required>
+        <button type="button" class="btnOutline xsRemove">Remove</button>`;
+    fillSelect(row.querySelector(".xsCustomer"), customers.map((c) => c.name), "Select customer");
+    extraStops.appendChild(row);
+    refreshStopChoices();
+}
+
+document.getElementById("addStopBtn").addEventListener("click", addStopRow);
+extraStops.addEventListener("change", (e) => {
+    if (!e.target.classList.contains("xsCustomer")) return;
+    const c = customers.find((x) => x.name === e.target.value);
+    e.target.closest(".extraStopRow").querySelector(".xsAddress").textContent = c ? (c.address ?? "") : "";
+    refreshStopChoices();
+});
+extraStops.addEventListener("click", (e) => {
+    if (!e.target.classList.contains("xsRemove")) return;
+    e.target.closest(".extraStopRow").remove();
+    refreshStopChoices();
+});
+delForm.elements.customerName.addEventListener("change", refreshStopChoices);

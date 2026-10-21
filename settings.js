@@ -288,7 +288,7 @@ $("userRows").addEventListener("click", async event => {
     }
 
     if (action === "delete") {
-        if (!confirm(`Delete the account "${user.username}"?`)) return;
+        if (!(await confirmBox(`Delete the account “${user.username}”?`))) return;
 
         try {
             await api(`${USERS_API}?id=${id}`, { method: "DELETE" });

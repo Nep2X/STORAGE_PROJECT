@@ -68,15 +68,51 @@ function renderCustomers() {
 
 cusSearch.addEventListener("input", renderCustomers);
 
+// ---------- ADDRESS HELPERS ----------
+const ADDR_FIELDS = ["street", "city", "province"];
+const cusFormError = document.getElementById("cusFormError");
+
+// Ang naka-save na address ay "Street, Town/City, Province". Hatiin ito pabalik para sa Edit.
+function splitAddress(address) {
+    const parts = String(address ?? "").split(",").map((p) => p.trim()).filter(Boolean);
+    if (parts.length >= 3) {
+        return { street: parts.slice(0, -2).join(", "), city: parts[parts.length - 2], province: parts[parts.length - 1] };
+    }
+    return { street: parts.join(", "), city: "", province: "" };   // lumang address na hindi kumpleto
+}
+
+function clearFormError() {
+    cusFormError.hidden = true;
+    cusFormError.textContent = "";
+    ADDR_FIELDS.forEach((f) => cusForm.elements[f].classList.remove("fieldInvalid"));
+}
+
+function showFormError(message, fields = []) {
+    cusFormError.textContent = message;
+    cusFormError.hidden = false;
+    fields.forEach((f) => cusForm.elements[f] && cusForm.elements[f].classList.add("fieldInvalid"));
+    if (fields.length && cusForm.elements[fields[0]]) cusForm.elements[fields[0]].focus();
+}
+
+// Kapag binago ang laman ng field, alisin ang pula
+ADDR_FIELDS.forEach((f) => cusForm.elements[f].addEventListener("input", () => {
+    cusForm.elements[f].classList.remove("fieldInvalid");
+}));
+
 // ---------- MODAL ----------
 function openCusModal(cus = null) {
     editingCusId = cus ? cus.id : null;
     document.getElementById("cusModalTitle").textContent = cus ? "Edit Customer" : "Add Customer";
     cusForm.reset();
+    clearFormError();
     if (cus) {
         cusForm.elements.name.value = cus.name ?? "";
         cusForm.elements.contact.value = cus.contact ?? "";
-        cusForm.elements.address.value = cus.address ?? "";
+
+        const a = splitAddress(cus.address);
+        cusForm.elements.street.value = a.street;
+        cusForm.elements.city.value = a.city;
+        cusForm.elements.province.value = a.province;
     }
     cusModal.style.display = "flex";
 }
@@ -95,19 +131,39 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCusMo
 // ---------- ADD / EDIT ----------
 cusForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    clearFormError();
+
     const body = Object.fromEntries(new FormData(cusForm));
     const url = editingCusId ? `${CUS_API}?id=${editingCusId}` : CUS_API;
+    const saveBtn = cusForm.querySelector('button[type="submit"]');
 
-    const res = await fetch(url, {
-        method: editingCusId ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-    });
-    const out = await res.json();
-    if (!out.ok) return alert("Error: " + out.error);
+    // Mabilis na check sa browser: kumpleto ba ang address?
+    const missing = ADDR_FIELDS.filter((f) => !String(body[f] ?? "").trim());
+    if (missing.length) {
+        return showFormError("Please complete the address: street / building, town / city, and province.", missing);
+    }
 
-    closeCusModal();
-    loadCustomers();
+    saveBtn.disabled = true;
+    const label = saveBtn.textContent;
+    saveBtn.textContent = "Checking address...";
+
+    try {
+        const res = await fetch(url, {
+            method: editingCusId ? "PUT" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        });
+        const out = await res.json();
+        if (!out.ok) return showFormError(out.error || "Could not save the customer.", out.fields || []);
+
+        closeCusModal();
+        loadCustomers();
+    } catch (err) {
+        showFormError("Could not reach the server. Please try again.");
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = label;
+    }
 });
 
 // ---------- VIEW / EDIT / DELETE ----------
@@ -130,7 +186,7 @@ cusBody.addEventListener("click", async (e) => {
     } else if (action === "edit") {
         openCusModal(cus);
     } else if (action === "delete") {
-        if (confirm(`Delete customer ${cus.name}?`)) {
+        if (await confirmBox(`Delete customer ${cus.name}?`)) {
             await fetch(`${CUS_API}?id=${id}`, { method: "DELETE" });
             loadCustomers();
         }

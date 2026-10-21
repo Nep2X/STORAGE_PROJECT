@@ -2000,3 +2000,198 @@ a:focus-visible {
 :root[data-theme="midnight"] .headerSec button {
     color: var(--foreground);
 }
+/* =====================================================
+   POP-UP MESSAGES: laging nasa gitna ng screen
+   (alert, confirm, at mga modal)
+===================================================== */
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* ---- Mga mensahe (success / error / info / detalye) ---- */
+#toastHost {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+    width: min(420px, calc(100vw - 32px));
+    gap: 12px;
+    pointer-events: none;
+}
+
+.toast {
+    position: relative;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 28px 28px 22px;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-top: 5px solid var(--primary);
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+    pointer-events: auto;
+    animation: popIn 0.18s ease-out;
+}
+
+.toast.success { border-left-color: var(--border); border-top-color: var(--green); }
+.toast.error   { border-left-color: var(--border); border-top-color: var(--destructive); }
+
+.toast::before {
+    content: "i";
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--secondary);
+    color: var(--foreground);
+    font-family: Georgia, serif;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.toast.success::before { content: "\2713"; background: #E4F5EC; color: var(--green); font-family: inherit; }
+.toast.error::before   { content: "!";     background: var(--destructive-soft); color: var(--destructive); font-family: inherit; }
+
+.toastMsg {
+    flex: none;
+    width: 100%;
+    max-height: 60vh;
+    overflow-y: auto;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.toastClose {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 22px;
+}
+
+.toastClose:hover { background: var(--secondary); }
+
+/* Mahabang detalye (hal. View ng delivery) */
+.toast.detail { align-items: stretch; text-align: left; }
+.toast.detail::before { align-self: center; }
+.toast.detail .toastMsg::first-line { font-size: 17px; font-weight: 700; }
+
+/* ---- Kumpirmasyon (Delete? Log out?) ---- */
+.confirmBox {
+    width: 400px;
+    padding: 30px 28px 24px;
+    text-align: center;
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
+    animation: popIn 0.18s ease-out;
+}
+
+.confirmBox::before {
+    content: "?";
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 14px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--secondary);
+    color: var(--foreground);
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.confirmBox:has(.btnDanger)::before {
+    content: "!";
+    background: var(--destructive-soft);
+    color: var(--destructive);
+}
+
+.confirmText    { margin: 0 0 22px; font-size: 16px; }
+.confirmActions { justify-content: center; }
+.confirmActions button { min-width: 120px; }
+
+/* ---- Mga modal (Add / Edit forms) ---- */
+.modalBox { animation: popIn 0.18s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+    .toast, .confirmBox, .modalBox { animation: none; }
+}
+
+/* ---- Naka-lock na field (Delivery Number, Address) ---- */
+input[readonly],
+textarea[readonly] {
+    background: var(--secondary);
+    color: var(--muted-foreground);
+    cursor: not-allowed;
+}
+
+.modalBox input[readonly]:focus {
+    outline: none;
+    border-color: var(--border);
+}
+
+/* ---- Theme Color sa Settings ---- */
+#themeSlot { align-self: center; }
+#themeSlot .themePicker { min-width: 150px; }
+
+/* Hindi makita ang address sa mapa / kulang ang address */
+.modalBox input.fieldInvalid,
+.modalBox input.fieldInvalid:focus {
+    border-color: #d93025;
+    background: rgba(217, 48, 37, 0.08);
+    box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.18);
+}
+
+.formError {
+    margin: 10px 0 0;
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: rgba(217, 48, 37, 0.1);
+    color: #d93025;
+    font-size: 14px;
+}
+/* ===== Minimalist pop-up messages ===== */
+.toast {
+    align-items: flex-start;
+    text-align: left;
+    gap: 4px;
+    padding: 14px 44px 14px 16px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted-foreground);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+.toast.success { border-left-color: var(--green);       border-top-color: var(--border); }
+.toast.error   { border-left-color: var(--destructive); border-top-color: var(--border); }
+
+.toast::before,
+.toast.success::before,
+.toast.error::before {
+    width: auto;
+    height: auto;
+    display: block;
+    border-radius: 0;
+    background: none;
+    color: var(--foreground);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+}
+.toast::before         { content: "Information"; }
+.toast.success::before { content: "Success"; }
+.toast.error::before   { content: "Error"; }
+
+.toast.detail::before { align-self: flex-start; }
+.toast.detail .toastMsg::first-line { font-size: inherit; font-weight: 600; }
+.toastMsg   { font-size: 14px; }
+.toastClose { top: 8px; right: 8px; border-radius: 6px; }

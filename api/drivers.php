@@ -27,7 +27,7 @@ try {
             break;
 
         case 'POST':
-            if (empty(trim($input['name'] ?? ''))) fail(400, 'Missing field: name');
+            fail(405, 'Drivers are created automatically when you add a Driver account in Settings.');
             $status = in_array($input['status'] ?? '', $STATUSES) ? $input['status'] : 'Available';
             if ($status === 'On Route') $status = 'Available';   // awtomatiko lang ang On Route
 

@@ -67,7 +67,20 @@ try {
              ORDER BY del_date, id"
         );
         $stmt->execute([$driver]);
-        echo json_encode($stmt->fetchAll());
+        $list = $stmt->fetchAll();
+
+        // Batch: isama ang mga customer (stops) ng bawat delivery
+        $ss = $pdo->prepare(
+            "SELECT id, stop_order, customer_name, address, contact, item_desc, quantity, status
+             FROM delivery_stops WHERE delivery_id = ? ORDER BY stop_order"
+        );
+        foreach ($list as &$row) {
+            $ss->execute([$row['id']]);
+            $row['stops'] = $ss->fetchAll();
+        }
+        unset($row);
+
+        echo json_encode($list);
         exit;
     }
 
@@ -122,6 +135,58 @@ try {
         }
 
         $path = 'uploads/proofs/' . $filename;
+
+        // ---- Batch (maraming customer): isa-isang customer ang ina-report ----
+        $sc = $pdo->prepare("SELECT COUNT(*) FROM delivery_stops WHERE delivery_id = ?");
+        $sc->execute([$id]);
+        if ((int)$sc->fetchColumn() > 0) {
+            $stopId = (int)($_POST['stop_id'] ?? 0);
+            if (!$stopId) {
+                @unlink($dir . '/' . $filename);
+                fail(400, 'Please choose which customer you delivered to.');
+            }
+
+            $now = date('Y-m-d H:i:s');
+            $pdo->beginTransaction();
+
+            $stmt = $pdo->prepare(
+                "UPDATE delivery_stops
+                 SET status = 'Delivered', proof_image = ?, delivered_at = ?, rider_notes = ?
+                 WHERE id = ? AND delivery_id = ? AND status = 'Pending'"
+            );
+            $stmt->execute([$path, $now, $notes ?: null, $stopId, $id]);
+            if ($stmt->rowCount() === 0) {
+                $pdo->rollBack();
+                @unlink($dir . '/' . $filename);
+                fail(409, 'This customer was already delivered, or is not part of this delivery.');
+            }
+
+            $stmt = $pdo->prepare("SELECT customer_name FROM delivery_stops WHERE id = ?");
+            $stmt->execute([$stopId]);
+            $custName = (string)$stmt->fetchColumn();
+
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM delivery_stops WHERE delivery_id = ? AND status = 'Pending'");
+            $stmt->execute([$id]);
+            $remaining = (int)$stmt->fetchColumn();
+
+            if ($remaining === 0) {
+                // Tapos na ang lahat ng customer: Delivered na ang buong delivery
+                $stmt = $pdo->prepare(
+                    "UPDATE deliveries
+                     SET status = 'Delivered', proof_image = ?, delivered_at = ?, rider_notes = ?
+                     WHERE id = ? AND status IN ($activeSql)"
+                );
+                $stmt->execute([$path, $now, $notes ?: null, $id]);
+                log_delivery_event($pdo, $id, 'Delivered', 'Delivered to ' . $custName . ' (last customer). All customers delivered.');
+                sync_driver_status($pdo, $driver);
+            } else {
+                log_delivery_event($pdo, $id, $del['status'], 'Delivered to ' . $custName . ' (' . $remaining . ' customer(s) left)');
+            }
+
+            $pdo->commit();
+            echo json_encode(['ok' => true, 'proof' => $path, 'remaining' => $remaining, 'customer' => $custName]);
+            exit;
+        }
         $stmt = $pdo->prepare(
             "UPDATE deliveries
              SET status = 'Delivered', proof_image = ?, delivered_at = ?, rider_notes = ?

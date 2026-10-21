@@ -40,6 +40,14 @@ try {
 // =====================================================
 const ACTIVE_DELIVERY_STATUSES = ['Pending', 'Processing', 'Out for Delivery'];
 
+const COMPANY_LAT = 14.624556610241402;   // dapat kapareho ng COMPANY.lat sa live-map.js
+const MAX_BATCH_STOPS = 5;                // pinakamaraming customer sa isang delivery
+
+function customer_zone($lat): ?string {
+    if ($lat === null || $lat === '') return null;
+    return ((float)$lat >= COMPANY_LAT) ? 'North' : 'South';
+}
+
 function active_status_sql(): string {
     return "'" . implode("','", ACTIVE_DELIVERY_STATUSES) . "'";
 }
@@ -79,6 +87,7 @@ function sync_driver_status(PDO $pdo, ?string $driverName): void {
         $pdo->prepare("UPDATE drivers SET status = 'On Route' WHERE name = ?")->execute([$driverName]);
     } else {
         $pdo->prepare("UPDATE drivers SET status = 'Available' WHERE name = ? AND status = 'On Route'")->execute([$driverName]);
+        clear_driver_locations($pdo, $driverName);   // tapos na ang delivery: alisin sa Live Map
     }
 }
 
@@ -180,5 +189,30 @@ if (!function_exists('log_delivery_event')) {
             // Huwag ipa-crash ang pangunahing request kung nabigo ang logging.
             error_log('log_delivery_event: ' . $e->getMessage());
         }
+    }
+}
+
+// =====================================================
+// GEOCODING: PILIPINAS LANG
+// Return: ['lat' => .., 'lng' => ..] kung may nakita, null kung walang match,
+//         false kung walang internet o na-block ang request.
+// =====================================================
+if (!function_exists('geocode_ph')) {
+    function geocode_ph(string $query) {
+        $url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1'
+             . '&countrycodes=ph&accept-language=en&q=' . urlencode($query);
+
+        $json = http_get($url);
+        if ($json === false || $json === '') return false;
+
+        $r = json_decode($json, true);
+        if (!is_array($r)) return false;                                   // hindi JSON (hal. na-block)
+
+        if (empty($r[0]['lat']) || empty($r[0]['lon'])) return null;       // walang nakitang match
+
+        // Tiyakin na nasa Pilipinas talaga ang resulta
+        if (strtolower($r[0]['address']['country_code'] ?? '') !== 'ph') return null;
+
+        return ['lat' => (float)$r[0]['lat'], 'lng' => (float)$r[0]['lon']];
     }
 }

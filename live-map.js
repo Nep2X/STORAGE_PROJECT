@@ -57,6 +57,12 @@ function ago(sec) {
     return `${Math.floor(sec / 86400)} days ago`;
 }
 
+// Format: "DEL-005 - Juan Dela Cruz"
+function riderLabel(id, name) {
+    const loc = locations[String(id)];
+    return loc && loc.del_number ? `${loc.del_number} - ${name}` : name;
+}
+
 function pin(bg, label) {
     return L.divIcon({
         className: "",
@@ -73,12 +79,32 @@ function icon(fresh) {
 }
 
 // Pin ng customer address (walang bilog at walang delivery ID)
-function destPin(color) {
+// Ayusin ang mga customer mula pinakamalapit (nearest-neighbor): rider -> pinakamalapit -> susunod na pinakamalapit...
+function orderStops(start, list) {
+    const left = [...list];
+    const ordered = [];
+    let cur = start;
+    while (left.length) {
+        let best = 0, bestDist = Infinity;
+        left.forEach((s, i) => {
+            const d = cur.distanceTo(L.latLng(s.lat, s.lng));
+            if (d < bestDist) { bestDist = d; best = i; }
+        });
+        const [next] = left.splice(best, 1);
+        ordered.push(next);
+        cur = L.latLng(next.lat, next.lng);
+    }
+    return ordered;
+}
+
+function destPin(color, n) {
     return L.divIcon({
         className: "",
         html: `<svg width="30" height="40" viewBox="0 0 30 40" style="display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))">` +
               `<path d="M15 39C15 39 2 24.5 2 14.5C2 7.04 7.82 1 15 1s13 6.04 13 13.5C28 24.5 15 39 15 39z" fill="${color}" stroke="#fff" stroke-width="2"/>` +
-              `<circle cx="15" cy="14.5" r="4.5" fill="#fff"/></svg>`,
+              (n
+                ? `<circle cx="15" cy="14.5" r="8" fill="#fff"/><text x="15" y="18.5" text-anchor="middle" font-size="12" font-weight="700" font-family="sans-serif" fill="${color}">${n}</text></svg>`
+                : `<circle cx="15" cy="14.5" r="4.5" fill="#fff"/></svg>`),
         iconSize: [30, 40], iconAnchor: [15, 39], popupAnchor: [0, -36], tooltipAnchor: [16, -22],
     });
 }
@@ -132,7 +158,7 @@ function renderList() {
         row.className = "rider";
         row.disabled = !loc;
         row.setAttribute("aria-pressed", id === selectedId ? "true" : "false");
-        row.innerHTML = `<span class="dot ${fresh ? "fresh" : "stale"}"></span><b>${escH(r.name)}</b>` +
+        row.innerHTML = `<span class="dot ${fresh ? "fresh" : "stale"}"></span><b>${escH(riderLabel(r.driver_id, r.name))}</b>` +
             `<small>${n ? n + " active " + (n === 1 ? "delivery" : "deliveries") : "No active delivery"} · ${loc ? "Updated " + ago(loc.seconds_ago) : "No location yet"}</small>`;
         row.onclick = () => selectRider(id);
         listEl.appendChild(row);
@@ -156,12 +182,19 @@ function renderInfo() {
     if (!loc || !currentRoute) { infoEl.hidden = true; return; }
     infoEl.hidden = false;
 
-    let html = `<b>${escH(loc.name)}</b> · ${currentRoute.km.toFixed(1)} km from company` +
+    let html = `<b>${escH(riderLabel(loc.driver_id, loc.name))}</b> · ${currentRoute.km.toFixed(1)} km from company` +
         `${currentRoute.road ? "" : " (straight line)"} · updated ${ago(loc.seconds_ago)}`;
 
-    (currentRoute.stops || []).forEach(({ s, km, road }) => {
-        html += `<br><span style="color:${routeToColor()}">&#9679;</span> ${escH(s.customer_name)} · ` +
-            `${km.toFixed(1)} km remaining${road ? "" : " (straight line)"}`;
+        const legs = currentRoute.stops || [];
+    let total = 0;
+    legs.forEach(({ s, km, road }, i) => {
+        total += km;
+        const num = legs.length > 1 ? `${i + 1}. ` : "";
+        const dist = i === 0
+            ? `${km.toFixed(1)} km from rider`
+            : `+${km.toFixed(1)} km from previous · ${total.toFixed(1)} km total`;
+        html += `<br><span style="color:${routeToColor()}">&#9679;</span> ${num}${escH(s.customer_name)} · ` +
+            `${dist}${road ? "" : " (straight line)"}`;
     });
     if ((currentRoute.missing || []).length) {
         html += `<br>&#9888; Address not on the map yet: ${currentRoute.missing.map((s) => escH(s.customer_name)).join(", ")}`;
@@ -207,7 +240,7 @@ function animateLine({ line, road }, duration) {
 // Kapag nagpalit ng theme, palitan agad ang kulay ng ruta at pin
 new MutationObserver(() => {
     routeLines.forEach(({ line, kind }) => line.setStyle({ color: kind === "from" ? routeFromColor() : routeToColor() }));
-    destMarkers.forEach((m) => m.setIcon(destPin(routeToColor())));
+    destMarkers.forEach((m) => m.setIcon(destPin(routeToColor(), m._n)));
     if (currentRoute) renderInfo();
 }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
@@ -224,31 +257,34 @@ async function showSelected(fit) {
     const fresh = Number(loc.seconds_ago) <= STALE_SECONDS;
 
     riderMarker = L.marker(here, { icon: icon(fresh), zIndexOffset: 1000 }).addTo(selectionLayer)
-        .bindPopup(`<b>${escH(loc.name)}</b><br>Last report: ${escH(loc.reported_at)} (${ago(loc.seconds_ago)})`);
+        .bindPopup(`<b>${escH(riderLabel(loc.driver_id, loc.name))}</b><br>Last report: ${escH(loc.reported_at)} (${ago(loc.seconds_ago)})`);
 
     // Mga customer address na nakita sa mapa (may coordinates)
-    const stops = rider.stops.filter((s) => s.lat != null && s.lng != null).slice(0, MAX_ROUTED_STOPS);
+    const stops = orderStops(here, rider.stops.filter((s) => s.lat != null && s.lng != null).slice(0, MAX_ROUTED_STOPS));
     const missing = rider.stops.filter((s) => s.lat == null || s.lng == null);
     const bounds = [company, here];
 
-    stops.forEach((s) => {
+    stops.forEach((s, i) => {
         const dest = L.latLng(s.lat, s.lng);
         bounds.push(dest);
-                const destMarker = L.marker(dest, { icon: destPin(routeToColor()) }).addTo(selectionLayer)
+                const destMarker = L.marker(dest, { icon: destPin(routeToColor(), stops.length > 1 ? i + 1 : null) }).addTo(selectionLayer)
             .bindTooltip(
                 `<div style="white-space:normal;max-width:200px"><b>${escH(s.customer_name)}</b><br>${escH(s.address)}</div>`,
                 { permanent: true, direction: "right" }
             )
             .bindPopup(`<b>${escH(s.customer_name)}</b><br>${escH(s.address)}<br>Delivery ${escH(s.del_number)}`);
-        destMarkers.push(destMarker);
+            destMarker._n = stops.length > 1 ? i + 1 : null;
+            destMarkers.push(destMarker);
     });
     if (fit) map.fitBounds(L.latLngBounds(bounds).pad(0.2), { maxZoom: 16 });
 
     // Sabay na hinahanap: company -> rider (itim) at rider -> bawat customer (asul, natitirang daraanan)
-    const [route, ...remaining] = await Promise.all([
-        getRoadRoute(company, here),
-        ...stops.map((s) => getRoadRoute(here, L.latLng(s.lat, s.lng))),
-    ]);
+        // Tuloy-tuloy na ruta: rider -> customer 1 -> customer 2 -> ...
+        const points = [here, ...stops.map((s) => L.latLng(s.lat, s.lng))];
+        const [route, ...remaining] = await Promise.all([
+            getRoadRoute(company, here),
+            ...stops.map((s, i) => getRoadRoute(points[i], points[i + 1])),
+        ]);
     if (token !== drawToken) return;   // ibang rider na ang napili
 
         const mkLine = (r, kind) => {
@@ -270,7 +306,12 @@ async function showSelected(fit) {
         animateLine(first, ms(first.km)).then(() => {
             if (token !== drawToken) return;
             destMarkers.forEach((m) => m.setOpacity(1));
-            rest.forEach((x) => animateLine(x, ms(x.km)));
+            (async () => {
+                for (const x of rest) {
+                    if (token !== drawToken) return;
+                    await animateLine(x, ms(x.km));
+                }
+            })();
         });
     }
 
