@@ -79,7 +79,7 @@ Object.entries(PAGE_MAP).forEach(([id, file]) => {
 
 // --- Logout ---
 async function handleLogout() {
-    if (!confirm("Are you sure you want to log out?")) return;
+    if (!(await confirmBox("Are you sure you want to log out?"))) return;
     try {
         await _fetch("api/auth.php?action=logout", { method: "POST" });
     } catch (err) { /* magla-logout pa rin sa screen */ }
@@ -159,7 +159,7 @@ function alert(message, type) {
     }
 
     const toast = document.createElement("div");
-    toast.className = "toast " + type;
+    toast.className = "toast " + type + (text.includes("\n") ? " detail" : "");
     toast.setAttribute("role", type === "error" ? "alert" : "status");
 
     const msg = document.createElement("div");

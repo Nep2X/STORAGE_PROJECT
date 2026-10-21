@@ -42,22 +42,84 @@ try {
             }
 
             $rows = $pdo->query(
-                "SELECT * FROM deliveries ORDER BY del_date DESC, id DESC"
+                "SELECT deliveries.*,
+                        (SELECT COUNT(*) FROM delivery_stops s WHERE s.delivery_id = deliveries.id) AS stop_count
+                 FROM deliveries
+                 ORDER BY del_date DESC, id DESC"
             )->fetchAll();
             echo json_encode($rows);
             break;
 
             case 'POST':
-                foreach (['delNumber', 'customerName'] as $f) {
-                    if (empty(trim($input[$f] ?? ''))) fail(400, "Missing field: $f");
+                // Ang Delivery Number at Address ay laging galing sa server (hindi sa browser)
+                $maxNum = (int)$pdo->query("SELECT COALESCE(MAX(CAST(SUBSTRING(del_number, 5) AS UNSIGNED)), 0) FROM deliveries")->fetchColumn();
+                $input['delNumber'] = 'DEL-' . str_pad((string)($maxNum + 1), 3, '0', STR_PAD_LEFT);
+                $cs = $pdo->prepare("SELECT address FROM customers WHERE name = ?");
+                $cs->execute([trim($input['customerName'] ?? '')]);
+                $custAddress = $cs->fetchColumn();
+                if ($custAddress === false) fail(400, 'Customer not found.');
+                $input['delAddress'] = $custAddress;
+
+                foreach (['delNumber', 'customerName', 'delAddress', 'contactNumber', 'delDate', 'driverAssign', 'vehicle', 'itemDesc', 'quantity', 'status'] as $f) {
+                    if (trim((string)($input[$f] ?? '')) === '') fail(400, "Please fill in all required fields (missing: $f).");
                 }
+                if ((int)$input['quantity'] < 1) fail(400, 'Quantity must be at least 1.');
                 $status = in_array($input['status'] ?? '', $STATUSES) ? $input['status'] : 'Pending';
                 $driver = trim($input['driverAssign'] ?? '') ?: null;
     
                 $pdo->beginTransaction();
     
                 // Isang active delivery lang bawat driver
-                $busy = driver_conflict($pdo, $driver, $status);
+                                // ---- Dagdag na customer (isang batch, parehong area lang) ----
+                                $extras = [];
+                                foreach ((array)($input['extraCustomers'] ?? []) as $e) {
+                                    $extras[] = [
+                                        'name' => trim((string)($e['customerName'] ?? '')),
+                                        'item' => trim((string)($e['itemDesc'] ?? '')),
+                                        'qty'  => (int)($e['quantity'] ?? 0),
+                                    ];
+                                }
+                                $stopRows = [];
+                                if ($extras) {
+                                    if (count($extras) > MAX_BATCH_STOPS - 1) fail(400, 'A delivery can have at most ' . MAX_BATCH_STOPS . ' customers.');
+                
+                                    $names = [trim($input['customerName'])];
+                                    foreach ($extras as $e) {
+                                        if ($e['name'] === '' || $e['item'] === '' || $e['qty'] < 1) {
+                                            fail(400, 'Please complete the customer, item, and quantity of every additional customer.');
+                                        }
+                                        $names[] = $e['name'];
+                                    }
+                                    if (count(array_unique($names)) !== count($names)) fail(400, 'The same customer was added more than once.');
+                
+                                    $cq   = $pdo->prepare("SELECT name, contact, address, lat, lng FROM customers WHERE name = ?");
+                                    $zone = null;
+                                    foreach ($names as $i => $n) {
+                                        $cq->execute([$n]);
+                                        $c = $cq->fetch();
+                                        if (!$c) fail(400, "Customer not found: $n");
+                                        if ($c['lat'] === null || $c['lng'] === null) {
+                                            fail(409, "$n has no map location yet. Open this customer in the Customers page, press Save, then try again.");
+                                        }
+                                        $z = customer_zone($c['lat']);
+                                        if ($zone === null) {
+                                            $zone = $z;
+                                        } elseif ($z !== $zone) {
+                                            fail(409, "$n is in the $z area, but this delivery is for the $zone area. Only customers in the same area can share one delivery.");
+                                        }
+                                        $stopRows[] = [
+                                            'name'    => $c['name'],
+                                            'contact' => $c['contact'],
+                                            'address' => $c['address'],
+                                            'lat'     => $c['lat'],
+                                            'lng'     => $c['lng'],
+                                            'item'    => $i === 0 ? ($input['itemDesc'] ?? null) : $extras[$i - 1]['item'],
+                                            'qty'     => $i === 0 ? (int)(($input['quantity'] ?? 1) ?: 1) : $extras[$i - 1]['qty'],
+                                        ];
+                                    }
+                                }
+                
+                                $busy = driver_conflict($pdo, $driver, $status);
                 if ($busy) {
                     fail(409, "Driver $driver already has an active delivery ({$busy['del_number']}). A driver can only handle one delivery at a time.");
                 }
@@ -77,7 +139,16 @@ try {
                     $input['remarks'] ?? null, $status,
                 ]);
                 $newId = $pdo->lastInsertId();
-                log_delivery_event($pdo, (int)$newId, $status, 'Delivery created');
+                log_delivery_event($pdo, (int)$newId, $status, $stopRows ? 'Delivery created with ' . count($stopRows) . ' customers' : 'Delivery created');
+
+                $insStop = $pdo->prepare(
+                    "INSERT INTO delivery_stops
+                     (delivery_id, stop_order, customer_name, address, contact, item_desc, quantity, dest_lat, dest_lng)
+                     VALUES (?,?,?,?,?,?,?,?,?)"
+                );
+                foreach ($stopRows as $i => $s) {
+                    $insStop->execute([$newId, $i + 1, $s['name'], $s['address'], $s['contact'], $s['item'], $s['qty'], $s['lat'], $s['lng']]);
+                }
     
                 sync_driver_status($pdo, $driver);   // may na-assign = On Route
                 $pdo->commit();
@@ -99,6 +170,17 @@ try {
                     if (isset($input['customerName'])) {
                         // Buong edit (galing sa modal)
                         if (empty(trim($input['delNumber'] ?? ''))) fail(400, 'Missing field: delNumber');
+
+                        // Batch (maraming customer): hindi pa puwedeng palitan ang main customer
+                        $sc = $pdo->prepare("SELECT COUNT(*) FROM delivery_stops WHERE delivery_id = ?");
+                        $sc->execute([$id]);
+                        if ((int)$sc->fetchColumn() > 0) {
+                            $oc = $pdo->prepare("SELECT customer_name FROM deliveries WHERE id = ?");
+                            $oc->execute([$id]);
+                            if ($oc->fetchColumn() !== trim($input['customerName'])) {
+                                fail(409, 'This delivery has multiple customers, so the main customer cannot be changed yet.');
+                            }
+                        }
                         $status = in_array($input['status'] ?? '', $STATUSES) ? $input['status'] : 'Pending';
                         $driver = trim($input['driverAssign'] ?? '') ?: null;
         
@@ -165,6 +247,7 @@ try {
             
                         $pdo->beginTransaction();
                         $pdo->prepare("DELETE FROM delivery_events WHERE delivery_id = ?")->execute([$id]);
+                        $pdo->prepare("DELETE FROM delivery_stops WHERE delivery_id = ?")->execute([$id]);
                         $pdo->prepare("DELETE FROM deliveries WHERE id = ?")->execute([$id]);
             
                         $driver = $old['driver_name'];

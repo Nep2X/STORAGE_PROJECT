@@ -15,8 +15,8 @@
     apply(saved());   // agad, bago pa lumabas ang page (walang kisap)
 
     document.addEventListener("DOMContentLoaded", () => {
-        const bar = document.querySelector(".headerActions");
-        if (!bar || bar.querySelector(".themePicker")) return;   // walang header, o nandiyan na ang picker
+        const slot = document.getElementById("themeSlot");   // nasa Settings page lang
+        if (!slot || slot.querySelector(".themePicker")) return;   // wala sa ibang page, o nandiyan na ang picker
         const select = document.createElement("select");
         select.className = "themePicker";
         select.setAttribute("aria-label", "Color theme");
@@ -27,6 +27,6 @@
             apply(select.value);
             try { localStorage.setItem(KEY, select.value); } catch (_) { /* ok lang */ }
         });
-        bar.prepend(select);
+        slot.appendChild(select);
     });
 })();

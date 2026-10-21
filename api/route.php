@@ -37,12 +37,8 @@ require_login(ROLES_STAFF);
 
 // Return: [lat,lng] kung may nakita, null kung walang match, false kung walang internet
 function geocode(string $q) {
-    $json = http_get('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ph&q=' . urlencode($q));
-    if ($json === false || $json === '') return false;   // walang internet
-    $r = json_decode($json, true);
-    if (!is_array($r)) return false;                     // hindi JSON (hal. na-block), subukan ulit mamaya
-    if (!empty($r[0]['lat']) && !empty($r[0]['lon'])) return [(float)$r[0]['lat'], (float)$r[0]['lon']];
-    return null;                                         // walang nakitang match
+    $pt = geocode_ph($q);                                // Pilipinas lang (countrycodes=ph)
+    return is_array($pt) ? [$pt['lat'], $pt['lng']] : $pt;
 }
 
 try {
@@ -98,13 +94,36 @@ try {
             );
             $routes[$did] = ['driver_id' => $did, 'driver_name' => $r['driver_name'], 'trail' => $trail, 'stops' => []];
         }
-        $routes[$did]['stops'][] = [
-            'del_number'    => $r['del_number'],
-            'customer_name' => $r['customer_name'],
-            'address'       => $r['address'],
-            'lat'           => $r['dest_lat'] !== null ? (float)$r['dest_lat'] : null,
-            'lng'           => $r['dest_lng'] !== null ? (float)$r['dest_lng'] : null,
-        ];
+                // Batch (maraming customer): kunin lahat ng stop na hindi pa tapos
+                $ss = $pdo->prepare(
+                    "SELECT customer_name, address, dest_lat, dest_lng
+                     FROM delivery_stops
+                     WHERE delivery_id = ? AND status = 'Pending'
+                     ORDER BY stop_order"
+                );
+                $ss->execute([$r['id']]);
+                $batch = $ss->fetchAll();
+        
+                if ($batch) {
+                    foreach ($batch as $b) {
+                        $routes[$did]['stops'][] = [
+                            'del_number'    => $r['del_number'],
+                            'customer_name' => $b['customer_name'],
+                            'address'       => $b['address'],
+                            'lat'           => $b['dest_lat'] !== null ? (float)$b['dest_lat'] : null,
+                            'lng'           => $b['dest_lng'] !== null ? (float)$b['dest_lng'] : null,
+                        ];
+                    }
+                } else {
+                    // Isang customer lang (karaniwang delivery)
+                    $routes[$did]['stops'][] = [
+                        'del_number'    => $r['del_number'],
+                        'customer_name' => $r['customer_name'],
+                        'address'       => $r['address'],
+                        'lat'           => $r['dest_lat'] !== null ? (float)$r['dest_lat'] : null,
+                        'lng'           => $r['dest_lng'] !== null ? (float)$r['dest_lng'] : null,
+                    ];
+                }
     }
     echo json_encode(['ok' => true, 'routes' => array_values($routes)]);
 } catch (PDOException $e) {

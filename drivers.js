@@ -34,7 +34,6 @@ const actionButtons = () => `
     <div class="actionBtns">
         <button type="button" class="iconBtn" data-action="view" title="View" aria-label="View">${ICONS.view}</button>
         <button type="button" class="iconBtn" data-action="edit" title="Edit" aria-label="Edit">${ICONS.edit}</button>
-        <button type="button" class="iconBtn danger" data-action="delete" title="Delete" aria-label="Delete">${ICONS.delete}</button>
     </div>`;
 
 // ---------- LOAD + RENDER ----------
@@ -102,7 +101,7 @@ function closeDrvModal() {
     editingDrvId = null;
 }
 
-document.getElementById("openAddDrv").addEventListener("click", () => openDrvModal());
+// Walang "Add Driver": kusang lumalabas ang driver kapag may Driver account sa Settings
 document.getElementById("closeDrvModal").addEventListener("click", closeDrvModal);
 document.getElementById("cancelDrvModal").addEventListener("click", closeDrvModal);
 drvModal.addEventListener("click", (e) => { if (e.target === drvModal) closeDrvModal(); });
@@ -163,7 +162,7 @@ drvBody.addEventListener("click", async (e) => {
     } else if (action === "edit") {
         openDrvModal(drv);
     } else if (action === "delete") {
-        if (confirm(`Delete driver ${drv.name}?`)) {
+        if (await confirmBox(`Delete driver ${drv.name}?`)) {
             await fetch(`${DRV_API}?id=${id}`, { method: "DELETE" });
             loadDrivers();
         }

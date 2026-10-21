@@ -103,31 +103,16 @@
 
         <form id="deliveryForm">
             <label for="delNumber">Delivery Number</label>
-            <input type="text" id="delNumber" name="delNumber" required>
-
-            <label for="customerName">Customer</label>
-            <select id="customerName" name="customerName" required></select>
-
-            <label for="delAddress">Delivery Address</label>
-            <input type="text" id="delAddress" name="delAddress" placeholder="Enter delivery address">
-
-            <label for="contactNumber">Contact Number</label>
-            <input type="text" id="contactNumber" name="contactNumber" placeholder="09XXXXXXXXX">
+            <input type="text" id="delNumber" name="delNumber" required readonly>
 
             <label for="delDate">Delivery Date</label>
-            <input type="date" id="delDate" name="delDate">
+            <input type="date" id="delDate" name="delDate" required>
 
             <label for="driverAssign">Driver Assignment</label>
-            <select id="driverAssign" name="driverAssign"></select>
+            <select id="driverAssign" name="driverAssign" required></select>
 
             <label for="vehicle">Vehicle</label>
-            <input type="text" id="vehicle" name="vehicle" placeholder="Vehicle plate / model">
-
-            <label for="itemDesc">Item / Description</label>
-            <input type="text" id="itemDesc" name="itemDesc" placeholder="Item description">
-
-            <label for="quantity">Quantity</label>
-            <input type="number" id="quantity" name="quantity" min="1" placeholder="0">
+            <input type="text" id="vehicle" name="vehicle" placeholder="Vehicle plate / model" required>
 
             <label for="delStatusField">Status</label>
             <select id="delStatusField" name="status">
@@ -137,6 +122,29 @@
                 <option value="Delivered">Delivered</option>
                 <option value="Cancelled">Cancelled</option>
             </select>
+
+            <h3 style="margin:22px 0 2px;font-size:15px;">Customers</h3>
+
+            <label for="customerName">Customer 1</label>
+            <select id="customerName" name="customerName" required></select>
+
+            <label for="delAddress">Delivery Address</label>
+            <input type="text" id="delAddress" name="delAddress" placeholder="Auto-filled from the selected customer" readonly>
+
+            <label for="contactNumber">Contact Number</label>
+            <input type="text" id="contactNumber" name="contactNumber" placeholder="09XXXXXXXXX" required>
+
+            <label for="itemDesc">Item / Description</label>
+            <input type="text" id="itemDesc" name="itemDesc" placeholder="Item description" required>
+
+            <label for="quantity">Quantity</label>
+            <input type="number" id="quantity" name="quantity" min="1" placeholder="0" required>
+
+            <div id="extraStopsBox">
+                <div id="extraStops"></div>
+                <button type="button" class="btnOutline" id="addStopBtn">+ Add another customer</button>
+                <br><small>Only customers in the same area (all North or all South of the company) can share one delivery. Maximum of 5 customers.</small>
+            </div>
 
             <label for="remarks">Remarks</label>
             <textarea id="remarks" name="remarks" rows="3" placeholder="Optional notes"></textarea>

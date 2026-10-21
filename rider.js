@@ -16,6 +16,9 @@ window.fetch = async (...args) => {
 const riderSelect = document.getElementById("riderSelect");
 const deliverySelect = document.getElementById("deliverySelect");
 const deliveryHint = document.getElementById("deliveryHint");
+const stopWrap = document.getElementById("stopWrap");
+const stopSelect = document.getElementById("stopSelect");
+const stopHint = document.getElementById("stopHint");
 const detailsBox = document.getElementById("details");
 const reportForm = document.getElementById("reportForm");
 const proofInput = document.getElementById("proofInput");
@@ -48,7 +51,9 @@ function clearMsg() {
 }
 
 function updateSubmit() {
-    submitBtn.disabled = !(deliverySelect.value && photoBlob);
+    const d = myDeliveries.find((x) => String(x.id) === deliverySelect.value);
+    const needStop = !!(d && d.stops && d.stops.length > 0);
+    submitBtn.disabled = !(deliverySelect.value && photoBlob && (!needStop || stopSelect.value));
 }
 
 // Paliitin ang litrato bago i-upload (mabilis sa mobile data)
@@ -96,6 +101,7 @@ async function loadMyDeliveries() {
     const driver = riderSelect.value;
     detailsBox.style.display = "none";
     deliveryHint.textContent = "";
+    stopWrap.style.display = "none";
     myDeliveries = [];
 
     if (!driver) {
@@ -119,7 +125,7 @@ async function loadMyDeliveries() {
             deliverySelect.disabled = false;
             deliverySelect.innerHTML = `<option value="">Select delivery</option>` +
                 data.map((d) =>
-                    `<option value="${d.id}">${esc(d.del_number)} - ${esc(d.customer_name)}</option>`
+                `<option value="${d.id}">${esc(d.del_number)} - ${d.stops && d.stops.length > 1 ? d.stops.length + " customers" : esc(d.customer_name)}</option>`
                 ).join("");
         }
     } catch (err) {
@@ -135,19 +141,36 @@ function showDetails() {
     const d = myDeliveries.find((x) => String(x.id) === deliverySelect.value);
     if (!d) {
         detailsBox.style.display = "none";
+        stopWrap.style.display = "none";
         updateSubmit();
         return;
     }
 
+    // Batch: pumili muna ng customer na na-deliver-an
+    const allStops = d.stops || [];
+    const pending = allStops.filter((s) => s.status === "Pending");
+    const isBatch = allStops.length > 0;
+
+    stopWrap.style.display = isBatch ? "block" : "none";
+    if (isBatch) {
+        const prev = stopSelect.value;
+        stopSelect.innerHTML = `<option value="">Select customer</option>` +
+            pending.map((s) => `<option value="${s.id}">${s.stop_order}. ${esc(s.customer_name)}</option>`).join("");
+        stopSelect.value = pending.some((s) => String(s.id) === prev) ? prev : "";
+        stopHint.textContent = `${allStops.length - pending.length} of ${allStops.length} customers delivered`;
+    }
+    const stop = isBatch ? pending.find((s) => String(s.id) === stopSelect.value) : null;
+    const c = isBatch ? stop : d;   // detalye ng customer
+
     const set = (id, v) => (document.getElementById(id).textContent = v || "-");
     set("dID", d.del_number);
-    set("dCustomer", d.customer_name);
-    set("dAddress", d.address);
-    set("dContact", d.contact);
+    set("dCustomer", c && c.customer_name);
+    set("dAddress", c && c.address);
+    set("dContact", c && c.contact);
     set("dDate", fmtDate(d.del_date));
     set("dVehicle", d.vehicle);
-    set("dItem", d.item_desc);
-    set("dQty", d.quantity);
+    set("dItem", c && c.item_desc);
+    set("dQty", c && c.quantity);
     set("dStatus", d.status);
     set("dRemarks", d.remarks);
 
@@ -158,6 +181,7 @@ function showDetails() {
 
 riderSelect.addEventListener("change", loadMyDeliveries);
 deliverySelect.addEventListener("change", showDetails);
+stopSelect.addEventListener("change", showDetails);
 
 // ---------- PHOTO ----------
 proofInput.addEventListener("change", async () => {
@@ -182,7 +206,8 @@ reportForm.addEventListener("submit", async (e) => {
     if (!deliverySelect.value || !photoBlob) return;
 
     const d = myDeliveries.find((x) => String(x.id) === deliverySelect.value);
-    if (!confirm(`Report ${d.del_number} as delivered?`)) return;
+    const stopLabel = stopSelect.value ? stopSelect.selectedOptions[0].textContent : "";
+    if (!confirm(stopLabel ? `Report ${stopLabel} (${d.del_number}) as delivered?` : `Report ${d.del_number} as delivered?`)) return;
 
     const fd = new FormData();
     fd.append("id", deliverySelect.value);
@@ -199,12 +224,21 @@ reportForm.addEventListener("submit", async (e) => {
         const out = await res.json();
         if (!out.ok) throw new Error(out.error || "Something went wrong.");
 
-        showMsg(`${d.del_number} has been reported as delivered. Thank you!`, "ok");
+        const keepId = deliverySelect.value;
         reportForm.reset();
         photoBlob = null;
         proofPreview.style.display = "none";
         detailsBox.style.display = "none";
         await loadMyDeliveries();
+
+        if (out.remaining > 0 && [...deliverySelect.options].some((o) => o.value === keepId)) {
+            // Batch: may natitira pang customer, ibalik ang parehong delivery
+            deliverySelect.value = keepId;
+            showDetails();
+            showMsg(`${out.customer} delivered. ${out.remaining} customer(s) left for ${d.del_number}.`, "ok");
+        } else {
+            showMsg(`${d.del_number} has been reported as delivered. Thank you!`, "ok");
+        }
     } catch (err) {
         showMsg("Error: " + err.message, "err");
     } finally {

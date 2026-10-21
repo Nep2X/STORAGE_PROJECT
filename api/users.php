@@ -302,9 +302,11 @@ try {
                 fail(409, 'You cannot delete your own account.');
             }
 
-            $stmt = $pdo->prepare("SELECT role FROM users WHERE id = ?");
+            $stmt = $pdo->prepare("SELECT role, driver_id FROM users WHERE id = ?");
             $stmt->execute([$id]);
-            $role = $stmt->fetchColumn();
+            $targetRow = $stmt->fetch();
+            $role = $targetRow['role'] ?? false;
+            $linkedDriverId = !empty($targetRow['driver_id']) ? (int)$targetRow['driver_id'] : null;
 
             if (!$role) {
                 fail(404, 'User not found.');
@@ -314,8 +316,25 @@ try {
                 fail(409, 'At least one active admin account is required.');
             }
 
-            $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
-            $stmt->execute([$id]);
+                        // Driver / Rider account: tanggalin din ang driver record at location niya
+                        if ($linkedDriverId) {
+                            $stmt = $pdo->prepare("SELECT name FROM drivers WHERE id = ?");
+                            $stmt->execute([$linkedDriverId]);
+                            $linkedDriverName = $stmt->fetchColumn();
+            
+                            if ($linkedDriverName && active_delivery_of($pdo, $linkedDriverName)) {
+                                fail(409, 'This driver still has an active delivery. Complete, cancel, or reassign it first.');
+                            }
+                        }
+            
+                        $pdo->beginTransaction();
+                        $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$id]);
+            
+                        if ($linkedDriverId) {
+                            $pdo->prepare("DELETE FROM rider_locations WHERE driver_id = ?")->execute([$linkedDriverId]);
+                            $pdo->prepare("DELETE FROM drivers WHERE id = ?")->execute([$linkedDriverId]);
+                        }
+                        $pdo->commit();
 
             echo json_encode(['ok' => true]);
             break;

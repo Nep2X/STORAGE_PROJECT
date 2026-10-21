@@ -23,6 +23,7 @@ if (!function_exists('ensure_location_schema')) {
                 ['deliveries', 'dest_lat',  'DECIMAL(10,7) NULL'],
                 ['deliveries', 'dest_lng',  'DECIMAL(10,7) NULL'],
                 ['deliveries', 'geo_tried', 'TINYINT(1) NOT NULL DEFAULT 0'],
+                ['rider_locations', 'delivery_id', 'INT NULL'],
             ];
             foreach ($need as [$table, $col, $def]) {
                 $has = $pdo->query("SHOW COLUMNS FROM `$table` LIKE '$col'")->fetch();
@@ -111,14 +112,15 @@ try {
         // Naka-share lang ang location kapag may active delivery na naka-assign sa rider
         $stmt = $pdo->prepare("SELECT name FROM drivers WHERE id = ?");
         $stmt->execute([$driverId]);
-        if (!active_delivery_of($pdo, (string)$stmt->fetchColumn())) {
+        $activeDel = active_delivery_of($pdo, (string)$stmt->fetchColumn());
+        if (!$activeDel) {
             fail(409, 'You have no active delivery, so your location is not shared.');
         }
         $stmt = $pdo->prepare(
-            "INSERT INTO rider_locations (driver_id, latitude, longitude, accuracy, reported_at)
-             VALUES (?,?,?,?,?)"
+            "INSERT INTO rider_locations (driver_id, delivery_id, latitude, longitude, accuracy, reported_at)
+            VALUES (?,?,?,?,?,?)"
         );
-        $stmt->execute([$driverId, $lat, $lng, $acc === false ? null : $acc, date('Y-m-d H:i:s')]);
+        $stmt->execute([$driverId, (int)$activeDel['id'], $lat, $lng, $acc === false ? null : $acc, date('Y-m-d H:i:s')]);
 
         // Paminsan-minsan (1 sa 100 save), burahin ang lumang records para hindi bumigat ang table.
         // Laging itinatago ang pinakahuling location ng bawat rider.
@@ -139,11 +141,14 @@ try {
         // Huling report ng bawat driver, kahit anong status ng delivery nila
         $rows = $pdo->query(
             "SELECT d.id AS driver_id, d.name, d.contact, d.status,
+                    a.id AS delivery_id, a.del_number,
                     l.latitude, l.longitude, l.accuracy, l.reported_at
              FROM drivers d
+             JOIN deliveries a ON a.driver_name = d.name
+                              AND a.status IN ('Pending','Processing','Out for Delivery')
              JOIN rider_locations l ON l.id = (
-                 SELECT id FROM rider_locations x
-                 WHERE x.driver_id = d.id
+                 SELECT x.id FROM rider_locations x
+                 WHERE x.driver_id = d.id AND x.delivery_id = a.id
                  ORDER BY x.reported_at DESC, x.id DESC LIMIT 1
              )
              ORDER BY d.name"
