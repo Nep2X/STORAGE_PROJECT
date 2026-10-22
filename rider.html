@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-             <link rel="stylesheet" href="style.css"><script src="theme.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
       
     <title>Submit Delivery | Delivery Project</title>
     <style>
@@ -24,6 +26,24 @@
         .riderWrap input[type="number"] { width: 100%; box-sizing: border-box; padding: 10px; font: inherit; }
         .riderWrap .switchRow { display: flex; align-items: center; gap: 10px; margin: 14px 0 4px; cursor: pointer; }
         .riderWrap .switchRow input { width: 18px; height: 18px; padding: 0; margin: 0; }
+                #placePreviewMap {
+            height: 180px;
+            margin-top: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--secondary);
+            pointer-events: none;
+        }
+        #placePreviewMap[hidden] { display: none; }
+            @media (max-width: 650px) {
+            #placePreviewMap { height: 160px; }
+        }
+        /* Mas madilim na pin para sa rider preview */
+        .placePreviewPin {
+            background: #111827;
+            filter: drop-shadow(0 0 1.5px #fff) drop-shadow(0 2px 3px rgba(0,0,0,.45));
+        }
         #details { display: none; }
         .hint { color: var(--muted); font-size: 0.9rem; margin: 4px 0 0; }
     </style>
@@ -87,8 +107,12 @@
 
             <form id="placeForm">
                 <label for="placeInput">GPS not working? Type the place name</label>
-                <input type="text" id="placeInput" placeholder="e.g. Pasig Palengke, Pasig" autocomplete="off">
-                <p class="hint">Automatic na hahanapin sa map at kukunin ang Latitude/Longitude.</p>
+                <div class="addressSearchWrap">
+                    <input type="text" id="placeInput" placeholder="e.g. Pasig Palengke, Pasig" autocomplete="off">
+                    <div id="placeSuggestions" class="addressSuggestions" hidden></div>
+                </div>
+                <div id="placePreviewMap" hidden aria-label="Preview of the selected address"></div>
+                <p class="hint">Pumili ng suggestion o i-type ang buong lugar. Makikita sa maliit na mapa ang lokasyon bago i-save.</p>
                 <button type="submit" class="btnOutline" id="placeBtn">Search &amp; save this place</button>
             </form>
 
@@ -123,6 +147,7 @@
 
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="rider.js"></script>
 </body>
 </html>

@@ -137,6 +137,10 @@ Object.entries(uiNavIcons).forEach(([id, paths]) => {
  const label = button.textContent.trim();
  button.title = label;
  button.setAttribute('aria-label', label);
+ if (id === "settingsButton") {
+   button.innerHTML = `<span class="settingsIcon" aria-hidden="true"></span>`;
+   return;
+ }
  button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>`;
 });
 // =========================

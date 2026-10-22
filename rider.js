@@ -212,6 +212,7 @@ reportForm.addEventListener("submit", async (e) => {
     const fd = new FormData();
     fd.append("id", deliverySelect.value);
     fd.append("driver", riderSelect.value);
+    if (stopSelect.value) fd.append("stop_id", stopSelect.value);
     fd.append("notes", document.getElementById("notes").value);
     fd.append("photo", photoBlob, "proof.jpg");
 
@@ -385,7 +386,184 @@ async function geocodePlace(q) {
     }
     return null;
 }
+// ---------- PLACE SUGGESTIONS ----------
+const placeSuggestions = document.getElementById("placeSuggestions");
+let placeSuggestionsList = [];
+let placeSearchTimer = null;
+let placeSearchToken = 0;
+let placeSearchAt = 0;
+let selectedPlace = null;
 
+function hidePlaceSuggestions() {
+    clearTimeout(placeSearchTimer);
+    placeSearchToken++;
+    placeSuggestionsList = [];
+    placeSuggestions.hidden = true;
+    placeSuggestions.innerHTML = "";
+}
+// ---------- PLACE PREVIEW MAP ----------
+const placePreviewMapEl = document.getElementById("placePreviewMap");
+let placePreviewMap = null;
+let placePreviewMarker = null;
+
+function placePreviewIcon() {
+    return L.divIcon({
+        className: "",
+        html: `<span class="customerPin placePreviewPin" aria-hidden="true"></span>`,
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+    });
+}
+
+function ensurePlacePreview() {
+    if (placePreviewMap) return true;
+    if (typeof L === "undefined") return false;
+
+    placePreviewMap = L.map(placePreviewMapEl, {
+        zoomControl: false,
+        scrollWheelZoom: false,
+        dragging: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        touchZoom: false,
+    }).setView([12.8797, 121.7740], 6);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(placePreviewMap);
+
+    return true;
+}
+
+function showPlacePreview(lat, lng) {
+    if (!placePreviewMapEl) return;
+
+    lat = Number(lat);
+    lng = Number(lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    placePreviewMapEl.hidden = false;
+    if (!ensurePlacePreview()) {
+        placePreviewMapEl.hidden = true;
+        return;
+    }
+
+    const at = [lat, lng];
+    if (!placePreviewMarker) {
+        placePreviewMarker = L.marker(at, { icon: placePreviewIcon(), interactive: false })
+            .addTo(placePreviewMap);
+    } else {
+        placePreviewMarker.setLatLng(at);
+    }
+
+    placePreviewMap.setView(at, 16, { animate: false });
+    setTimeout(() => {
+        if (placePreviewMap && !placePreviewMapEl.hidden) placePreviewMap.invalidateSize();
+    }, 60);
+}
+
+function hidePlacePreview() {
+    if (placePreviewMapEl) placePreviewMapEl.hidden = true;
+}
+
+function previewSuggestion(e) {
+    const btn = e.target.closest(".addressSuggestion[data-idx]");
+    if (!btn) return;
+
+    const it = placeSuggestionsList[Number(btn.dataset.idx)];
+    if (it) showPlacePreview(it.lat, it.lng);
+}
+function renderPlaceSuggestions(items, message = "") {
+    placeSuggestionsList = items;
+    if (!items.length) {
+        placeSuggestions.innerHTML = `<div class="addressSuggestion empty">${esc(message || "No matching place found.")}</div>`;
+    } else {
+        placeSuggestions.innerHTML = items.map((it, i) =>
+            `<button type="button" class="addressSuggestion" data-idx="${i}">` +
+            `<b>${esc(it.label)}</b>` +
+            `<small>${esc(it.kind)}${it.sub ? " - " + esc(it.sub) : ""}</small>` +
+            `</button>`
+        ).join("") + (message ? `<div class="addressSuggestion empty">${esc(message)}</div>` : "");
+    }
+    placeSuggestions.hidden = false;
+}
+
+async function searchPlaces(q) {
+    const token = ++placeSearchToken;
+    try {
+        const res = await fetch(`api/geocode.php?q=${encodeURIComponent(q)}`, {
+            headers: { Accept: "application/json" },
+        });
+        const out = await res.json();
+        if (token !== placeSearchToken) return;
+
+        if (!out.ok) {
+            renderPlaceSuggestions([], out.error || "Map search is unavailable.");
+            return;
+        }
+
+        const items = (out.results || []).map((r) => ({
+            label: r.address?.street || (r.label || "").split(",")[0],
+            sub: r.label || "",
+            lat: Number(r.lat),
+            lng: Number(r.lng),
+            kind: "OpenStreetMap",
+        })).filter((x) => Number.isFinite(x.lat) && Number.isFinite(x.lng));
+
+        renderPlaceSuggestions(items, items.length ? "" : "No matching place found.");
+        if (items.length) showPlacePreview(items[0].lat, items[0].lng);
+    } catch (_) {
+        if (token === placeSearchToken) {
+            renderPlaceSuggestions([], "Map search is unavailable. I-type ang buong lugar at pindutin ang Search & save.");
+        }
+    }
+}
+
+placeInput.addEventListener("input", () => {
+    selectedPlace = null;
+    hidePlaceSuggestions();
+    hidePlacePreview();
+
+    const q = placeInput.value.trim();
+    if (q.length < 3) return;
+
+    // Debounce + 1.1s gap para hindi mag-spam sa Nominatim.
+    const wait = Math.max(0, 1100 - (Date.now() - placeSearchAt));
+    placeSearchTimer = setTimeout(() => {
+        placeSearchAt = Date.now();
+        searchPlaces(q);
+    }, 800 + wait);
+});
+
+placeInput.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        e.stopPropagation();
+        hidePlaceSuggestions();
+    }
+});
+
+placeSuggestions.addEventListener("click", (e) => {
+    const btn = e.target.closest(".addressSuggestion[data-idx]");
+    if (!btn) return;
+
+    const it = placeSuggestionsList[Number(btn.dataset.idx)];
+    if (!it) return;
+
+    selectedPlace = it;
+    placeInput.value = it.sub || it.label;
+    hidePlaceSuggestions();
+    showPlacePreview(it.lat, it.lng);
+    showLocMsg("Napili na ang lugar. Tingnan ang preview sa ibaba, tapos pindutin ang Search & save.", "ok");
+});
+
+placeSuggestions.addEventListener("mouseover", previewSuggestion);
+placeSuggestions.addEventListener("focusin", previewSuggestion);
+
+document.addEventListener("click", (e) => {
+    if (!e.target.closest("#placeForm .addressSearchWrap")) hidePlaceSuggestions();
+});
 function afterManualSave(lat, lng) {
     manualUntil = Date.now() + MANUAL_HOLD_MS;
     latInput.value = lat;
@@ -397,21 +575,32 @@ placeForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const address = placeInput.value.trim();
     if (!address) return;
+
+    hidePlaceSuggestions();
     placeBtn.disabled = true;
     placeBtn.textContent = "Searching...";
+
     try {
-        let pt = null;
-        try {
-            pt = await geocodePlace(address);          // sa browser muna (mas maaasahan)
-        } catch (_) {
-            await sendLocation({ address });           // kung hindi gumana, ang server ang maghahanap
-            showLocMsg("Na-save ang lugar mo: " + address, "ok");
-            return;
+        let pt = selectedPlace;
+
+        if (!pt) {
+            try {
+                pt = await geocodePlace(address);          // sa browser muna (mas maaasahan)
+            } catch (_) {
+                await sendLocation({ address });           // kung hindi gumana, ang server ang maghahanap
+                selectedPlace = null;
+                showLocMsg("Na-save ang lugar mo: " + address, "ok");
+                return;
+            }
         }
+
         if (!pt) throw new Error('Hindi makita ang lugar na iyon. Subukan ang mas kumpletong pangalan, hal. "Pasig City Public Market, Pasig".');
+
+        showPlacePreview(pt.lat, pt.lng);
         await sendLocation({ lat: pt.lat, lng: pt.lng });
         afterManualSave(pt.lat, pt.lng);
-        showLocMsg(`Na-save: ${pt.name} (${pt.lat.toFixed(5)}, ${pt.lng.toFixed(5)})`, "ok");
+        selectedPlace = null;
+        showLocMsg(`Na-save: ${pt.name || pt.sub || pt.label || address} (${pt.lat.toFixed(5)}, ${pt.lng.toFixed(5)})`, "ok");
     } catch (err) {
         showLocMsg(err.message, "err");
     } finally {

@@ -232,6 +232,15 @@ a:focus-visible {
     stroke-linejoin: round;
 }
 
+.optionSec .settingsIcon {
+    width: 20px;
+    height: 20px;
+    display: block;
+    background: currentColor;
+    -webkit-mask: url("assets/setting-icon.svg") center / contain no-repeat;
+    mask: url("assets/setting-icon.svg") center / contain no-repeat;
+}
+
 .sidebarBottom {
     width: 100%;
     margin-top: auto;
@@ -1068,13 +1077,94 @@ a:focus-visible {
 .stale { background: var(--muted-foreground); }
 
 .location-marker {
-    width: 20px;
-    height: 20px;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
     border: 3px solid var(--card);
     border-radius: 50%;
     box-shadow: var(--shadow-panel);
 }
 
+.location-marker.fresh {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.location-marker.stale {
+    background: var(--muted-foreground);
+    color: var(--card);
+}
+
+.location-marker .truck {
+    width: 20px;
+    height: 20px;
+    display: block;
+    background: currentColor;
+    -webkit-mask: url("assets/truck-icon.svg") center / contain no-repeat;
+    mask: url("assets/truck-icon.svg") center / contain no-repeat;
+}
+.company-marker {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: 3px solid var(--card);
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: var(--shadow-panel);
+}
+
+.company-marker .building {
+    width: 20px;
+    height: 20px;
+    display: block;
+    background: currentColor;
+    -webkit-mask: url("assets/company-icon.svg") center / contain no-repeat;
+    mask: url("assets/company-icon.svg") center / contain no-repeat;
+}
+/* Pin ng customer stops sa Live Map */
+.destPin {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: block;
+}
+
+.destPin::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: var(--pin-color, var(--accent));
+    -webkit-mask: url("assets/customer-pin-icon.svg") center / contain no-repeat;
+    mask: url("assets/customer-pin-icon.svg") center / contain no-repeat;
+    /* Fallback kung hindi supported ang color-mix */
+    filter:
+        drop-shadow(0 0 1px rgba(0,0,0,.55))
+        drop-shadow(0 2px 3px rgba(0,0,0,.35));
+    /* Colored outline: darker sa light themes, lighter sa Midnight */
+    filter:
+        drop-shadow(0 0 1.5px color-mix(in srgb, var(--pin-color, var(--accent)) 55%, var(--foreground)))
+        drop-shadow(0 2px 3px rgba(0,0,0,.35));
+}
+
+.destPin b {
+    position: absolute;
+    top: 4.5px;
+    left: 50%;
+    z-index: 1;
+    width: 18px;
+    height: 18px;
+    transform: translateX(-50%);
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--pin-color, var(--accent));
+    font: 700 11px/1 sans-serif;
+}
 .leaflet-control-zoom {
     border: 1px solid var(--border) !important;
     box-shadow: var(--shadow-panel) !important;
@@ -2289,7 +2379,31 @@ textarea[readonly] {
     color: var(--muted-foreground);
     text-align: right;
 }
+.addressMapTitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
 
+.pinLabelIcon {
+    width: 13px;
+    height: 13px;
+    display: inline-block;
+    flex: none;
+    background: currentColor;
+    -webkit-mask: url("assets/pin-1-svgrepo-com.svg") center / contain no-repeat;
+    mask: url("assets/pin-1-svgrepo-com.svg") center / contain no-repeat;
+}
+
+.customerPin {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background: var(--primary);
+    -webkit-mask: url("assets/customer-pin-icon.svg") center / contain no-repeat;
+    mask: url("assets/customer-pin-icon.svg") center / contain no-repeat;
+    filter: drop-shadow(0 0 1px var(--card)) drop-shadow(0 2px 3px rgba(0,0,0,.35));
+}
 .customerMap {
     height: 220px;
     margin-bottom: 8px;

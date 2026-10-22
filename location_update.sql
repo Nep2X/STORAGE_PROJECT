@@ -7,5 +7,9 @@ CREATE TABLE IF NOT EXISTS rider_locations (
     longitude DECIMAL(10,7) NOT NULL,
     accuracy FLOAT NULL,
     reported_at DATETIME NOT NULL,
+    delivery_id INT NULL,
     INDEX idx_driver_time (driver_id, reported_at)
 );
+
+-- Kung existing na ang rider_locations at wala pang delivery_id, run this once:
+-- ALTER TABLE rider_locations ADD COLUMN delivery_id INT NULL;
