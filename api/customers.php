@@ -132,7 +132,7 @@ try {
             $current = $stmt->fetch();
             if (!$current) fail(404, 'Customer not found.');
 
-                $lat = $current['lat'];
+            $lat = $current['lat'];
             $lng = $current['lng'];
             // Pin mula sa mini-map ang priority; kung wala, geocode kapag nagbago ang address.
             if ($picked) {

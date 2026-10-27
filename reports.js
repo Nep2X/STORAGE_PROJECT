@@ -71,7 +71,7 @@ function renderRider(list) {
             <td>${esc(r.driver_name || "—")}</td>
             <td>
                 <a href="${esc(r.proof_image)}" class="proofLink">
-                    <img class="proofThumb" loading="lazy" src="${esc(r.proof_image)}" alt="Proof for ${esc(r.del_number)}">
+                    <img class="proofThumb" loading="lazy" src="${esc(r.proof_image)}" alt="Proof for ${esc(r.del_number)} (${esc(r.customer_name || "customer")})">
                 </a>
             </td>
             <td>${esc(r.rider_notes || "—")}</td>

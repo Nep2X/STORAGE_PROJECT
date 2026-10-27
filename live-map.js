@@ -71,11 +71,19 @@ function pin(bg, label) {
         iconSize: [28, 28], iconAnchor: [14, 14],
     });
 }
+function companyIcon() {
+    return L.divIcon({
+        className: "",
+        html: `<div class="company-marker"><span class="building" aria-hidden="true"></span></div>`,
+        iconSize: [34, 34], iconAnchor: [17, 17],
+    });
+}
+
 function icon(fresh) {
     return L.divIcon({
         className: "",
-        html: `<div class="location-marker ${fresh ? "fresh" : "stale"}"></div>`,
-        iconSize: [18, 18], iconAnchor: [9, 9],
+        html: `<div class="location-marker ${fresh ? "fresh" : "stale"}"><span class="truck" aria-hidden="true"></span></div>`,
+        iconSize: [34, 34], iconAnchor: [17, 17],
     });
 }
 
@@ -101,16 +109,15 @@ function orderStops(start, list) {
 function destPin(color, n) {
     return L.divIcon({
         className: "",
-        html: `<svg width="30" height="40" viewBox="0 0 30 40" style="display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))">` +
-              `<path d="M15 39C15 39 2 24.5 2 14.5C2 7.04 7.82 1 15 1s13 6.04 13 13.5C28 24.5 15 39 15 39z" fill="${color}" stroke="#fff" stroke-width="2"/>` +
-              (n
-                ? `<circle cx="15" cy="14.5" r="8" fill="#fff"/><text x="15" y="18.5" text-anchor="middle" font-size="12" font-weight="700" font-family="sans-serif" fill="${color}">${n}</text></svg>`
-                : `<circle cx="15" cy="14.5" r="4.5" fill="#fff"/></svg>`),
-        iconSize: [30, 40], iconAnchor: [15, 39], popupAnchor: [0, -36], tooltipAnchor: [16, -22],
+        html: `<span class="destPin" style="--pin-color:${color}">${n ? `<b>${n}</b>` : ""}</span>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -34],
+        tooltipAnchor: [18, -20],
     });
 }
 
-L.marker([COMPANY.lat, COMPANY.lng], { icon: pin("#161616", "&#127970;"), zIndexOffset: 500 })
+L.marker([COMPANY.lat, COMPANY.lng], { icon: companyIcon(), zIndexOffset: 500 })
     .addTo(map).bindPopup(`<b>${escH(COMPANY.name)}</b><br>${escH(COMPANY.address)}`);
 
 // ---------- DATA ----------
@@ -331,8 +338,16 @@ function selectRider(id) {
 
 // ---------- REFRESH ----------
 async function refreshLocations() {
-    try {
+        try {
+        const before = locations;
         await loadLocations();
+
+        // Kapag may driver na nawala ang location (tapos na ang delivery),
+        // i-refresh agad ang routes para mawala rin ang pangalan sa listahan.
+        if (Object.keys(before).some((id) => !locations[id])) {
+            await loadDeliveries();
+        }
+
         renderList();
         if (selectedId) {
             const loc = locations[selectedId];

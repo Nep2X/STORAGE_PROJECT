@@ -83,6 +83,23 @@ try {
             $id = (int)($_GET['id'] ?? 0);
             if (!$id) fail(400, 'Missing id');
 
+            $stmt = $pdo->prepare("SELECT name FROM drivers WHERE id = ?");
+            $stmt->execute([$id]);
+            $name = $stmt->fetchColumn();
+            if ($name === false) fail(404, 'Driver not found.');
+
+            // Bawal burahin kung may active deliveries pa (maiiwan walang driver)
+            $stmt = $pdo->prepare(
+                "SELECT COUNT(*) FROM deliveries
+                 WHERE driver_name = ? AND status IN ('Pending','Processing','Out for Delivery')"
+            );
+            $stmt->execute([$name]);
+            $active = (int)$stmt->fetchColumn();
+            if ($active > 0) {
+                fail(409, 'This driver still has ' . $active . ' active deliver'
+                    . ($active === 1 ? 'y' : 'ies') . '. Reassign them first.');
+            }
+
             // Bawal burahin ang driver na may user account
             $stmt = $pdo->prepare("SELECT username FROM users WHERE driver_id = ? LIMIT 1");
             $stmt->execute([$id]);

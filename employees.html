@@ -9,6 +9,8 @@
 </head>
 <body>
 
+    <a class="skipLink" href="#pageContent">Skip to content</a>
+
 <header class="headerSec">
     <h2>DELIVERY PROJECT</h2>
 
@@ -28,7 +30,7 @@
         <button id="driversButton">Drivers</button>
         <button id="mapButton">Live Map</button>
         <button id="customersButton">Customers</button>
-        <button id="employeeButton" class="active">Employees</button>
+        <button id="employeeButton" class="active" aria-current="page">Employees</button>
         <button id="reportsButton">Reports</button>
         <button id="riderButton">Submit Delivery</button>
         <button id="settingsButton">Settings</button>
@@ -37,19 +39,19 @@
             <button id="sidebarLogoutButton">Logout</button>
         </div>
     </aside>
-    <section class="dashboardSec">
+    <section class="dashboardSec" id="pageContent" tabindex="-1">
         <div class="dashboardHead">
             <div class="pageHead">
-                <h3>Employees</h3>
+                <h1>Employees</h1>
                 <p>Manage company employees and roles</p>
             </div>
         </div>
 
         <div class="panel">
             <div class="toolbar">
-                <input type="text" id="employeeSearch" placeholder="Search employee...">
+                <input type="text" id="employeeSearch" placeholder="Search employee..." aria-label="Search employees">
 
-                <select id="employeeRole">
+                <select id="employeeRole" aria-label="Filter by role">
                     <option value="">All Roles</option>
                     <option value="Admin">Admin</option>
                     <option value="Employee">Employee</option>
@@ -57,7 +59,7 @@
                     <option value="Rider">Rider</option>
                 </select>
 
-                <select id="employeeStatus">
+                <select id="employeeStatus" aria-label="Filter by status">
                     <option value="">All Status</option>
                     <option value="Active">Active</option>
                     <option value="Disabled">Disabled</option>
@@ -73,14 +75,14 @@
                 <table class="dataTable">
                     <thead>
                         <tr>
-                            <th>Employee ID</th>
-                            <th>Full Name</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Contact Number</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Action</th>
+                            <th scope="col">Employee ID</th>
+                            <th scope="col">Full Name</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Contact Number</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Action</th>
                         </tr>
                     </thead>
                     <tbody id="employeeRows"></tbody>

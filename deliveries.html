@@ -9,6 +9,8 @@
 </head>
 <body>
 
+    <a class="skipLink" href="#pageContent">Skip to content</a>
+
     <header class="headerSec">
         <h2>DELIVERY PROJECT</h2>
 
@@ -25,7 +27,7 @@
             <div class="sidebarTitle">MENU</div>
 
             <button id="dashboardButton" class="">Dashboard</button>
-            <button id="deliveriesButton" class="active">Deliveries</button>
+            <button id="deliveriesButton" class="active" aria-current="page">Deliveries</button>
             <button id="driversButton" class="">Drivers</button>
             <button id="mapButton">Live Map</button>
             <button id="customersButton" class="">Customers</button>
@@ -39,11 +41,11 @@
             </div>
         </aside>
 
-        <section class="dashboardSec">
+        <section class="dashboardSec" id="pageContent" tabindex="-1">
 
             <div class="dashboardHead">
                 <div class="pageHead">
-                    <h3>Deliveries</h3>
+                    <h1>Deliveries</h1>
                     <p>Manage all delivery transactions</p>
                 </div>
             </div>
@@ -51,8 +53,8 @@
             <div class="panel">
                 <div class="toolbar">
                     <button class="btnPrimary" id="openAddDel">+ New Delivery</button>
-                    <input type="text" id="searchDelivery" placeholder="Search delivery...">
-                    <select name="delStatus">
+                    <input type="text" id="searchDelivery" placeholder="Search delivery..." aria-label="Search deliveries">
+                    <select name="delStatus" aria-label="Filter by status">
                         <option value="">Status</option>
                         <option value="Pending">Pending</option>
                         <option value="Processing">Processing</option>
@@ -60,7 +62,7 @@
                         <option value="Delivered">Delivered</option>
                         <option value="Cancelled">Cancelled</option>
                     </select>
-                    <select name="driverName">
+                    <select name="driverName" aria-label="Filter by driver">
                         <option value="">Driver</option>
                     </select>
                     <input type="date" name="filterDate" aria-label="Filter by date">
@@ -77,12 +79,12 @@
                     <table class="dataTable">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Customer</th>
-                                <th>Driver</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Action</th>
+                                <th scope="col">ID</th>
+                                <th scope="col">Customer</th>
+                                <th scope="col">Driver</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -94,7 +96,7 @@
 
             <!-- Add Delivery Modal -->
             <!-- Add / Edit Delivery Modal -->
-<div class="modal" id="deliveryModal">
+<div class="modal" id="deliveryModal" role="dialog" aria-modal="true" aria-labelledby="delModalTitle">
     <div class="modalBox">
         <div class="modalHeader">
             <h2 id="delModalTitle">Add Delivery</h2>
@@ -123,7 +125,7 @@
                 <option value="Cancelled">Cancelled</option>
             </select>
 
-            <h3 style="margin:22px 0 2px;font-size:15px;">Customers</h3>
+            <h2 style="margin:22px 0 2px;font-size:15px;">Customers</h2>
 
             <label for="customerName">Customer 1</label>
             <select id="customerName" name="customerName" required></select>
@@ -158,7 +160,7 @@
 </div>
 
 <!-- Update Status Modal -->
-<div class="modal" id="statusModal">
+<div class="modal" id="statusModal" role="dialog" aria-modal="true" aria-label="Update Status">
     <div class="modalBox">
         <div class="modalHeader">
             <h2>Update Status</h2>
@@ -184,7 +186,7 @@
 </div>
 
                 <!-- Delivery History Modal -->
-        <div class="modal" id="historyModal">
+        <div class="modal" id="historyModal" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
             <div class="modalBox">
                 <div class="modalHeader">
                     <h2 id="historyTitle">Delivery History</h2>

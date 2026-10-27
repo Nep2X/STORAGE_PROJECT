@@ -105,18 +105,12 @@ let suggestions = [];
 let searchTimer = null;
 let searchToken = 0;
 
-const themeVar = (name, fallback) =>
-    getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
-
 function pinIcon() {
-    const accent = themeVar("--accent", "#BFF100");
     return L.divIcon({
         className: "",
-        html: `<svg width="30" height="40" viewBox="0 0 30 40" style="display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))">` +
-              `<path d="M15 39C15 39 2 24.5 2 14.5C2 7.04 7.82 1 15 1s13 6.04 13 13.5C28 24.5 15 39 15 39z" fill="${accent}" stroke="#fff" stroke-width="2"/>` +
-              `<circle cx="15" cy="14.5" r="4.5" fill="#fff"/></svg>`,
-        iconSize: [30, 40],
-        iconAnchor: [15, 39],
+        html: `<span class="customerPin" aria-hidden="true"></span>`,
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
     });
 }
 
@@ -179,6 +173,8 @@ async function onPinDrag() {
 }
 
 function hideSuggestions() {
+    clearTimeout(searchTimer);
+    searchToken++;
     suggestions = [];
     suggestBox.hidden = true;
     suggestBox.innerHTML = "";
@@ -283,13 +279,15 @@ suggestBox.addEventListener("click", (e) => {
     const it = suggestions[Number(btn.dataset.idx)];
     if (!it) return;
 
-    if (it.address?.street) cusForm.elements.street.value = it.address.street;
-    if (it.address?.city) cusForm.elements.city.value = it.address.city;
-    if (it.address?.province) cusForm.elements.province.value = it.address.province;
+    const a = it.address || {};
+    cusForm.elements.street.value = a.street || "";
+    cusForm.elements.city.value = a.city || "";
+    cusForm.elements.province.value = a.province || "";
 
     searchInput.value = it.sub || it.label;
     if (Number.isFinite(it.lat) && Number.isFinite(it.lng)) setPin(it.lat, it.lng, true);
     hideSuggestions();
+    if (!cusForm.elements.street.value.trim()) cusForm.elements.street.focus();
 });
 
 document.addEventListener("click", (e) => {

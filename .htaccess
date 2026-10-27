@@ -1,0 +1,24 @@
+# ============================================================
+# Delivery Project Map - root access rules
+# ============================================================
+
+# Huwag ipakita ang listahan ng files sa folder
+Options -Indexes
+
+# Huwag i-serve ang docs, backup, at log files
+<FilesMatch "\.(sql|md|txt|zip|bak|log|ini|sh|old|env)$">
+    Require all denied
+</FilesMatch>
+
+# Huwag i-serve ang config at setup files
+<FilesMatch "^(config.*\.php|db\.php|ensure_schema\.php|setup_admin\.php)$">
+    Require all denied
+</FilesMatch>
+
+# Huwag i-serve ang dot-folders (.git, .opencode, .qodo)
+RedirectMatch 404 /\.(git|opencode|qodo)(/|$)
+
+# Huwag i-serve ang dot-files (.gitignore, .env, .user.ini)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

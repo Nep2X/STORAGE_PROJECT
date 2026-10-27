@@ -118,7 +118,7 @@ function driver_status_error(PDO $pdo, string $driverName, string $newStatus): ?
 // HTTP GET gamit ang cURL (kung meron) o file_get_contents. Return string o false.
 if (!function_exists('http_get')) {
     function http_get(string $url) {
-        $ua = 'DeliveryProject/1.0 (XAMPP)';
+        $ua = 'DeliveryProject/1.0 (+https://github.com/Nep2X/STORAGE_PROJECT)';
         if (function_exists('curl_init')) {
             $ch = curl_init($url);
             curl_setopt_array($ch, [

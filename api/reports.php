@@ -75,12 +75,34 @@ try {
                 delivered_at, proof_image, rider_notes
          FROM deliveries $w
          ORDER BY del_date DESC, id DESC", $params);
-        // ---------- Rider reports (may proof picture) ----------
-    $w3 = $where ? $w . ' AND proof_image IS NOT NULL' : 'WHERE proof_image IS NOT NULL';
+    // ---------- Rider reports (bawat customer na may proof picture) ----------
+    // Ang batch delivery ay may proof bawat stop. Kaya pinagsasama ang:
+    //   1) proof ng bawat stop (tamang customer + litrato nito)
+    //   2) proof sa delivery mismo (para sa mga single delivery)
+    // Hindi isinasama ang delivery-level proof kapag may stop proof na,
+    // para hindi madoble ang huling customer ng isang batch.
     $riderReports = rows($pdo,
-        "SELECT del_number, customer_name, del_date, delivered_at, driver_name, proof_image, rider_notes
-         FROM deliveries $w3
-         ORDER BY del_date DESC, id DESC", $params);
+        "SELECT del_number, customer_name, del_date, delivered_at, driver_name, proof_image, rider_notes, stop_order
+         FROM (
+             SELECT d.id, d.del_number, s.customer_name, d.del_date, s.delivered_at,
+                    d.driver_name, s.proof_image, s.rider_notes, s.stop_order
+             FROM delivery_stops s
+             JOIN deliveries d ON d.id = s.delivery_id
+             WHERE s.proof_image IS NOT NULL
+
+             UNION ALL
+
+             SELECT d.id, d.del_number, d.customer_name, d.del_date, d.delivered_at,
+                    d.driver_name, d.proof_image, d.rider_notes, 0
+             FROM deliveries d
+             WHERE d.proof_image IS NOT NULL
+               AND NOT EXISTS (
+                   SELECT 1 FROM delivery_stops s2
+                   WHERE s2.delivery_id = d.id AND s2.proof_image IS NOT NULL
+               )
+         ) x
+         $w
+         ORDER BY del_date DESC, id DESC, stop_order", $params);
     echo json_encode([
         'ok'          => true,
         'total'       => $total,

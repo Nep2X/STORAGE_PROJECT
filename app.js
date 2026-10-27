@@ -106,12 +106,29 @@ const openAddDel = document.getElementById("openAddDel");
 const closeModalBtn = document.getElementById("closeModal");
 const cancelModalBtn = document.getElementById("cancelModal");
 
+let lastFocused = null;
+
 function openModal() {
-    if (deliveryModal) deliveryModal.style.display = "flex";
+    if (!deliveryModal) return;
+
+    lastFocused = document.activeElement;
+    deliveryModal.style.display = "flex";
+
+    // Ilipat ang focus sa unang field para marinig/maabot agad ng keyboard
+    const field = deliveryModal.querySelector(
+        "select:not([disabled]), input:not([readonly]):not([disabled]), textarea:not([disabled])"
+    );
+    const target = field || deliveryModal.querySelector(".modalBox button:not(.modalClose)");
+    if (target) target.focus();
 }
 
 function closeModal() {
-    if (deliveryModal) deliveryModal.style.display = "none";
+    // Guard: tinatawag ito ng Escape kahit sarado ang modal — huwag agawin ang focus
+    if (!deliveryModal || deliveryModal.style.display !== "flex") return;
+
+    deliveryModal.style.display = "none";
+    if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
+    lastFocused = null;
 }
 
 if (openAddDel) openAddDel.addEventListener("click", openModal);
@@ -137,6 +154,10 @@ Object.entries(uiNavIcons).forEach(([id, paths]) => {
  const label = button.textContent.trim();
  button.title = label;
  button.setAttribute('aria-label', label);
+ if (id === "settingsButton") {
+   button.innerHTML = `<span class="settingsIcon" aria-hidden="true"></span>`;
+   return;
+ }
  button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${paths}</svg>`;
 });
 // =========================

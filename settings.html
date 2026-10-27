@@ -9,6 +9,8 @@
 </head>
 <body>
 
+    <a class="skipLink" href="#pageContent">Skip to content</a>
+
     <header class="headerSec">
         <h2>DELIVERY PROJECT</h2>
 
@@ -32,25 +34,25 @@
             <button id="employeeButton" class="">Employees</button>
             <button id="reportsButton" class="">Reports</button>
             <button id="riderButton" class="">Submit Delivery</button>
-            <button id="settingsButton" class="active">Settings</button>
+            <button id="settingsButton" class="active" aria-current="page">Settings</button>
 
             <div class="sidebarBottom">
                 <button id="sidebarLogoutButton">Logout</button>
             </div>
         </aside>
 
-        <section class="dashboardSec">
+        <section class="dashboardSec" id="pageContent" tabindex="-1">
 
             <div class="dashboardHead">
                 <div class="pageHead">
-                    <h3>Settings</h3>
+                    <h1>Settings</h1>
                     <p>Account and system settings</p>
                 </div>
             </div>
 
             <div class="settingsGrid">
                 <div class="profileCard">
-                    <h3>Profile</h3>
+                    <h2>Profile</h2>
                     <div class="profileRow"><span>Name</span><strong id="pName">-</strong></div>
                     <div class="profileRow"><span>Username</span><strong id="pUsername">-</strong></div>
                     <div class="profileRow"><span>Email</span><strong id="pEmail">-</strong></div>
@@ -59,14 +61,14 @@
                 </div>
 
                 <div class="profileCard">
-                    <h3>Security</h3>
+                    <h2>Security</h2>
                     <div class="profileRow"><span>Password</span><strong>********</strong></div>
                     <div class="profileRow"><span>Last login</span><strong id="pLastLogin">-</strong></div>
                     <button class="btnOutline" type="button" id="changePwBtn">Change Password</button>
                 </div>
 
                 <div class="profileCard">
-                    <h3>Appearance</h3>
+                    <h2>Appearance</h2>
                     <div class="profileRow"><span>Theme Color</span><div id="themeSlot"></div></div>
                 </div>
             </div>
@@ -85,12 +87,12 @@
                     <table class="dataTable">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Username</th>
-                                <th>Role</th>
-                                <th>Contact</th>
-                                <th>Status</th>
-                                <th>Action</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Username</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Contact</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
                             </tr>
                         </thead>
                         <tbody id="userRows"></tbody>
@@ -99,7 +101,7 @@
             </div>
 
             <!-- Edit Profile Modal -->
-            <div class="modal" id="profileModal">
+            <div class="modal" id="profileModal" role="dialog" aria-modal="true" aria-label="Edit Profile">
                 <div class="modalBox">
                     <div class="modalHeader">
                         <h2>Edit Profile</h2>
@@ -121,7 +123,7 @@
             </div>
 
             <!-- Change Password Modal -->
-            <div class="modal" id="passwordModal">
+            <div class="modal" id="passwordModal" role="dialog" aria-modal="true" aria-label="Change Password">
                 <div class="modalBox">
                     <div class="modalHeader">
                         <h2>Change Password</h2>
@@ -148,7 +150,7 @@
             
 
                         <!-- Add / Edit User Modal -->
-            <div class="modal" id="userModal">
+            <div class="modal" id="userModal" role="dialog" aria-modal="true" aria-labelledby="userModalTitle">
                 <div class="modalBox">
                     <div class="modalHeader">
                         <h2 id="userModalTitle">Add User</h2>
@@ -199,7 +201,7 @@
             </div>
 
             <!-- Reset Password Modal -->
-            <div class="modal" id="resetModal">
+            <div class="modal" id="resetModal" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
                 <div class="modalBox">
                     <div class="modalHeader">
                         <h2 id="resetTitle">Reset Password</h2>

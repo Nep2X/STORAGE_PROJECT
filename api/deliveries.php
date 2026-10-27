@@ -119,7 +119,11 @@ try {
                                     }
                                 }
                 
-                                $busy = driver_conflict($pdo, $driver, $status);
+                if ($status === 'Delivered') {
+                    fail(400, 'A new delivery cannot start as Delivered. Use Pending or Out for Delivery.');
+                }
+
+                $busy = driver_conflict($pdo, $driver, $status);
                 if ($busy) {
                     fail(409, "Driver $driver already has an active delivery ({$busy['del_number']}). A driver can only handle one delivery at a time.");
                 }
@@ -160,7 +164,7 @@ try {
                     $id = (int)($_GET['id'] ?? 0);
                     if (!$id) fail(400, 'Missing id');
         
-                    $stmt = $pdo->prepare("SELECT driver_name, status FROM deliveries WHERE id = ?");
+                    $stmt = $pdo->prepare("SELECT driver_name, status, proof_image FROM deliveries WHERE id = ?");
                     $stmt->execute([$id]);
                     $old = $stmt->fetch();
                     if (!$old) fail(404, 'Delivery not found.');
@@ -183,6 +187,11 @@ try {
                         }
                         $status = in_array($input['status'] ?? '', $STATUSES) ? $input['status'] : 'Pending';
                         $driver = trim($input['driverAssign'] ?? '') ?: null;
+
+                        // Bawal i-mark na Delivered kung walang proof photo (rider upload)
+                        if ($status === 'Delivered' && empty($old['proof_image'])) {
+                            fail(409, 'Cannot mark as Delivered without a proof photo. The rider must upload it from the Rider page.');
+                        }
         
                         // Isang active delivery lang bawat driver
                         $busy = driver_conflict($pdo, $driver, $status, $id);
@@ -207,6 +216,10 @@ try {
                         // Status lang
                         $status = $input['status'];
                         $driver = $old['driver_name'];
+
+                        if ($status === 'Delivered' && empty($old['proof_image'])) {
+                            fail(409, 'Cannot mark as Delivered without a proof photo. The rider must upload it from the Rider page.');
+                        }
         
                         $busy = driver_conflict($pdo, $driver, $status, $id);
                         if ($busy) {
@@ -214,7 +227,7 @@ try {
                         }
         
                         $pdo->prepare("UPDATE deliveries SET status=? WHERE id=?")->execute([$status, $id]);
-                                        } else {
+                    } else {
                         fail(400, 'Nothing to update');
                     }
 
@@ -222,6 +235,14 @@ try {
                     $pdo->prepare(
                         "UPDATE deliveries SET delivered_at = IF(? = 'Delivered', COALESCE(delivered_at, ?), NULL) WHERE id = ?"
                     )->execute([$status, date('Y-m-d H:i:s'), $id]);
+
+                    // Binuksan ulit ang batch: gawing Pending muli ang mga stop
+                    if ($status !== 'Delivered') {
+                        $pdo->prepare(
+                            "UPDATE delivery_stops SET status = 'Pending', delivered_at = NULL, proof_image = NULL, rider_notes = NULL
+                             WHERE delivery_id = ? AND status = 'Delivered'"
+                        )->execute([$id]);
+                    }
         
                     // Itala sa history kung nagbago ang status
                     if ($status !== $old['status']) {

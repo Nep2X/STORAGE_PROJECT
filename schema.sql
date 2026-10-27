@@ -37,7 +37,27 @@ CREATE TABLE IF NOT EXISTS deliveries (
         NOT NULL DEFAULT 'Pending',
     proof_image VARCHAR(255) NULL,
     delivered_at DATETIME NULL,
-    rider_notes TEXT NULL, dest_lat DECIMAL(10,7) NULL, dest_lng DECIMAL(10,7) NULL, geo_tried TINYINT(1) NOT NULL DEFAULT 0
+    rider_notes TEXT NULL, dest_lat DECIMAL(10,7) NULL, dest_lng DECIMAL(10,7) NULL, geo_tried TINYINT(1) NOT NULL DEFAULT 0,
+    INDEX idx_driver_status (driver_name, status),
+    INDEX idx_del_date (del_date)
+);
+
+CREATE TABLE IF NOT EXISTS delivery_stops (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    delivery_id INT NOT NULL,
+    stop_order INT NOT NULL DEFAULT 1,
+    customer_name VARCHAR(100) NOT NULL,
+    address VARCHAR(255) NULL,
+    contact VARCHAR(20) NULL,
+    item_desc VARCHAR(255) NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    dest_lat DECIMAL(10,7) NULL,
+    dest_lng DECIMAL(10,7) NULL,
+    status ENUM('Pending','Delivered','Cancelled') NOT NULL DEFAULT 'Pending',
+    proof_image VARCHAR(255) NULL,
+    delivered_at DATETIME NULL,
+    rider_notes TEXT NULL,
+    INDEX idx_delivery (delivery_id, stop_order)
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -63,6 +83,7 @@ CREATE TABLE IF NOT EXISTS rider_locations (
     longitude DECIMAL(10,7) NOT NULL,
     accuracy FLOAT NULL,
     reported_at DATETIME NOT NULL,
+    delivery_id INT NULL,
     INDEX idx_driver_time (driver_id, reported_at)
 );
 

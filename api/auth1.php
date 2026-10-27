@@ -76,6 +76,28 @@ function require_login(array $roles = []) {
 
     $user = current_user();
 
+    // Re-check sa DB: baka na-delete, na-deactivate, o nabago ang role
+    // habang naka-login pa ang lumang session. Dito natin sinisiguro na
+    // ang session ay tugma pa rin sa totoong record.
+    $pdo = $GLOBALS['pdo'] ?? null;
+    if ($user && $pdo instanceof PDO) {
+        $stmt = $pdo->prepare(
+            "SELECT id, username, full_name, role, driver_id, is_active FROM users WHERE id = ? LIMIT 1"
+        );
+        $stmt->execute([(int)$user['id']]);
+        $fresh = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$fresh || (int)$fresh['is_active'] !== 1) {
+            $_SESSION = [];
+            if (session_status() === PHP_SESSION_ACTIVE) session_destroy();
+            auth_fail(401, 'Please log in again.');
+        }
+
+        // Gamitin ang fresh values (role, full_name, driver_id)
+        $user = array_merge($user, $fresh);
+        $_SESSION['user'] = $user;
+    }
+
     // Binabasa lang natin ang session, kaya isara agad para hindi
     // magbanggaan ang sabay-sabay na requests. Ang auth.php (login/logout)
     // ay nagde-define ng AUTH_WRITE para makapagsulat pa.

@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/auth1.php';
-require_login(ROLES_STAFF);
+// Kailangan din ito ng Rider/Driver para sa address suggestions sa rider page.
+require_login(array_merge(ROLES_STAFF, ROLES_RIDER));
 header('Content-Type: application/json');
 
 function geo_fail(int $code, string $msg): void {
