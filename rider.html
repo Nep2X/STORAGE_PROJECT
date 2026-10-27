@@ -19,8 +19,8 @@
         #proofPreview { display: none; width: 100%; max-height: 320px; object-fit: contain;
                         margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; }
         #msg, #locMsg { display: none; margin-top: 14px; padding: 10px 12px; border-radius: 8px; }
-        #msg.ok, #locMsg.ok  { display: block; background: #e4f5ec; color: #1b6b43; }
-        #msg.err, #locMsg.err { display: block; background: #fbe9e7; color: var(--red); }
+        #msg.ok, #locMsg.ok  { display: block; background: var(--secondary); color: var(--green); border: 1px solid var(--border); }
+        #msg.err, #locMsg.err { display: block; background: var(--destructive-soft); color: var(--destructive); }
         #updateNowBtn, #placeBtn, #locSubmitBtn { width: 100%; margin-top: 14px; padding: 12px; }
         .riderWrap input[type="text"],
         .riderWrap input[type="number"] { width: 100%; box-sizing: border-box; padding: 10px; font: inherit; }
@@ -50,6 +50,8 @@
 </head>
 <body>
 
+    <a class="skipLink" href="#pageContent">Skip to content</a>
+
     <header class="headerSec">
         <h2>DELIVERY PROJECT</h2>
         <div class="headerActions">
@@ -59,10 +61,10 @@
         </div>
     </header>
 
-    <div class="riderWrap">
+    <main class="riderWrap" id="pageContent" tabindex="-1">
 
         <div class="panel">
-            <h2>Report a Delivery</h2>
+            <h1>Report a Delivery</h1>
             <p>Select your name and the delivery you completed, then upload the proof of delivery photo.</p>
 
             <label for="riderSelect">Your Name</label>
@@ -145,7 +147,7 @@
             <div id="msg" role="status"></div>
         </form>
 
-    </div>
+    </main>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="rider.js"></script>

@@ -9,6 +9,8 @@
 </head>
 <body>
 
+    <a class="skipLink" href="#pageContent">Skip to content</a>
+
     <header class="headerSec">
         <h2>DELIVERY PROJECT</h2>
 
@@ -24,7 +26,7 @@
         <aside class="optionSec">
             <div class="sidebarTitle">MENU</div>
 
-            <button id="dashboardButton" class="active">Dashboard</button>
+            <button id="dashboardButton" class="active" aria-current="page">Dashboard</button>
             <button id="deliveriesButton">Deliveries</button>
             <button id="driversButton">Drivers</button>
             <button id="mapButton">Live Map</button>
@@ -39,17 +41,17 @@
             </div>
         </aside>
 
-        <section class="dashboardSec dashPage">
+        <section class="dashboardSec dashPage" id="pageContent" tabindex="-1">
 
             <div class="dashTopbar">
                 <div class="dashWelcome">
                     <div class="dashMeta">
-                        <span id="dashDate">—</span>
+                        <span id="dashDate">â€”</span>
                         <span class="dashMetaDot"></span>
-                        <span id="dashUpdated">Loading…</span>
+                        <span id="dashUpdated">Loadingâ€¦</span>
                     </div>
-                    <h3 id="dashGreeting">Welcome back</h3>
-                    <p>Here’s what’s happening with your deliveries today.</p>
+                    <h1 id="dashGreeting">Welcome back</h1>
+                    <p>Hereâ€™s whatâ€™s happening with your deliveries today.</p>
                 </div>
 
                 <div class="dashActions">
@@ -141,7 +143,7 @@
                     </header>
 
                     <div class="breakdownList" id="statusList"></div>
-                    <div class="breakdownFoot" id="driverFoot">—</div>
+                    <div class="breakdownFoot" id="driverFoot">â€”</div>
                 </section>
 
             </div>
@@ -159,11 +161,11 @@
                     <table class="recentDeliveryTable">
                         <thead>
                             <tr>
-                                <th>Delivery</th>
-                                <th>Customer</th>
-                                <th>Driver</th>
-                                <th>Date</th>
-                                <th>Status</th>
+                                <th scope="col">Delivery</th>
+                                <th scope="col">Customer</th>
+                                <th scope="col">Driver</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Status</th>
                             </tr>
                         </thead>
                         <tbody id="recentRows"></tbody>

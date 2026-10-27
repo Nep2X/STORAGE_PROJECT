@@ -30,6 +30,8 @@ form.addEventListener("submit", async (e) => {
     errBox.style.display = "none";
     loginBtn.disabled = true;
     loginBtn.textContent = "Logging in...";
+    document.getElementById("username").removeAttribute("aria-invalid");
+    pwInput.removeAttribute("aria-invalid");
 
     try {
         const res = await fetch("api/auth.php?action=login", {
@@ -46,6 +48,8 @@ form.addEventListener("submit", async (e) => {
     } catch (err) {
         errBox.textContent = err.message;
         errBox.style.display = "block";
+        document.getElementById("username").setAttribute("aria-invalid", "true");
+        pwInput.setAttribute("aria-invalid", "true");
         pwInput.value = "";
         pwInput.focus();
         loginBtn.disabled = false;

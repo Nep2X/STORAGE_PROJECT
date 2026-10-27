@@ -2,8 +2,6 @@
 //   DELIVERIES PAGE SCRIPT
 // =========================
 
-console.log("deliveries.js v2 loaded");
-
 const DEL_API = "api/deliveries.php";
 const CUS_API = "api/customers.php";
 const DRV_API = "api/drivers.php";
@@ -113,7 +111,7 @@ async function loadAll() {
     const [d] = await Promise.all([fetchList(DEL_API), refreshLists()]);
 
     if (!d) {
-        delBody.innerHTML = `<tr><td colspan="6">Failed to load deliveries. Check api/deliveries.php</td></tr>`;
+        delBody.innerHTML = `<tr><td colspan="6">Could not load deliveries. Please refresh the page.</td></tr>`;
     } else {
         deliveries = d;
     }

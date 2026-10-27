@@ -11,6 +11,8 @@
 </head>
 <body>
 
+    <a class="skipLink" href="#pageContent">Skip to content</a>
+
     <header class="headerSec">
         <h2>DELIVERY PROJECT</h2>
 
@@ -30,7 +32,7 @@
             <button id="deliveriesButton" class="">Deliveries</button>
             <button id="driversButton" class="">Drivers</button>
             <button id="mapButton">Live Map</button>
-            <button id="customersButton" class="active">Customers</button>
+            <button id="customersButton" class="active" aria-current="page">Customers</button>
             <button id="employeeButton" class="">Employees</button>
             <button id="reportsButton" class="">Reports</button>
             <button id="riderButton">Submit Delivery</button>
@@ -41,11 +43,11 @@
             </div>
         </aside>
 
-        <section class="dashboardSec">
+        <section class="dashboardSec" id="pageContent" tabindex="-1">
 
             <div class="dashboardHead">
                 <div class="pageHead">
-                    <h3>Customers</h3>
+                    <h1>Customers</h1>
                     <p>Manage company customers and destinations</p>
                 </div>
             </div>
@@ -53,7 +55,7 @@
             <div class="panel">
                 <div class="toolbar">
                     <button class="btnPrimary" type="button" id="openAddCus">+ Add Customer</button>
-                    <input type="text" id="customerSearch" placeholder="Search customer...">
+                    <input type="text" id="customerSearch" placeholder="Search customer..." aria-label="Search customers">
                 </div>
             </div>
 
@@ -65,11 +67,11 @@
                     <table class="dataTable">
                         <thead>
                             <tr>
-                                <th>Customer</th>
-                                <th>Contact</th>
-                                <th>Address</th>
-                                <th>Deliveries</th>
-                                <th>Action</th>
+                                <th scope="col">Customer</th>
+                                <th scope="col">Contact</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Deliveries</th>
+                                <th scope="col">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -80,7 +82,7 @@
             </div>
 
             <!-- Add / Edit Customer Modal -->
-            <div class="modal" id="customerModal">
+            <div class="modal" id="customerModal" role="dialog" aria-modal="true" aria-labelledby="cusModalTitle">
                 <div class="modalBox">
                     <div class="modalHeader">
                         <h2 id="cusModalTitle">Add Customer</h2>

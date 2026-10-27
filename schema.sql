@@ -37,7 +37,9 @@ CREATE TABLE IF NOT EXISTS deliveries (
         NOT NULL DEFAULT 'Pending',
     proof_image VARCHAR(255) NULL,
     delivered_at DATETIME NULL,
-    rider_notes TEXT NULL, dest_lat DECIMAL(10,7) NULL, dest_lng DECIMAL(10,7) NULL, geo_tried TINYINT(1) NOT NULL DEFAULT 0
+    rider_notes TEXT NULL, dest_lat DECIMAL(10,7) NULL, dest_lng DECIMAL(10,7) NULL, geo_tried TINYINT(1) NOT NULL DEFAULT 0,
+    INDEX idx_driver_status (driver_name, status),
+    INDEX idx_del_date (del_date)
 );
 
 CREATE TABLE IF NOT EXISTS delivery_stops (

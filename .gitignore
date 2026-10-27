@@ -4,6 +4,8 @@ uploads/
 # Mga file ng editor / system
 .vscode/
 .idea/
+.opencode/
+.qodo/
 .DS_Store
 Thumbs.db
 
@@ -12,5 +14,4 @@ config.php
 
 # Mga zip / backup
 *.zip
-config.php
-*.zip
+*.bak

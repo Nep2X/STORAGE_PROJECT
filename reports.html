@@ -9,6 +9,8 @@
 </head>
 <body>
 
+    <a class="skipLink" href="#pageContent">Skip to content</a>
+
     <header class="headerSec">
         <h2>DELIVERY PROJECT</h2>
 
@@ -30,7 +32,7 @@
             <button id="mapButton">Live Map</button>
             <button id="customersButton" class="">Customers</button>
             <button id="employeeButton" class="">Employees</button>
-            <button id="reportsButton" class="active">Reports</button>
+            <button id="reportsButton" class="active" aria-current="page">Reports</button>
             <button id="riderButton">Submit Delivery</button>
             <button id="settingsButton" class="">Settings</button>
 
@@ -39,11 +41,11 @@
             </div>
         </aside>
 
-        <section class="dashboardSec">
+        <section class="dashboardSec" id="pageContent" tabindex="-1">
 
             <div class="dashboardHead">
                 <div class="pageHead">
-                    <h3>Reports</h3>
+                    <h1>Reports</h1>
                     <p>Delivery summaries by driver, customer, and month</p>
                 </div>
             </div>
@@ -108,7 +110,7 @@
                 <div class="tableWrapper">
                     <table class="dataTable">
                         <thead>
-                        <tr><th>Delivery ID</th><th>Customer</th><th>Delivery Date</th><th>Delivered At</th><th>Rider Name</th><th>Proof Picture</th><th>Notes</th></tr>                        </thead>
+                        <tr><th scope="col">Delivery ID</th><th scope="col">Customer</th><th scope="col">Delivery Date</th><th scope="col">Delivered At</th><th scope="col">Rider Name</th><th scope="col">Proof Picture</th><th scope="col">Notes</th></tr>                        </thead>
                         <tbody id="riderRows"></tbody>
                     </table>
                 </div>
@@ -120,7 +122,7 @@
                 <div class="tableWrapper">
                     <table class="dataTable">
                         <thead>
-                            <tr><th>Driver</th><th>Total</th><th>Delivered</th><th>Cancelled</th></tr>
+                            <tr><th scope="col">Driver</th><th scope="col">Total</th><th scope="col">Delivered</th><th scope="col">Cancelled</th></tr>
                         </thead>
                         <tbody id="driverRows"></tbody>
                     </table>
@@ -133,7 +135,7 @@
                 <div class="tableWrapper">
                     <table class="dataTable">
                         <thead>
-                            <tr><th>Customer</th><th>Total</th><th>Delivered</th><th>Cancelled</th></tr>
+                            <tr><th scope="col">Customer</th><th scope="col">Total</th><th scope="col">Delivered</th><th scope="col">Cancelled</th></tr>
                         </thead>
                         <tbody id="customerRows"></tbody>
                     </table>
@@ -146,7 +148,7 @@
                 <div class="tableWrapper">
                     <table class="dataTable">
                         <thead>
-                            <tr><th>Month</th><th>Total</th><th>Delivered</th><th>Cancelled</th></tr>
+                            <tr><th scope="col">Month</th><th scope="col">Total</th><th scope="col">Delivered</th><th scope="col">Cancelled</th></tr>
                         </thead>
                         <tbody id="monthRows"></tbody>
                     </table>

@@ -50,8 +50,8 @@
     --accent-foreground: #202413;
     --packed: #E2CBFF;                   /* lilac (Pending / Processing) */
     --packed-foreground: #45335B;
-    --ring: #87A148;                     /* focus ring */
-    --destructive: #D33B39;
+    --ring: #5E7A22;                     /* focus ring (4.14 on bg, 4.90 on card) */
+    --destructive: #B42318;   /* 5.61 on #FBE9E7, 6.57 on white */
     --destructive-soft: #FBE9E7;
     --green: #2F8F4E;
     --orange: #D98A00;
@@ -280,7 +280,8 @@ a:focus-visible {
 }
 
 .dashboardHead h3,
-.pageHead h3 {
+.pageHead h3,
+.pageHead h1 {
     margin: 0 0 6px;
     font-size: 28px;
     font-weight: 500;
@@ -305,6 +306,7 @@ a:focus-visible {
 }
 
 .panel h2,
+.panel h1,
 .sectionHeader h2,
 .recentDeliveryHeader h2 {
     margin: 0 0 5px;
@@ -932,7 +934,8 @@ a:focus-visible {
     padding: 24px;
 }
 
-.profileCard h3 {
+.profileCard h3,
+.profileCard h2 {
     margin: 0 0 16px;
     font-size: 18px;
     color: var(--foreground);
@@ -1347,6 +1350,35 @@ a:focus-visible {
         transition: none !important;
     }
 }
+
+/* =====================================================================
+   SKIP LINK  (para sa keyboard/screen reader users)
+==================================================================== */
+.skipLink {
+    position: fixed;
+    left: 8px;
+    top: -80px;
+    z-index: 10002;
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--foreground);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: var(--shadow-panel);
+    transition: top 0.15s ease;
+}
+
+.skipLink:focus {
+    top: 8px;
+}
+
+/* Ang skip target ay container, hindi interactive — walang malaking outline */
+#pageContent:focus {
+    outline: none;
+}
 /* HEADER: maitim */
 .headerSec {
     background: var(--primary);
@@ -1417,7 +1449,7 @@ a:focus-visible {
     --accent-foreground: #3A2500;
     --packed: #FFD9C2;
     --packed-foreground: #6B2E0E;
-    --ring: #C98512;
+    --ring: #96600A;                     /* 4.47 on bg, 5.20 on card */
 }
 
 /* MIDNIGHT (dark) */
@@ -1638,7 +1670,8 @@ a:focus-visible {
     opacity: 0.6;
 }
 
-.dashWelcome h3 {
+.dashWelcome h3,
+.dashWelcome h1 {
     margin: 0 0 6px;
     color: var(--foreground);
     font-size: 30px;
@@ -2049,7 +2082,8 @@ a:focus-visible {
         align-items: flex-start;
     }
 
-    .dashWelcome h3 {
+    .dashWelcome h3,
+    .dashWelcome h1 {
         font-size: 24px;
     }
 

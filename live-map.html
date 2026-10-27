@@ -10,6 +10,8 @@
 </head>
 <body>
 
+    <a class="skipLink" href="#pageContent">Skip to content</a>
+
     <header class="headerSec">
         <h2>DELIVERY PROJECT</h2>
         <div class="headerActions">
@@ -27,7 +29,7 @@
             <button id="dashboardButton">Dashboard</button>
             <button id="deliveriesButton">Deliveries</button>
             <button id="driversButton">Drivers</button>
-            <button id="mapButton" class="active">Live Map</button>
+            <button id="mapButton" class="active" aria-current="page">Live Map</button>
             <button id="customersButton">Customers</button>
             <button id="employeeButton">Employees</button>
             <button id="reportsButton">Reports</button>
@@ -39,10 +41,10 @@
             </div>
         </aside>
 
-        <section class="dashboardSec">
+        <section class="dashboardSec" id="pageContent" tabindex="-1">
             <div class="dashboardHead">
                 <div>
-                    <h3>Live Map</h3>
+                    <h1>Live Map</h1>
                     <p>Pumili ng rider para makita ang huling location niya at ang ruta mula sa company.</p>
                 </div>
                 <span class="liveStatus" id="updated" role="status">Loading…</span>
