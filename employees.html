@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-             <link rel="stylesheet" href="style.css"><script src="theme.js"></script>
+             <link rel="stylesheet" href="style.css"><script src="theme.js?v=2"></script>
       
     <title>Employees | Delivery Project</title>
 </head>
@@ -90,6 +90,17 @@
             </div>
         </div>
     </section>
+
+    <!-- View Employee Modal -->
+    <div class="modal" id="empViewModal" role="dialog" aria-modal="true" aria-labelledby="empViewTitle">
+        <div class="modalBox viewBox">
+            <div class="modalHeader">
+                <h2 id="empViewTitle">Employee</h2>
+                <button class="modalClose" id="closeEmpView" type="button" aria-label="Close">&times;</button>
+            </div>
+            <div id="empViewBody"></div>
+        </div>
+    </div>
 </main>
 
 <script src="app.js"></script>

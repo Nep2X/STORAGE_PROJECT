@@ -142,6 +142,47 @@ drvBody.addEventListener("change", async (e) => {
     loadDrivers();
 });
 
+// ---------- VIEW MODAL (kagaya sa Deliveries) ----------
+const drvViewModal = document.getElementById("drvViewModal");
+const drvViewBody = document.getElementById("drvViewBody");
+let drvViewingId = null;
+let drvViewLastFocused = null;
+
+const drvViewRow = (label, value) =>
+    `<div class="viewRow"><dt>${label}</dt><dd>${value}</dd></div>`;
+
+function closeDrvView() {
+    if (drvViewModal.style.display !== "flex") return;
+    drvViewModal.style.display = "none";
+    drvViewingId = null;
+    if (drvViewLastFocused && typeof drvViewLastFocused.focus === "function") drvViewLastFocused.focus();
+    drvViewLastFocused = null;
+}
+
+function openDrvView(drv) {
+    // Klik ulit sa View ng parehong driver = isara
+    if (drvViewModal.style.display === "flex" && drvViewingId === drv.id) {
+        closeDrvView();
+        return;
+    }
+
+    drvViewingId = drv.id;
+    drvViewLastFocused = document.activeElement;
+    document.getElementById("drvViewTitle").textContent = driverCode(drv.id);
+    drvViewBody.innerHTML = `<dl class="viewList">
+        ${drvViewRow("Name", esc(drv.name))}
+        ${drvViewRow("Contact", esc(drv.contact || "-"))}
+        ${drvViewRow("Deliveries", esc(drv.deliveries ?? 0))}
+        ${drvViewRow("Status", esc(drv.status || "-"))}
+    </dl>`;
+    drvViewModal.style.display = "flex";
+    document.getElementById("closeDrvView").focus();
+}
+
+document.getElementById("closeDrvView").addEventListener("click", closeDrvView);
+drvViewModal.addEventListener("click", (e) => { if (e.target === drvViewModal) closeDrvView(); });   // click sa labas
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrvView(); });
+
 // ---------- VIEW / EDIT / DELETE buttons ----------
 drvBody.addEventListener("click", async (e) => {
     const btn = e.target.closest(".iconBtn");
@@ -154,11 +195,7 @@ drvBody.addEventListener("click", async (e) => {
     const action = btn.dataset.action;
 
     if (action === "view") {
-          alert(
-  
-            `${driverCode(drv.id)}\n${drv.name}\nContact: ${drv.contact ?? "-"}\n` +
-            `Deliveries: ${drv.deliveries}\nStatus: ${drv.status}`
-        );
+        openDrvView(drv);
     } else if (action === "edit") {
         openDrvModal(drv);
     } else if (action === "delete") {

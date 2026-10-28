@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="style.css">
-    <script src="theme.js"></script>
+    <script src="theme.js?v=2"></script>
       
     <title>Customers | Delivery Project</title>
 </head>
@@ -128,6 +128,17 @@
                     </form>
                 </div>
 </div>            
+            <!-- View Customer Modal -->
+            <div class="modal" id="cusViewModal" role="dialog" aria-modal="true" aria-labelledby="cusViewTitle">
+                <div class="modalBox viewBox">
+                    <div class="modalHeader">
+                        <h2 id="cusViewTitle">Customer</h2>
+                        <button class="modalClose" id="closeCusView" type="button" aria-label="Close">&times;</button>
+                    </div>
+                    <div id="cusViewBody"></div>
+                </div>
+            </div>
+
         </section>
 
     </main>

@@ -136,17 +136,18 @@ function customerCell(d) {
     const list = names.length ? names : [d.customer_name];
     if (list.length === 1) return `<div class="custLine"><span class="custName">${esc(list[0])}</span></div>`;
 
-    // Marami: ① unang customer + badge "+N more"; sa ilalim ang iba (② ③ ...)
+    // Marami: ① unang customer + badge "+N more"; kapag bukas, "Show less" sa ilalim
     const extra = list.slice(1);
     const open = expandedRows.has(String(d.id));
     return `
         <div class="custLine">
             <span class="custName">${esc(list[0])}</span>
-            <button type="button" class="moreBadge" data-more aria-expanded="${open}" aria-controls="more-${d.id}">${open ? "Show less \u25B4" : "+" + extra.length + " more \u25BE"}</button>
+            ${open ? "" : `<button type="button" class="moreBadge" data-more aria-expanded="false" aria-controls="more-${d.id}">+${extra.length} more \u25BE</button>`}
         </div>
         <div class="moreList" id="more-${d.id}" ${open ? "" : "hidden"}>
-            ${extra.map((n, i) => `<div class="custLine"><span class="custName">${esc(n)}</span></div>`).join("")}
-        </div>`;
+            ${extra.map((n) => `<div class="custLine"><span class="custName">${esc(n)}</span></div>`).join("")}
+        </div>
+        ${open ? `<button type="button" class="moreBadge moreLess" data-more aria-expanded="true" aria-controls="more-${d.id}">Show less \u25B4</button>` : ""}`;
 }
 
 
@@ -157,12 +158,11 @@ delBody.addEventListener("click", (e) => {
     const badge = e.target.closest("[data-more]");
     if (!badge) return;
     const tr = badge.closest("tr");
-    const more = tr.querySelector(".moreList");
-    const open = more.hidden;               // kasalukuyang nakatago = bubuksan
-    more.hidden = !open;
-    if (open) expandedRows.add(tr.dataset.id); else expandedRows.delete(tr.dataset.id);
-    badge.setAttribute("aria-expanded", String(open));
-    badge.textContent = open ? "Show less \u25B4" : "+" + more.children.length + " more \u25BE";
+    const id = tr.dataset.id;
+    const d = deliveries.find((x) => String(x.id) === id);
+    if (!d) return;
+    if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id);
+    tr.children[1].innerHTML = customerCell(d);   // ika-2 column = Customer
 });
 
 function renderDeliveries() {    const q = fSearch.value.trim().toLowerCase();
@@ -400,9 +400,14 @@ const viewModal = document.getElementById("viewModal");
 const viewBody = document.getElementById("viewBody");
 let viewingId = null;
 
+let viewLastFocused = null;
+
 function closeViewModal() {
+    if (viewModal.style.display !== "flex") return;
     viewModal.style.display = "none";
     viewingId = null;
+    if (viewLastFocused && typeof viewLastFocused.focus === "function") viewLastFocused.focus();
+    viewLastFocused = null;
 }
 
 const viewRow = (label, valueHtml) =>
@@ -441,6 +446,7 @@ function renderView(del, stops) {
 
 async function openViewModal(del) {
     viewingId = del.id;
+    viewLastFocused = document.activeElement;
 
     // Agad na lumalabas ang laman gamit ang nasa row; kukunin pagkatapos ang lahat ng customer
     renderView(del, [{
@@ -450,6 +456,7 @@ async function openViewModal(del) {
     }]);
     viewModal.style.display = "flex";
     viewModal.querySelector(".modalBox").scrollTop = 0;
+    document.getElementById("closeViewModal").focus();
 
     try {
         const res = await fetch(`${DEL_API}?action=stops&id=${del.id}`);
@@ -467,8 +474,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && viewModa
 // Naka-pause habang bukas ang modal para hindi mawala ang ginagawa.
 setInterval(() => {
     if (document.hidden) return;
-            if (delModal.style.display === "flex" || statusModal.style.display === "flex" || historyModal?.style.display === "flex") return;
-    reloadDeliveries().catch(() => {});
+    if (delModal.style.display === "flex" || statusModal.style.display === "flex" || historyModal?.style.display === "flex" || viewModal.style.display === "flex") return;    reloadDeliveries().catch(() => {});
 }, 30000);
 // ---------- DAGDAG NA CUSTOMER (isang batch) ----------
 const MAX_STOPS = 5;

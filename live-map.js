@@ -25,12 +25,52 @@ const MAX_ROUTED_STOPS = 5;        // para hindi ma-overload ang libreng OSRM se
 const COMPANY = { name: "Company", address: "Campanilla, Quezon City, 1112 Metro Manila", lat: 14.624556610241402, lng: 121.03696233024351 };
 
 const map = L.map("map", { zoomControl: false }).setView([COMPANY.lat, COMPANY.lng], 12);
-L.tileLayer(mapTileUrl(), {
-    maxZoom: 19,
-    attribution: MAP_ATTRIBUTION,
+
+// ---------- BASEMAP (Street / Topo / Satellite) ----------
+let tileLayer = null;
+function applyMapStyle(style) {
+    if (tileLayer) map.removeLayer(tileLayer);
+    tileLayer = L.tileLayer(mapTileUrl(style), {
+        maxZoom: 19,
+        maxNativeZoom: mapMaxNativeZoom(style),
+        attribution: mapAttribution(style),
         subdomains: "abcd",
-}).addTo(map);
+    }).addTo(map);
+    tileLayer.bringToBack();
+    document.documentElement.setAttribute("data-map-style", style);
+    document.querySelectorAll(".mapStylePicker button").forEach((b) => {
+        b.setAttribute("aria-pressed", String(b.dataset.style === style));
+    });
+}
+
+const StyleControl = L.Control.extend({
+    options: { position: "topright" },
+    onAdd() {
+        const box = L.DomUtil.create("div", "mapStylePicker");
+        box.setAttribute("role", "group");
+        box.setAttribute("aria-label", "Map style");
+        Object.entries(MAP_STYLES).forEach(([key, s]) => {
+            const b = L.DomUtil.create("button", "", box);
+            b.type = "button";
+            b.dataset.style = key;
+            b.textContent = s.label;
+            b.setAttribute("aria-pressed", String(key === mapStyleName()));
+            L.DomEvent.on(b, "click", (e) => {
+                L.DomEvent.stop(e);
+                try { localStorage.setItem(MAP_STYLE_KEY, key); } catch (_) {}
+                applyMapStyle(key);
+            });
+        });
+        L.DomEvent.disableClickPropagation(box);
+        L.DomEvent.disableScrollPropagation(box);
+        return box;
+    },
+});
+
+applyMapStyle(mapStyleName());
 L.control.zoom({ position: "topright" }).addTo(map);
+new StyleControl().addTo(map);
+L.control.scale({ position: "bottomright", imperial: false, maxWidth: 120 }).addTo(map);
 
 const roadLayer = L.layerGroup().addTo(map);
 const selectionLayer = L.layerGroup().addTo(map);
@@ -225,25 +265,34 @@ async function getRoadRoute(from, to) {
     }
 }
 
-// Iguhit ang linya mula umpisa hanggang dulo (stroke-dashoffset)
-function hideLine({ line }) {
-    const el = line.getElement();
-    if (el) el.style.opacity = "0";
+// Iguhit ang linya at casing nang sabay (stroke-dashoffset).
+function lineEls({ line, casing }) {
+    return [line, casing].filter(Boolean).map((l) => l.getElement()).filter(Boolean);
 }
-function animateLine({ line, road }, duration) {
-    const el = line.getElement();
-    if (!el || !el.animate) return Promise.resolve();
-    el.style.opacity = "";
+function hideLine({ line, casing }) {
+    lineEls({ line, casing }).forEach((el) => { el.style.opacity = "0"; });
+}
+function animateLine({ line, casing, road }, duration) {
+    const els = lineEls({ line, casing });
+    if (!els.length || !els[0].animate) return Promise.resolve();
+    els.forEach((el) => { el.style.opacity = ""; });
     if (!road) {   // putol-putol na straight line: fade in na lang
-        return el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, easing: "ease-out" }).finished.catch(() => {});
+        return Promise.all(els.map((el) =>
+            el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, easing: "ease-out" }).finished
+        )).catch(() => {});
     }
-    el.setAttribute("pathLength", "1");
-    el.style.strokeDasharray = "1";
-    const anim = el.animate(
-        [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }],
-        { duration, easing: "ease-in-out", fill: "both" }
-    );
-    return anim.finished.then(() => { el.style.strokeDasharray = ""; anim.cancel(); }).catch(() => {});
+    const runs = els.map((el) => {
+        el.setAttribute("pathLength", "1");
+        el.style.strokeDasharray = "1";
+        return el.animate(
+            [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }],
+            { duration, easing: "ease-in-out", fill: "both" }
+        );
+    });
+    return Promise.all(runs.map((a) => a.finished)).then(() => {
+        els.forEach((el) => { el.style.strokeDasharray = ""; });
+        runs.forEach((a) => a.cancel());
+    }).catch(() => {});
 }
 
 // Kapag nagpalit ng theme, palitan agad ang kulay ng ruta at pin
@@ -297,11 +346,15 @@ async function showSelected(fit) {
 
         const mkLine = (r, kind, stopIndex = 0) => {
         const color = kind === "from" ? routeFromColor() : stopColor(stopIndex);
+        // Halo sa ilalim (casing), tapos ang makulay na linya sa ibabaw.
+        const casing = r.road
+            ? L.polyline(r.points, { weight: 9, opacity: 0.9, className: "route-casing", interactive: false }).addTo(roadLayer)
+            : null;
         const line = L.polyline(r.points, r.road
             ? { color, weight: 5, opacity: 0.9, className: "route-line" }
             : { color, weight: 4, dashArray: "6 8", className: "route-line" }).addTo(roadLayer);
-        routeLines.push({ line, kind, stopIndex, road: r.road });
-        return { line, km: r.km, road: r.road };
+        routeLines.push({ line, casing, kind, stopIndex, road: r.road });
+        return { line, casing, km: r.km, road: r.road };
     };
     const first = mkLine(route, "from");
     const rest = remaining.map((r, i) => mkLine(r, "to", i));
@@ -356,7 +409,13 @@ async function refreshLocations() {
                 L.latLng(Number(loc.latitude), Number(loc.longitude)).distanceTo(riderMarker.getLatLng()) >= MOVE_REDRAW_METERS);
             if (!loc) clearSelection();
             else if (moved) showSelected(false);
-            else renderInfo();
+            else {
+                // I-update ang fresh/stale na itsura kahit hindi gumalaw ang rider.
+                const isFresh = Number(loc.seconds_ago) <= STALE_SECONDS;
+                const shownFresh = riderMarker.options.icon.options.html.includes("location-marker fresh");
+                if (shownFresh !== isFresh) riderMarker.setIcon(icon(isFresh));
+                renderInfo();
+            }
         }
         updatedEl.textContent = "Updated " + new Date().toLocaleTimeString();
     } catch (err) {

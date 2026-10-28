@@ -117,17 +117,56 @@ empBody.addEventListener("click", event => {
     const employee = employees.find(item => String(item.id) === id);
     if (!employee) return;
 
-      alert(
-  
-        `Employee ID: EMP-${String(employee.id).padStart(4, "0")}\n` +
-        `Full Name: ${employee.full_name}\n` +
-        `Username: ${employee.username}\n` +
-        `Email: ${employee.email || "-"}\n` +
-        `Contact Number: ${employee.contact_number || "-"}\n` +
-        `Role: ${employee.role}\n` +
-        `Status: ${Number(employee.is_active) ? "Active" : "Disabled"}\n` +
-        `Last Login: ${employee.last_login || "Never"}`
-    );
+    if (button.dataset.action === "view") openEmpView(employee);
 });
+
+// ---------- VIEW MODAL (kagaya sa Deliveries) ----------
+const empViewModal = document.getElementById("empViewModal");
+const empViewBody = document.getElementById("empViewBody");
+let empViewingId = null;
+let empViewLastFocused = null;
+
+const empViewRow = (label, value) =>
+    `<div class="viewRow"><dt>${label}</dt><dd>${value}</dd></div>`;
+
+const empCode = (id) => "EMP-" + String(id).padStart(4, "0");
+
+const empStatusBadge = (active) =>
+    `<span class="statusBadge ${Number(active) ? "activeBadge" : "disabledBadge"}">${Number(active) ? "Active" : "Disabled"}</span>`;
+
+function closeEmpView() {
+    if (empViewModal.style.display !== "flex") return;
+    empViewModal.style.display = "none";
+    empViewingId = null;
+    if (empViewLastFocused && typeof empViewLastFocused.focus === "function") empViewLastFocused.focus();
+    empViewLastFocused = null;
+}
+
+function openEmpView(employee) {
+    // Klik ulit sa View ng parehong employee = isara
+    if (empViewModal.style.display === "flex" && empViewingId === employee.id) {
+        closeEmpView();
+        return;
+    }
+
+    empViewingId = employee.id;
+    empViewLastFocused = document.activeElement;
+    document.getElementById("empViewTitle").textContent = empCode(employee.id);
+    empViewBody.innerHTML = `<dl class="viewList">
+        ${empViewRow("Full Name", esc(employee.full_name))}
+        ${empViewRow("Username", esc(employee.username))}
+        ${empViewRow("Email", esc(employee.email || "-"))}
+        ${empViewRow("Contact", esc(employee.contact_number || "-"))}
+        ${empViewRow("Role", esc(employee.role))}
+        ${empViewRow("Status", empStatusBadge(employee.is_active))}
+        ${empViewRow("Last Login", esc(employee.last_login || "Never"))}
+    </dl>`;
+    empViewModal.style.display = "flex";
+    document.getElementById("closeEmpView").focus();
+}
+
+document.getElementById("closeEmpView").addEventListener("click", closeEmpView);
+empViewModal.addEventListener("click", (e) => { if (e.target === empViewModal) closeEmpView(); });   // click sa labas
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeEmpView(); });
 
 loadEmployees();

@@ -15,3 +15,5 @@ config.php
 # Mga zip / backup
 *.zip
 *.bak
+
+chat_*.md
