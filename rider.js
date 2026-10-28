@@ -255,6 +255,7 @@ const backBtn = document.getElementById("backBtn");
 try {
     if (document.referrer && new URL(document.referrer).origin === window.location.origin) {
         backBtn.style.display = "inline-block";
+        document.body.classList.add("hasBack");
         backBtn.addEventListener("click", () => {
             if (history.length > 1) history.back();
             else window.location.href = "dashboard.html";
@@ -429,9 +430,10 @@ function ensurePlacePreview() {
         touchZoom: false,
     }).setView([12.8797, 121.7740], 6);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    L.tileLayer(mapTileUrl(), {
         maxZoom: 19,
-        attribution: "&copy; OpenStreetMap contributors",
+        attribution: MAP_ATTRIBUTION,
+        subdomains: "abcd",
     }).addTo(placePreviewMap);
 
     return true;

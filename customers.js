@@ -118,9 +118,10 @@ function ensureMap() {
     if (cusMap) return true;
     if (typeof L === "undefined") return false;
     cusMap = L.map("cusMap", { scrollWheelZoom: false }).setView(MAP_CENTER, 6);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    L.tileLayer(mapTileUrl(), {
         maxZoom: 19,
-        attribution: "&copy; OpenStreetMap contributors",
+        attribution: MAP_ATTRIBUTION,
+        subdomains: "abcd",
     }).addTo(cusMap);
     return true;
 }

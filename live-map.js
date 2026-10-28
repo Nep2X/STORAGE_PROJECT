@@ -25,9 +25,10 @@ const MAX_ROUTED_STOPS = 5;        // para hindi ma-overload ang libreng OSRM se
 const COMPANY = { name: "Company", address: "Campanilla, Quezon City, 1112 Metro Manila", lat: 14.624556610241402, lng: 121.03696233024351 };
 
 const map = L.map("map", { zoomControl: false }).setView([COMPANY.lat, COMPANY.lng], 12);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+L.tileLayer(mapTileUrl(), {
     maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors",
+    attribution: MAP_ATTRIBUTION,
+        subdomains: "abcd",
 }).addTo(map);
 L.control.zoom({ position: "topright" }).addTo(map);
 
@@ -277,9 +278,9 @@ async function showSelected(fit) {
     stops.forEach((s, i) => {
         const dest = L.latLng(s.lat, s.lng);
         bounds.push(dest);
-        const destMarker = L.marker(dest, { icon: destPin(stopColor(i), stops.length > 1 ? i + 1 : null) }).addTo(selectionLayer)
+        const destMarker = L.marker(dest, { icon: destPin(stopColor(i), i + 1) }).addTo(selectionLayer)
         .bindPopup(`<b>${escH(s.customer_name)}</b><br>${escH(s.address)}<br>Delivery ${escH(s.del_number)}`);
-        destMarker._n = stops.length > 1 ? i + 1 : null;
+        destMarker._n = i + 1;
         destMarker._stopIndex = i;
         destMarkers.push(destMarker);
     });

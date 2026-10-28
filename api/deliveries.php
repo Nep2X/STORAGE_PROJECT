@@ -25,6 +25,22 @@ try {
 
     switch ($method) {
         case 'GET':
+            // Mga customer (stops) ng isang delivery: api/deliveries.php?action=stops&id=123
+            if (($_GET['action'] ?? '') === 'stops') {
+                $stopId = (int)($_GET['id'] ?? 0);
+                if (!$stopId) fail(400, 'Missing id');
+
+                $stmt = $pdo->prepare(
+                    "SELECT stop_order, customer_name, address, contact, item_desc, quantity, status, delivered_at, rider_notes
+                     FROM delivery_stops
+                     WHERE delivery_id = ?
+                     ORDER BY stop_order"
+                );
+                $stmt->execute([$stopId]);
+                echo json_encode(['ok' => true, 'stops' => $stmt->fetchAll()]);
+                break;
+            }
+
             // History ng isang delivery: api/deliveries.php?action=events&id=123
             if (($_GET['action'] ?? '') === 'events') {
                 $eventId = (int)($_GET['id'] ?? 0);
@@ -43,7 +59,9 @@ try {
 
             $rows = $pdo->query(
                 "SELECT deliveries.*,
-                        (SELECT COUNT(*) FROM delivery_stops s WHERE s.delivery_id = deliveries.id) AS stop_count
+                        (SELECT COUNT(*) FROM delivery_stops s WHERE s.delivery_id = deliveries.id) AS stop_count,
+                        (SELECT GROUP_CONCAT(s.customer_name ORDER BY s.stop_order SEPARATOR '||')
+                           FROM delivery_stops s WHERE s.delivery_id = deliveries.id) AS customer_list
                  FROM deliveries
                  ORDER BY del_date DESC, id DESC"
             )->fetchAll();

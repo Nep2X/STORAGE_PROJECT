@@ -87,7 +87,7 @@ function renderEmployees() {
             <td>${esc(employee.contact_number) || "-"}</td>
             <td><span class="statusBadge">${esc(employee.role)}</span></td>
             <td>
-                <span class="statusBadge ${Number(employee.is_active) ? "deliveredBadge" : "pendingBadge"}">
+                <span class="statusBadge ${Number(employee.is_active) ? "activeBadge" : "disabledBadge"}">
                     ${Number(employee.is_active) ? "Active" : "Disabled"}
                 </span>
             </td>

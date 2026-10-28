@@ -30,3 +30,12 @@
         slot.appendChild(select);
     });
 })();
+
+// Mga tile ng mapa na tugma sa theme (CARTO Positron = light gray, Dark Matter = dark gray)
+const CARTO_KEY = "cb1_4why_1_52b2a94ec9af8613fa26c98b";   // free key from carto.com/basemaps/apikey
+
+function mapTileUrl() {
+    const dark = document.documentElement.getAttribute("data-theme") === "midnight";
+    return "https://{s}.basemaps.cartocdn.com/rastertiles/" + (dark ? "dark_all" : "light_all") + "/{z}/{x}/{y}.png?key=" + CARTO_KEY;
+}
+const MAP_ATTRIBUTION = "&copy; OpenStreetMap contributors &copy; CARTO";
