@@ -33,6 +33,7 @@ let customers = [];
 let drivers = [];
 let editingDelId = null;
 let statusDelId = null;
+const expandedRows = new Set();   // mga delivery na naka-expand ang listahan ng customer
 
 // ---------- HELPERS ----------
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
@@ -117,7 +118,7 @@ async function loadAll() {
     }
 
     // Driver filter sa toolbar galing sa Drivers table
-    fillSelect(fDriver, drivers.map((x) => x.name), "Driver", fDriver.value);
+    fillSelect(fDriver, drivers.map((x) => x.name), "All Driver", fDriver.value);
 
     if (d) renderDeliveries();
 }
@@ -129,14 +130,48 @@ async function reloadDeliveries() {
 }
 
 // ---------- RENDER + FILTER ----------
-function renderDeliveries() {
-    const q = fSearch.value.trim().toLowerCase();
+// Isang customer bawat linya: ang pangalawa at susunod ay nasa ilalim ng una
+function customerCell(d) {
+    const names = String(d.customer_list || "").split("||").map((n) => n.trim()).filter(Boolean);
+    const list = names.length ? names : [d.customer_name];
+    if (list.length === 1) return `<div class="custLine"><span class="custName">${esc(list[0])}</span></div>`;
+
+    // Marami: ① unang customer + badge "+N more"; sa ilalim ang iba (② ③ ...)
+    const extra = list.slice(1);
+    const open = expandedRows.has(String(d.id));
+    return `
+        <div class="custLine">
+            <span class="custName">${esc(list[0])}</span>
+            <button type="button" class="moreBadge" data-more aria-expanded="${open}" aria-controls="more-${d.id}">${open ? "Show less \u25B4" : "+" + extra.length + " more \u25BE"}</button>
+        </div>
+        <div class="moreList" id="more-${d.id}" ${open ? "" : "hidden"}>
+            ${extra.map((n, i) => `<div class="custLine"><span class="custName">${esc(n)}</span></div>`).join("")}
+        </div>`;
+}
+
+
+
+
+// I-click ang badge: ipakita / itago ang iba pang customer sa mismong cell
+delBody.addEventListener("click", (e) => {
+    const badge = e.target.closest("[data-more]");
+    if (!badge) return;
+    const tr = badge.closest("tr");
+    const more = tr.querySelector(".moreList");
+    const open = more.hidden;               // kasalukuyang nakatago = bubuksan
+    more.hidden = !open;
+    if (open) expandedRows.add(tr.dataset.id); else expandedRows.delete(tr.dataset.id);
+    badge.setAttribute("aria-expanded", String(open));
+    badge.textContent = open ? "Show less \u25B4" : "+" + more.children.length + " more \u25BE";
+});
+
+function renderDeliveries() {    const q = fSearch.value.trim().toLowerCase();
     const status = fStatus.value;
     const driver = fDriver.value;
     const date = fDate.value;
 
     const list = deliveries.filter((d) =>
-        (!q || `${d.del_number} ${d.customer_name} ${d.driver_name ?? ""} ${d.item_desc ?? ""}`.toLowerCase().includes(q)) &&
+        (!q || `${d.del_number} ${d.customer_list ?? d.customer_name} ${d.driver_name ?? ""} ${d.item_desc ?? ""}`.toLowerCase().includes(q)) &&
         (!status || d.status === status) &&
         (!driver || d.driver_name === driver) &&
         (!date || d.del_date === date)
@@ -148,9 +183,9 @@ function renderDeliveries() {
     }
 
     delBody.innerHTML = list.map((d) => `
-        <tr data-id="${d.id}">
+    <tr data-id="${d.id}"${String(d.customer_list || "").includes("||") ? ' class="multiRow"' : ""}>
             <td>${esc(d.del_number)}</td>
-            <td>${esc(d.customer_name)}${Number(d.stop_count) > 1 ? ` <span class="statusBadge">+${Number(d.stop_count) - 1} more</span>` : ""}</td>
+            <td>${customerCell(d)}</td>
             <td>${esc(d.driver_name)}</td>
             <td>${esc(fmtDate(d.del_date))}${isOverdue(d) ? ' <span class="statusBadge lateBadge">Overdue</span>' : ""}</td>
             <td><span class="statusBadge ${BADGE[d.status] ?? ""}">${esc(d.status) || "No status"}</span></td>
@@ -161,15 +196,6 @@ function renderDeliveries() {
 [fSearch, fStatus, fDriver, fDate].forEach((el) => {
     el.addEventListener("input", renderDeliveries);
     el.addEventListener("change", renderDeliveries);
-});
-
-document.getElementById("filterBtn").addEventListener("click", renderDeliveries);
-document.getElementById("resetBtn").addEventListener("click", () => {
-    fSearch.value = "";
-    fStatus.value = "";
-    fDriver.value = "";
-    fDate.value = "";
-    renderDeliveries();
 });
 
 // ---------- ADD / EDIT MODAL ----------
@@ -349,17 +375,9 @@ delBody.addEventListener("click", async (e) => {
     const action = btn.dataset.action;
 
     if (action === "view") {
-          alert(
-  
-            `${del.del_number}\n` +
-            `Customer: ${del.customer_name}\nAddress: ${del.address ?? "-"}\n` +
-            `Contact: ${del.contact ?? "-"}\nDate: ${fmtDate(del.del_date) || "-"}\n` +
-            `Driver: ${del.driver_name ?? "-"}\nVehicle: ${del.vehicle ?? "-"}\n` +
-            `Item: ${del.item_desc ?? "-"} (Qty: ${del.quantity})\n` +
-            `Status: ${del.status}\nRemarks: ${del.remarks ?? "-"}` +
-            (del.delivered_at ? `\nDelivered at: ${del.delivered_at}` : "") +
-            (del.rider_notes ? `\nRider notes: ${del.rider_notes}` : "")
-        );
+        // I-click ulit ang View habang bukas = isara
+        if (viewModal.style.display === "flex" && viewingId === del.id) closeViewModal();
+        else openViewModal(del);
     } else if (action === "edit") {
         await prepareForm(del);
         openModal(); // galing sa app.js
@@ -376,6 +394,74 @@ delBody.addEventListener("click", async (e) => {
 });
 
 loadAll();
+
+// ---------- VIEW: kumpletong detalye ng delivery ----------
+const viewModal = document.getElementById("viewModal");
+const viewBody = document.getElementById("viewBody");
+let viewingId = null;
+
+function closeViewModal() {
+    viewModal.style.display = "none";
+    viewingId = null;
+}
+
+const viewRow = (label, valueHtml) =>
+    `<div class="viewRow"><dt>${esc(label)}</dt><dd>${valueHtml}</dd></div>`;
+
+const statusBadgeHtml = (s) => `<span class="statusBadge ${BADGE[s] ?? ""}">${esc(s) || "No status"}</span>`;
+
+function viewStopsHtml(stops) {
+    return `<h3 class="viewSection">${stops.length > 1 ? "Customers (" + stops.length + ")" : "Customer"}</h3>` +
+        stops.map((s) => `
+            <div class="viewStop">
+                <div class="viewStopHead"><b>${esc(s.customer_name)}</b>${statusBadgeHtml(s.status)}</div>
+                <dl class="viewList">
+                    ${viewRow("Address", esc(s.address || "-"))}
+                    ${viewRow("Contact", esc(s.contact || "-"))}
+                    ${viewRow("Item", esc(s.item_desc || "-") + " (Qty: " + esc(s.quantity ?? 1) + ")")}
+                    ${s.delivered_at ? viewRow("Delivered at", esc(fmtDateTime(s.delivered_at))) : ""}
+                    ${s.rider_notes ? viewRow("Rider notes", esc(s.rider_notes)) : ""}
+                </dl>
+            </div>`).join("");
+}
+
+function renderView(del, stops) {
+    document.getElementById("viewTitle").textContent = del.del_number;
+    viewBody.innerHTML = `
+        <dl class="viewList">
+            ${viewRow("Status", statusBadgeHtml(del.status) + (isOverdue(del) ? ' <span class="statusBadge lateBadge">Overdue</span>' : ""))}
+            ${viewRow("Date", esc(fmtDate(del.del_date) || "-"))}
+            ${viewRow("Driver", esc(del.driver_name || "-"))}
+            ${viewRow("Vehicle", esc(del.vehicle || "-"))}
+            ${viewRow("Remarks", esc(del.remarks || "-"))}
+            ${del.delivered_at ? viewRow("Delivered at", esc(fmtDateTime(del.delivered_at))) : ""}
+        </dl>
+        ${viewStopsHtml(stops)}`;
+}
+
+async function openViewModal(del) {
+    viewingId = del.id;
+
+    // Agad na lumalabas ang laman gamit ang nasa row; kukunin pagkatapos ang lahat ng customer
+    renderView(del, [{
+        customer_name: del.customer_name, address: del.address, contact: del.contact,
+        item_desc: del.item_desc, quantity: del.quantity, status: del.status,
+        delivered_at: del.delivered_at, rider_notes: del.rider_notes,
+    }]);
+    viewModal.style.display = "flex";
+    viewModal.querySelector(".modalBox").scrollTop = 0;
+
+    try {
+        const res = await fetch(`${DEL_API}?action=stops&id=${del.id}`);
+        const out = await res.json();
+        if (viewingId !== del.id) return;          // isinara na, o ibang delivery na ang binuksan
+        if (out.ok && out.stops.length) renderView(del, out.stops);
+    } catch (_) { /* okay lang: naka-display na ang pangunahing detalye */ }
+}
+
+document.getElementById("closeViewModal").addEventListener("click", closeViewModal);
+viewModal.addEventListener("click", (e) => { if (e.target === viewModal) closeViewModal(); });   // click sa labas
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && viewModal.style.display === "flex") closeViewModal(); });
 
 // Auto-refresh tuwing 30s para makita agad ang update ng rider.
 // Naka-pause habang bukas ang modal para hindi mawala ang ginagawa.

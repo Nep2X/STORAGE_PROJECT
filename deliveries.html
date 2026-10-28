@@ -55,7 +55,7 @@
                     <button class="btnPrimary" id="openAddDel">+ New Delivery</button>
                     <input type="text" id="searchDelivery" placeholder="Search delivery..." aria-label="Search deliveries">
                     <select name="delStatus" aria-label="Filter by status">
-                        <option value="">Status</option>
+                        <option value="">All Status</option>
                         <option value="Pending">Pending</option>
                         <option value="Processing">Processing</option>
                         <option value="Out for Delivery">Out for Delivery</option>
@@ -63,11 +63,11 @@
                         <option value="Cancelled">Cancelled</option>
                     </select>
                     <select name="driverName" aria-label="Filter by driver">
-                        <option value="">Driver</option>
+                        <option value="">All Driver</option>
                     </select>
                     <input type="date" name="filterDate" aria-label="Filter by date">
-                    <button class="btnOutline" type="button" id="filterBtn">Filter</button>
-                    <button class="btnOutline" type="button" id="resetBtn">Reset</button>
+                    
+                    
                 </div>
             </div>
 
@@ -91,6 +91,17 @@
                             
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- View Delivery Modal (kumpletong detalye) -->
+            <div class="modal" id="viewModal" role="dialog" aria-modal="true" aria-labelledby="viewTitle">
+                <div class="modalBox viewBox">
+                    <div class="modalHeader">
+                        <h2 id="viewTitle">Delivery</h2>
+                        <button class="modalClose" id="closeViewModal" type="button" aria-label="Close">&times;</button>
+                    </div>
+                    <div id="viewBody"></div>
                 </div>
             </div>
 
