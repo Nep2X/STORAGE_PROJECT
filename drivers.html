@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-             <link rel="stylesheet" href="style.css"><script src="theme.js"></script>
+             <link rel="stylesheet" href="style.css"><script src="theme.js?v=2"></script>
       
     <title>Drivers | Delivery Project</title>
 </head>
@@ -111,6 +111,17 @@
                             <button type="button" class="btnDanger" id="cancelDrvModal">Cancel</button>
                         </div>
                     </form>
+                </div>
+            </div>
+
+            <!-- View Driver Modal -->
+            <div class="modal" id="drvViewModal" role="dialog" aria-modal="true" aria-labelledby="drvViewTitle">
+                <div class="modalBox viewBox">
+                    <div class="modalHeader">
+                        <h2 id="drvViewTitle">Driver</h2>
+                        <button class="modalClose" id="closeDrvView" type="button" aria-label="Close">&times;</button>
+                    </div>
+                    <div id="drvViewBody"></div>
                 </div>
             </div>
 

@@ -120,7 +120,8 @@ function ensureMap() {
     cusMap = L.map("cusMap", { scrollWheelZoom: false }).setView(MAP_CENTER, 6);
     L.tileLayer(mapTileUrl(), {
         maxZoom: 19,
-        attribution: MAP_ATTRIBUTION,
+        maxNativeZoom: mapMaxNativeZoom(),
+        attribution: mapAttribution(),
         subdomains: "abcd",
     }).addTo(cusMap);
     return true;
@@ -158,16 +159,16 @@ async function onPinDrag() {
     cusForm.elements.lat.value = lat.toFixed(7);
     cusForm.elements.lng.value = lng.toFixed(7);
 
-    // Punan lang ang blangkong address fields; huwag i-overwrite ang tinype.
+        // I-update agad ang address fields sa pinagbagsakan ng pin.
     try {
         const res = await fetch(`api/geocode.php?reverse=1&lat=${lat}&lng=${lng}`);
         const out = await res.json();
         if (!out.ok || !out.result) return;
         const a = out.result.address || {};
-        if (!cusForm.elements.street.value.trim() && a.street) cusForm.elements.street.value = a.street;
-        if (!cusForm.elements.city.value.trim() && a.city) cusForm.elements.city.value = a.city;
-        if (!cusForm.elements.province.value.trim() && a.province) cusForm.elements.province.value = a.province;
-        if (!searchInput.value.trim() && out.result.label) searchInput.value = out.result.label;
+        if (a.street) cusForm.elements.street.value = a.street;
+        if (a.city) cusForm.elements.city.value = a.city;
+        if (a.province) cusForm.elements.province.value = a.province;
+        if (out.result.label) searchInput.value = out.result.label;
     } catch (_) {
         // okay lang; naka-save pa rin ang coordinates
     }
@@ -399,11 +400,7 @@ cusBody.addEventListener("click", async (e) => {
     const action = btn.dataset.action;
 
     if (action === "view") {
-          alert(
-  
-            `${cus.name}\nContact: ${cus.contact ?? "-"}\n` +
-            `Address: ${cus.address ?? "-"}\nDeliveries: ${cus.deliveries}`
-        );
+        openCusView(cus);
     } else if (action === "edit") {
         openCusModal(cus);
     } else if (action === "delete") {
@@ -413,5 +410,46 @@ cusBody.addEventListener("click", async (e) => {
         }
     }
 });
+
+// ---------- VIEW MODAL (kagaya sa Deliveries) ----------
+const cusViewModal = document.getElementById("cusViewModal");
+const cusViewBody = document.getElementById("cusViewBody");
+let cusViewingId = null;
+let cusViewLastFocused = null;
+
+const cusViewRow = (label, value) =>
+    `<div class="viewRow"><dt>${label}</dt><dd>${value}</dd></div>`;
+
+function closeCusView() {
+    if (cusViewModal.style.display !== "flex") return;
+    cusViewModal.style.display = "none";
+    cusViewingId = null;
+    if (cusViewLastFocused && typeof cusViewLastFocused.focus === "function") cusViewLastFocused.focus();
+    cusViewLastFocused = null;
+}
+
+function openCusView(cus) {
+    // Klik ulit sa View ng parehong customer = isara
+    if (cusViewModal.style.display === "flex" && cusViewingId === cus.id) {
+        closeCusView();
+        return;
+    }
+
+    cusViewingId = cus.id;
+    cusViewLastFocused = document.activeElement;
+    document.getElementById("cusViewTitle").textContent = cus.name;
+    cusViewBody.innerHTML = `<dl class="viewList">
+        ${cusViewRow("Name", esc(cus.name))}
+        ${cusViewRow("Contact", esc(cus.contact || "-"))}
+        ${cusViewRow("Address", esc(cus.address || "-"))}
+        ${cusViewRow("Deliveries", esc(cus.deliveries ?? 0))}
+    </dl>`;
+    cusViewModal.style.display = "flex";
+    document.getElementById("closeCusView").focus();
+}
+
+document.getElementById("closeCusView").addEventListener("click", closeCusView);
+cusViewModal.addEventListener("click", (e) => { if (e.target === cusViewModal) closeCusView(); });   // click sa labas
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCusView(); });
 
 loadCustomers();

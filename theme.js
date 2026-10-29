@@ -31,11 +31,42 @@
     });
 })();
 
-// Mga tile ng mapa na tugma sa theme (CARTO Positron = light gray, Dark Matter = dark gray)
-const CARTO_KEY = "cb1_4why_1_52b2a94ec9af8613fa26c98b";   // free key from carto.com/basemaps/apikey
+// Tatlong style ng mapa: Street (CARTO), Terrain (Esri Topo), Satellite (Esri Imagery).
+// Naka-save ang pinili sa localStorage, kaya pareho sa lahat ng mapa.
+const CARTO_KEY = "cb1_4why_1_52b2a94ec9af8613fa26c98b";
+const MAP_STYLE_KEY = "mapStyle";
+const DEFAULT_MAP_STYLE = "topo";   // "street" kung Voyager ang gusto mong default
 
-function mapTileUrl() {
-    const dark = document.documentElement.getAttribute("data-theme") === "midnight";
-    return "https://{s}.basemaps.cartocdn.com/rastertiles/" + (dark ? "dark_all" : "light_all") + "/{z}/{x}/{y}.png?key=" + CARTO_KEY;
+const MAP_STYLES = {
+    street:    { label: "Street",    attribution: "&copy; OpenStreetMap contributors &copy; CARTO" },
+    topo:      { label: "Topo",      attribution: "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, FAO, NOAA, USGS, &copy; OpenStreetMap contributors" },
+    imagery:   { label: "Satellite", attribution: "Tiles &copy; Esri &mdash; Esri, Maxar, Earthstar Geographics" },
+};
+
+function mapStyleName() {
+    try {
+        const v = localStorage.getItem(MAP_STYLE_KEY);
+        if (v && MAP_STYLES[v]) return v;
+    } catch (_) {}
+    return DEFAULT_MAP_STYLE;
 }
-const MAP_ATTRIBUTION = "&copy; OpenStreetMap contributors &copy; CARTO";
+
+function mapTileUrl(style = mapStyleName()) {
+    if (style === "topo")    return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}";
+    if (style === "imagery") return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+    const dark = document.documentElement.getAttribute("data-theme") === "midnight";
+    return "https://{s}.basemaps.cartocdn.com/rastertiles/" + (dark ? "dark_all" : "voyager") + "/{z}/{x}/{y}.png?key=" + CARTO_KEY;
+}
+
+function mapAttribution(style = mapStyleName()) {
+    return (MAP_STYLES[style] || MAP_STYLES.street).attribution;
+}
+
+function mapMaxNativeZoom(style = mapStyleName()) {
+    return style === "imagery" ? 18 : 19;   // upscaled na lang ang z19 sa imagery
+}
+
+const MAP_ATTRIBUTION = MAP_STYLES.street.attribution;
+
+// Para sa CSS: walang filter ang Topo/Imagery, dilim lang sa Midnight.
+document.documentElement.setAttribute("data-map-style", mapStyleName());

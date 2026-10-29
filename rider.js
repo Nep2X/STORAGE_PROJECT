@@ -249,20 +249,23 @@ reportForm.addEventListener("submit", async (e) => {
 });
 
 // ---------- BACK BUTTON ----------
-// Lalabas lang kung galing sa ibang page ng website (admin). Hindi ito makikita ng rider
-// na direktang nagbukas ng link ng rider page.
+// Lalabas lang para sa Admin/Employee na galing sa ibang page ng website.
+// Hindi ito ipinapakita sa Rider/Driver account.
 const backBtn = document.getElementById("backBtn");
-try {
-    if (document.referrer && new URL(document.referrer).origin === window.location.origin) {
-        backBtn.style.display = "inline-block";
-        document.body.classList.add("hasBack");
-        backBtn.addEventListener("click", () => {
-            if (history.length > 1) history.back();
-            else window.location.href = "dashboard.html";
-        });
+
+function setupBackButton(canShow) {
+    if (!canShow) return;
+    try {
+        if (!document.referrer || new URL(document.referrer).origin !== window.location.origin) return;
+    } catch (_) {
+        return;
     }
-} catch (e) {
-    /* walang referrer, hayaang nakatago */
+    backBtn.style.display = "inline-block";
+    document.body.classList.add("hasBack");
+    backBtn.addEventListener("click", () => {
+        if (history.length > 1) history.back();
+        else window.location.href = "dashboard.html";
+    });
 }
 
 // ---------- LOGOUT ----------
@@ -289,6 +292,7 @@ async function init() {
     }
 
     document.getElementById("whoami").textContent = me.full_name;
+    setupBackButton(!["Rider", "Driver"].includes(me.role));
     await loadRiders();
 
     if (me.driver) {
@@ -432,7 +436,8 @@ function ensurePlacePreview() {
 
     L.tileLayer(mapTileUrl(), {
         maxZoom: 19,
-        attribution: MAP_ATTRIBUTION,
+        maxNativeZoom: mapMaxNativeZoom(),
+        attribution: mapAttribution(),
         subdomains: "abcd",
     }).addTo(placePreviewMap);
 

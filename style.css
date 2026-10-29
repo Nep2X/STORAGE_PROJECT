@@ -1586,6 +1586,14 @@ a:focus-visible {
 }
 /* Animation ng route line sa Live Map */
 .route-line { stroke-linecap: round; stroke-linejoin: round; }
+
+/* Puting halo sa ilalim ng ruta */
+.route-casing {
+    stroke: #ffffff;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+:root[data-theme="midnight"] .route-casing { stroke: #0B0F14; }
 @media (prefers-reduced-motion: reduce) { .route-line { animation: none !important; } }
 /* ---------- Overdue badge (Deliveries page) ---------- */
 .statusBadge.lateBadge {
@@ -2492,6 +2500,10 @@ textarea[readonly] {
     display: none;
 }
 
+.moreLess {
+    margin-top: 4px;
+}
+
 /* Kapag marami ang customer, nasa itaas ang ibang column para katabi ng unang customer */
 .dataTable tr.multiRow td {
     vertical-align: top;
@@ -2515,7 +2527,27 @@ textarea[readonly] {
     vertical-align: middle;
 }
 
-.deliveredBadge { border-color: var(--border); }
+/* ---- Kulay ng status: Pending = default, iba = tugma sa pangalan ---- */
+.pendingBadge {
+    background: var(--secondary);
+    color: var(--foreground);
+    border-color: var(--border);
+}
+
+.processingBadge,
+.outBadge,
+.deliveredBadge,
+.cancelledBadge {
+    --badge: var(--muted-foreground);
+    background: color-mix(in srgb, var(--badge) 16%, var(--card));
+    color: color-mix(in srgb, var(--badge) 60%, var(--foreground));
+    border-color: color-mix(in srgb, var(--badge) 40%, var(--card));
+}
+
+.processingBadge { --badge: var(--blue); }
+.outBadge       { --badge: var(--orange); }
+.deliveredBadge { --badge: var(--green); }
+.cancelledBadge { --badge: var(--destructive); }
 
 /* ---- View Delivery (kumpletong detalye) ---- */
 .viewBox { width: 560px; }
@@ -2593,36 +2625,58 @@ body.hasBack .riderWrap { padding-top: 64px; }
 :root[data-theme="midnight"] .leaflet-tile-pane {
     filter: none;
 }
-/* Patamlayin ang kulay ng mapa */
+/* Hayaan ang kulay ng tiles; bahagyang linawin lang */
 .leaflet-tile-pane {
-    filter: grayscale(0.85) contrast(0.95) brightness(1.05);
+    filter: saturate(1.04) contrast(1.02);
 }
 /* =====================================================
    MAP POLISH (Pack 1)
 ===================================================== */
 
-/* Umiilaw na bilog sa rider na may sariwang location */
-.location-marker.fresh {
+/* Radar (rings + umiikot na sinag) sa driver marker.
+   May animation din ang stale — mas mabagal lang (grey). */
+.location-marker {
+    --radar: var(--muted-foreground);
+    --radar-speed: 4.5s;
     position: relative;
 }
 
-.location-marker.fresh::after {
+.location-marker.fresh {
+    --radar: var(--accent);
+    --radar-speed: 2.4s;
+}
+
+/* Tatlong pabilog na ring, paulit-ulit na lumalabas */
+.location-marker::before {
     content: "";
     position: absolute;
-    inset: -3px;
-    border: 2px solid var(--accent);
+    inset: -20px;
     border-radius: 50%;
     pointer-events: none;
-    animation: riderPulse 2s ease-out infinite;
+    background: radial-gradient(
+        circle,
+        transparent 0 20px,
+        var(--radar) 20px 21.5px,
+        transparent 21.5px 26px,
+        var(--radar) 26px 27.5px,
+        transparent 27.5px 32px,
+        var(--radar) 32px 33.5px,
+        transparent 33.5px 100%
+    );
+    animation: radarRings var(--radar-speed) ease-out infinite;
 }
 
-@keyframes riderPulse {
-    0%   { transform: scale(1);   opacity: 0.8; }
-    100% { transform: scale(1.9); opacity: 0; }
+
+
+@keyframes radarRings {
+    0%   { transform: scale(0.78); opacity: 0; }
+    20%  { opacity: 0.6; }
+    100% { transform: scale(1.08); opacity: 0; }
 }
 
+/* Reduced motion: huwag itago — pabagalin lang */
 @media (prefers-reduced-motion: reduce) {
-    .location-marker.fresh::after { animation: none; display: none; }
+    .location-marker { --radar-speed: 8s; }
 }
 
 /* Popup na tugma sa theme */
@@ -2673,4 +2727,64 @@ body.hasBack .riderWrap { padding-top: 64px; }
 
 .leaflet-control-attribution a {
     color: var(--text-soft) !important;
+}
+
+/* Scale bar */
+.leaflet-control-scale-line {
+    background: color-mix(in srgb, var(--card) 88%, transparent);
+    border-color: var(--border);
+    color: var(--foreground);
+    border-radius: 4px;
+    font-size: 10px;
+}
+
+/* Banayad na lilim sa gilid ng mapa */
+.liveMapWrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 400;
+    border-radius: 8px;
+    pointer-events: none;
+    box-shadow: inset 0 0 24px -16px rgba(0, 0, 0, .5);
+}
+
+/* ---------- Map style picker ---------- */
+.mapStylePicker {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-panel);
+}
+
+.mapStylePicker button {
+    margin: 0;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--muted-foreground);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.mapStylePicker button:hover { background: var(--secondary); color: var(--foreground); }
+.mapStylePicker button[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); }
+.mapStylePicker button:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* Topo/Imagery: walang filter; dilim lang sa Midnight para hindi nakakasilaw */
+:root[data-map-style="topo"] .leaflet-tile-pane,
+:root[data-map-style="imagery"] .leaflet-tile-pane {
+    filter: none;
+}
+:root[data-theme="midnight"][data-map-style="topo"] .leaflet-tile-pane {
+    filter: brightness(.78) saturate(.9) contrast(1.02);
+}
+:root[data-theme="midnight"][data-map-style="imagery"] .leaflet-tile-pane {
+    filter: brightness(.72) saturate(.85);
 }
