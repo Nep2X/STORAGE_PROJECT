@@ -27,20 +27,139 @@ const COMPANY = { name: "Company", address: "Campanilla, Quezon City, 1112 Metro
 const map = L.map("map", { zoomControl: false }).setView([COMPANY.lat, COMPANY.lng], 12);
 
 // ---------- BASEMAP (Street / Topo / Satellite) ----------
+// Topo = MapLibre vector tiles (OpenFreeMap, libre at walang key).
+// Ito ang tanging paraan para mabago ang buildings/kulay ng kalsada/text.
+const TOPO_ATTRIBUTION = '&copy; <a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> &copy; OpenMapTiles &copy; OpenStreetMap contributors';
+
 let tileLayer = null;
-function applyMapStyle(style) {
-    if (tileLayer) map.removeLayer(tileLayer);
-    tileLayer = L.tileLayer(mapTileUrl(style), {
-        maxZoom: 19,
-        maxNativeZoom: mapMaxNativeZoom(style),
-        attribution: mapAttribution(style),
-        subdomains: "abcd",
-    }).addTo(map);
-    tileLayer.bringToBack();
-    document.documentElement.setAttribute("data-map-style", style);
+let topoLayer = null;
+let topoStyleCache = null;
+let topoToken = 0;
+let topoAttribution = null;
+
+function patchTopoStyle(style) {
+    const byId = {};
+    style.layers.forEach((l) => { byId[l.id] = l; });
+    const set = (id, paint) => { const l = byId[id]; if (l) l.paint = Object.assign({}, l.paint, paint); };
+    const lay = (id, props) => { const l = byId[id]; if (l) l.layout = Object.assign({}, l.layout, props); };
+
+    // Base colors
+    set("background", { "background-color": "#F6F2E9" });
+    set("park", { "fill-color": "#D9E6C4" });
+    set("water", { "fill-color": "#BFE3F2" });
+    set("waterway", { "line-color": "#BFE3F2" });
+    set("landuse_residential", { "fill-color": "#F1ECE1", "fill-opacity": 0.45 });
+    set("landcover_wood", { "fill-color": "#CFE0B8" });
+
+    // Roads
+    set("highway_path", { "line-color": "#EFEBE1" });
+    set("highway_minor", { "line-color": "#FFFFFF" });
+    set("highway_major_casing", { "line-color": "#CFCABF" });
+    set("highway_major_inner", { "line-color": "#FFFFFF" });
+    set("highway_motorway_casing", { "line-color": "#BDB7AB" });
+    set("highway_motorway_inner", { "line-color": "#DDD8CD" });
+
+    // Manipis na casing sa ilalim ng minor roads
+    const mi = style.layers.findIndex((l) => l.id === "highway_minor");
+    if (mi >= 0) style.layers.splice(mi, 0, {
+        id: "highway_minor_casing", type: "line", source: "openmaptiles", "source-layer": "transportation",
+        minzoom: 9,
+        filter: ["all",
+            ["match", ["geometry-type"], ["LineString", "MultiLineString"], true, false],
+            ["match", ["get", "brunnel"], ["bridge", "tunnel"], false, true],
+            ["match", ["get", "class"], ["minor", "service", "track"], true, false]],
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": "#E0DBD0", "line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 13, 3.2, 20, 21.5] },
+    });
+
+    set("boundary_3", { "line-color": "#C9C5BC" });
+    set("boundary_2", { "line-color": "#C9C5BC" });
+
+    // Walang building shapes
+    if (byId.building) byId.building.layout = Object.assign({}, byId.building.layout, { visibility: "none" });
+
+    // Tanggalin ang road shields
+    style.layers = style.layers.filter((l) => !/shield/i.test(l.id));
+
+    // Text
+    ["label_other", "label_town", "label_city", "label_state", "label_country_1", "label_country_2", "label_country_3"].forEach((id) => {
+        set(id, { "text-color": "#3A3A3A", "text-halo-color": "#FFFFFF", "text-halo-width": 1.2, "text-halo-blur": 0 });
+        const l = byId[id];
+        if (l && l.layout) { delete l.layout["icon-image"]; delete l.layout["icon-optional"]; delete l.layout["icon-size"]; delete l.layout["icon-allow-overlap"]; }
+    });
+    set("label_city", { "text-color": "#1F1F1F" });
+    lay("label_city", { "text-font": ["Noto Sans Bold"] });
+    set("label_town", { "text-color": "#2E2E2E" });
+    lay("label_town", { "text-font": ["Noto Sans Bold"] });
+    set("label_other", { "text-color": "#6A6A6A", "text-halo-width": 1 });
+    lay("label_other", { "text-transform": "none" });
+
+    ["highway-name-minor", "highway-name-major"].forEach((id) => {
+        set(id, { "text-color": "#4F4F4F", "text-halo-color": "#FFFFFF", "text-halo-width": 1, "text-halo-blur": 0 });
+    });
+    ["water_name_point_label", "water_name_line_label"].forEach((id) => {
+        set(id, { "text-color": "#5B7C93", "text-halo-color": "#FFFFFF" });
+    });
+    if (byId.airport && byId.airport.layout) { delete byId.airport.layout["icon-image"]; delete byId.airport.layout["icon-size"]; }
+
+    return style;
+}
+
+function loadTopoStyle() {
+    if (topoStyleCache) return Promise.resolve(topoStyleCache);
+    return fetch("https://tiles.openfreemap.org/styles/positron")
+        .then((r) => r.json())
+        .then((json) => (topoStyleCache = patchTopoStyle(json)));
+}
+
+function removeTopoLayer() {
+    if (topoLayer) { map.removeLayer(topoLayer); topoLayer = null; }
+    if (topoAttribution) { map.attributionControl.removeAttribution(topoAttribution); topoAttribution = null; }
+}
+
+function syncStyleButtons(style) {
     document.querySelectorAll(".mapStylePicker button").forEach((b) => {
         b.setAttribute("aria-pressed", String(b.dataset.style === style));
     });
+}
+
+function applyMapStyle(style) {
+    const token = ++topoToken;
+    removeTopoLayer();
+    if (tileLayer) { map.removeLayer(tileLayer); tileLayer = null; }
+
+    if (style === "topo") {
+        loadTopoStyle().then((s) => {
+            if (token !== topoToken) return;   // may bagong pinili habang naglo-load
+            topoLayer = L.maplibreGL({ style: s }).addTo(map);
+            topoAttribution = TOPO_ATTRIBUTION;
+            map.attributionControl.addAttribution(topoAttribution);
+            document.documentElement.setAttribute("data-map-style", style);
+            syncStyleButtons(style);
+        }).catch(() => {
+            // Fallback sa Esri raster kung hindi ma-load ang vector tiles
+            if (token !== topoToken) return;
+            tileLayer = L.tileLayer(mapTileUrl("topo"), {
+                maxZoom: 19,
+                maxNativeZoom: mapMaxNativeZoom("topo"),
+                attribution: mapAttribution("topo"),
+                subdomains: "abcd",
+            }).addTo(map);
+            tileLayer.bringToBack();
+            document.documentElement.setAttribute("data-map-style", style);
+            syncStyleButtons(style);
+        });
+    } else {
+        tileLayer = L.tileLayer(mapTileUrl(style), {
+            maxZoom: 19,
+            maxNativeZoom: mapMaxNativeZoom(style),
+            attribution: mapAttribution(style),
+            subdomains: "abcd",
+        }).addTo(map);
+        tileLayer.bringToBack();
+        document.documentElement.setAttribute("data-map-style", style);
+        syncStyleButtons(style);
+    }
 }
 
 const StyleControl = L.Control.extend({
