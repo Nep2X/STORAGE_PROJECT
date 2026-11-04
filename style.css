@@ -772,6 +772,20 @@ a:focus-visible {
     color: var(--text-soft);
 }
 
+/* Isang box para sa lahat ng customers sa Add Delivery */
+.customerBatch {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+.customerBatch label:first-child {
+    margin-top: 0;
+}
+
 .modalBox input,
 .modalBox select,
 .modalBox textarea {
@@ -789,6 +803,21 @@ a:focus-visible {
     display: flex;
     gap: 10px;
     margin-top: 16px;
+}
+
+/* Sticky footer sa mahabang Add Delivery form */
+#deliveryModal .modalBox {
+    padding-bottom: 0;
+}
+
+#deliveryForm .modalActions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin: 16px -24px 0;
+    padding: 12px 24px 16px;
+    background: var(--card);
+    border-top: 1px solid var(--border-soft);
 }
 
 /* ---------- Proof photo + viewer ---------- */
@@ -1280,6 +1309,15 @@ a:focus-visible {
     .dashboardHead {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .dashMeta {
+        flex-wrap: wrap;
+        row-gap: 4px;
+    }
+
+    .dashMetaDot {
+        display: none;
     }
 
     .dashboardCards,
@@ -2787,4 +2825,403 @@ body.hasBack .riderWrap { padding-top: 64px; }
 }
 :root[data-theme="midnight"][data-map-style="imagery"] .leaflet-tile-pane {
     filter: brightness(.72) saturate(.85);
+}
+
+/* ---------- Mobile: tables as cards (Deliveries + Dashboard) ---------- */
+@media screen and (max-width: 650px) {
+    .deliveryTable thead,
+    .recentDeliveryTable thead {
+        display: none;
+    }
+
+    .deliveryTable,
+    .deliveryTable tbody,
+    .recentDeliveryTable,
+    .recentDeliveryTable tbody {
+        display: block;
+    }
+
+    .recentPanel .recentDeliveryTable,
+    .deliveryTable {
+        min-width: 0;
+    }
+
+    .deliveryTable tr,
+    .recentDeliveryTable tr {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 4px 10px;
+        padding: 14px;
+        margin-bottom: 10px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--card);
+    }
+
+    .deliveryTable td,
+    .recentDeliveryTable td,
+    .recentPanel .recentDeliveryTable td {
+        display: block;
+        padding: 0;
+        border: 0;
+        min-width: 0;
+        font-size: 13px;
+    }
+
+    .deliveryTable td:nth-child(1),
+    .recentDeliveryTable td:nth-child(1) {
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .deliveryTable td:nth-child(5),
+    .recentDeliveryTable td:nth-child(5) {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+    }
+
+    .deliveryTable td:nth-child(2),
+    .recentDeliveryTable td:nth-child(2) {
+        grid-column: 1 / -1;
+        font-weight: 500;
+    }
+
+    .deliveryTable td:nth-child(3),
+    .deliveryTable td:nth-child(4),
+    .recentDeliveryTable td:nth-child(3),
+    .recentDeliveryTable td:nth-child(4) {
+        grid-column: 1 / -1;
+        color: var(--muted-foreground);
+        font-size: 12px;
+    }
+
+    .deliveryTable td:nth-child(3)::before,
+    .recentDeliveryTable td:nth-child(3)::before {
+        content: "Driver: ";
+    }
+
+    .deliveryTable td:nth-child(4)::before,
+    .recentDeliveryTable td:nth-child(4)::before {
+        content: "Date: ";
+    }
+
+    .deliveryTable td:nth-child(6) {
+        grid-column: 1 / -1;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border-soft);
+    }
+
+    .deliveryTable td[colspan],
+    .recentDeliveryTable td[colspan] {
+        grid-column: 1 / -1;
+        padding: 8px 0;
+        text-align: center;
+        color: var(--muted-foreground);
+    }
+
+    .deliveryTable tbody tr:hover,
+    .recentDeliveryTable tbody tr:hover {
+        background: var(--card);
+    }
+}
+
+/* ---------- Sidebar labels (hover/focus) ---------- */
+.optionSec {
+    z-index: 20;
+}
+
+.optionSec button {
+    position: relative;
+}
+
+.optionSec button::after {
+    content: attr(aria-label);
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: var(--foreground);
+    color: var(--background);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+    z-index: 30;
+}
+
+.optionSec button:hover::after,
+.optionSec button:focus-visible::after {
+    opacity: 1;
+}
+
+/* ---------- Mas malaking touch targets sa mobile ---------- */
+@media (max-width: 650px) {
+    .iconBtn {
+        width: 42px;
+        height: 42px;
+    }
+}
+
+/* ---------- Mobile: Reports tables as cards ---------- */
+@media screen and (max-width: 650px) {
+    .reportTable thead {
+        display: none;
+    }
+
+    .reportTable,
+    .reportTable tbody {
+        display: block;
+    }
+
+    .reportTable tr {
+        display: block;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--card);
+    }
+
+    .reportTable td {
+        display: block;
+        padding: 0;
+        border: 0;
+        min-width: 0;
+    }
+
+    .reportTable td[colspan] {
+        padding: 8px 0;
+        text-align: center;
+        color: var(--muted-foreground);
+    }
+
+    /* Driver / Customer / Month summary */
+    :is(#driverRows, #customerRows, #monthRows) td:nth-child(1) {
+        margin-bottom: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--foreground);
+    }
+
+    :is(#driverRows, #customerRows, #monthRows) td:nth-child(n+2) {
+        display: inline-block;
+        margin-right: 16px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--foreground);
+    }
+
+    :is(#driverRows, #customerRows, #monthRows) td:nth-child(n+2)::before {
+        font-weight: 400;
+        color: var(--muted-foreground);
+    }
+
+    :is(#driverRows, #customerRows, #monthRows) td:nth-child(2)::before {
+        content: "Total: ";
+    }
+
+    :is(#driverRows, #customerRows, #monthRows) td:nth-child(3)::before {
+        content: "Delivered: ";
+    }
+
+    :is(#driverRows, #customerRows, #monthRows) td:nth-child(4)::before {
+        content: "Cancelled: ";
+    }
+
+    /* Rider report */
+    #riderRows td {
+        font-size: 12px;
+        color: var(--muted-foreground);
+    }
+
+    #riderRows td:nth-child(1) {
+        margin-bottom: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--foreground);
+    }
+
+    #riderRows td:nth-child(2)::before {
+        content: "Customer: ";
+    }
+
+    #riderRows td:nth-child(3)::before {
+        content: "Delivery date: ";
+    }
+
+    #riderRows td:nth-child(4)::before {
+        content: "Delivered at: ";
+    }
+
+    #riderRows td:nth-child(5)::before {
+        content: "Rider: ";
+    }
+
+    #riderRows td:nth-child(6) {
+        margin-top: 6px;
+    }
+
+    #riderRows td:nth-child(6)::before {
+        content: "Proof: ";
+        display: block;
+    }
+
+    #riderRows td:nth-child(7) {
+        margin-top: 4px;
+    }
+
+    #riderRows td:nth-child(7)::before {
+        content: "Notes: ";
+        display: block;
+    }
+
+    .reportTable tbody tr:hover {
+        background: var(--card);
+    }
+}
+
+/* ---------- Mobile touch targets: 44px minimum ---------- */
+@media (max-width: 650px) {
+    .headerSec button {
+        min-height: 44px;
+    }
+
+    .optionSec button {
+        width: 44px;
+        height: 44px;
+    }
+
+    .btnPrimary,
+    .btnOutline,
+    .btnDanger,
+    .newDeliveryBtn {
+        min-height: 44px;
+    }
+
+    .iconBtn {
+        width: 44px;
+        height: 44px;
+    }
+
+    select {
+        min-height: 44px;
+    }
+
+    .moreBadge {
+        min-height: 32px;
+        padding: 6px 10px;
+    }
+}
+
+/* =====================================================
+   COMPANY LOGO
+   Isang SVG lang ang brand: header, sidebar, login.
+   Mask para sumunod sa theme color (puti sa Midnight).
+====================================================== */
+
+/* Header: buong wordmark */
+.headerSec h2 {
+    width: 176px;
+    height: 28px;
+    font-size: 0;                 /* text hidden, logo ang kita */
+    background: currentColor;
+    -webkit-mask: url("assets/company-logo.svg") left center / contain no-repeat;
+    mask: url("assets/company-logo.svg") left center / contain no-repeat;
+}
+
+/* Sidebar: truck mark lang (crop sa kaliwa ng SVG) */
+.sidebarTitle {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: currentColor;
+    -webkit-mask: url("assets/company-logo.svg") left center / 200px 32.7px no-repeat;
+    mask: url("assets/company-logo.svg") left center / 200px 32.7px no-repeat;
+}
+
+.sidebarTitle::after {
+    content: none;
+}
+
+@media (max-width: 650px) {
+    .headerSec h2 {
+        width: 150px;
+        height: 24px;
+    }
+}
+
+/* =====================================================
+   PRINT: malinis na report sa papel
+   Light colors kahit Midnight, walang toolbar/filter,
+   tables ang ipi-print (hindi cards).
+====================================================== */
+@media print {
+    :root,
+    :root[data-theme] {
+        --background: #fff;
+        --card: #fff;
+        --secondary: #f3f3f3;
+        --foreground: #111;
+        --primary: #111;
+        --primary-foreground: #fff;
+        --muted-foreground: #444;
+        --text-soft: #333;
+        --border: #bbb;
+        --border-soft: #ddd;
+        --accent: #111;
+        --accent-foreground: #fff;
+        color-scheme: light;
+    }
+
+    body {
+        background: #fff;
+        color: #111;
+    }
+
+    .toolbar,
+    #repMessage,
+    #viewAllBtn,
+    .reportsPage .dashboardHead,
+    .dashPage .dashTopbar {
+        display: none !important;
+    }
+
+    .dashboardCards,
+    .printInfo {
+        break-inside: avoid;
+    }
+
+    .tableWrapper {
+        overflow: visible;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+
+    tr {
+        break-inside: avoid;
+    }
+
+    h2 {
+        break-after: avoid;
+    }
+
+    /* Walang silbi sa papel ang action buttons */
+    .deliveryTable th:last-child,
+    .deliveryTable td:last-child {
+        display: none;
+    }
 }

@@ -66,7 +66,7 @@ function renderRider(list) {
         <tr>
             <td>${esc(r.del_number)}</td>
             <td>${esc(r.customer_name || "—")}</td>
-            <td>${esc(r.del_date || "—")}</td>
+            <td>${esc(r.del_date ? fmtDay(r.del_date) : "—")}</td>
             <td>${esc(fmtDateTime(r.delivered_at))}</td>
             <td>${esc(r.driver_name || "—")}</td>
             <td>
