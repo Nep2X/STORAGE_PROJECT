@@ -149,7 +149,7 @@
             <form id="placeForm">
                 <label for="placeInput">GPS not working? Type the place name</label>
                 <div class="addressSearchWrap">
-                    <input type="text" id="placeInput" placeholder="e.g. Pasig Palengke, Pasig" autocomplete="off">
+                    <input type="text" id="placeInput" placeholder="e.g. Pasig Palengke, Pasig" autocomplete="off" maxlength="60">
                     <div id="placeSuggestions" class="addressSuggestions" hidden></div>
                 </div>
                 <div id="placePreviewMap" hidden aria-label="Preview of the selected address"></div>
@@ -184,7 +184,7 @@
             <img id="proofPreview" alt="Proof of delivery preview">
 
             <label for="notes">Notes (optional)</label>
-            <textarea id="notes" rows="3" placeholder="e.g. Received by the guard"></textarea>
+            <textarea id="notes" rows="3" placeholder="e.g. Received by the guard" maxlength="500"></textarea>
 
             <button type="submit" class="btnPrimary" id="submitBtn" disabled>Submit Report</button>
             <div id="msg" role="status"></div>

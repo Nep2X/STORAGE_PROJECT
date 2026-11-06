@@ -125,7 +125,7 @@ if (!function_exists('http_get')) {
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_TIMEOUT        => 8,
                 CURLOPT_USERAGENT      => $ua,
-                CURLOPT_SSL_VERIFYPEER => false,   // luma ang CA bundle ng ibang XAMPP (para sa local lang)
+                CURLOPT_SSL_VERIFYPEER => !APP_DEBUG,   // false lang sa local; true sa live
             ]);
             $out = curl_exec($ch);
             curl_close($ch);

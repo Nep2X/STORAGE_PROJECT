@@ -55,7 +55,7 @@
             <div class="panel">
                 <div class="toolbar">
                     <button class="btnPrimary" type="button" id="openAddCus">+ Add Customer</button>
-                    <input type="text" id="customerSearch" placeholder="Search customer..." aria-label="Search customers">
+                    <input type="text" id="customerSearch" placeholder="Search customer..." aria-label="Search customers" maxlength="60">
                 </div>
             </div>
 
@@ -91,25 +91,25 @@
 
                                         <form id="customerForm">
                         <label for="cusName">Customer Name</label>
-                        <input type="text" id="cusName" name="name" required>
+                        <input type="text" id="cusName" name="name" maxlength="80" required>
 
                         <label for="cusContact">Contact</label>
-                        <input type="text" id="cusContact" name="contact" placeholder="09XXXXXXXXX" required>
+                        <input type="text" id="cusContact" name="contact" placeholder="09XXXXXXXXX" maxlength="20" required>
 
                         <label for="cusAddressSearch">Find address on map</label>
                         <div class="addressSearchWrap">
-                            <input type="text" id="cusAddressSearch" placeholder="Type a street, building, or city..." autocomplete="off">
+                            <input type="text" id="cusAddressSearch" placeholder="Type a street, building, or city..." autocomplete="off" maxlength="60">
                             <div id="cusSuggestions" class="addressSuggestions" hidden></div>
                         </div>
 
                         <label for="cusStreet">Street / Building *</label>
-                        <input type="text" id="cusStreet" name="street" placeholder="e.g. 123 Shaw Blvd, Unit 4B" autocomplete="off" required>
+                        <input type="text" id="cusStreet" name="street" placeholder="e.g. 123 Shaw Blvd, Unit 4B" autocomplete="off" maxlength="100" required>
 
                         <label for="cusCity">Town / City *</label>
-                        <input type="text" id="cusCity" name="city" placeholder="e.g. Pasig City" autocomplete="off" required>
+                        <input type="text" id="cusCity" name="city" placeholder="e.g. Pasig City" autocomplete="off" maxlength="60" required>
 
                         <label for="cusProvince">Province *</label>
-                        <input type="text" id="cusProvince" name="province" placeholder="e.g. Metro Manila" autocomplete="off" required>
+                        <input type="text" id="cusProvince" name="province" placeholder="e.g. Metro Manila" autocomplete="off" maxlength="60" required>
 
                         <div class="addressMapHead">
                         <span class="addressMapTitle"><span class="pinLabelIcon" aria-hidden="true"></span>Pin location</span>

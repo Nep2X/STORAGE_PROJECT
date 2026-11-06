@@ -9,6 +9,7 @@ define('AUTH_WRITE', true);
 
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/auth1.php';
+require_once __DIR__ . '/limits.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -91,6 +92,16 @@ try {
             auth_fail(
                 400,
                 'Enter your username and password.'
+            );
+        }
+
+        // Sobrang habang username: hindi na kailangang mag-query sa database.
+        // Huwag limitahan ang password dito: ang lumang password na mas mahaba
+        // sa 72 bytes ay dapat pa ring makapasok (bcrypt ang bahala sa verify).
+        if (mb_strlen($username) > LIMIT_USERNAME) {
+            auth_fail(
+                401,
+                'Incorrect username or password.'
             );
         }
 
@@ -389,6 +400,18 @@ try {
         }
 
 
+        if ($msg = limit_error('Full name', $name, LIMIT_NAME)) {
+
+            auth_fail(400, $msg);
+        }
+
+
+        if ($msg = limit_error('Email', $email, LIMIT_EMAIL)) {
+
+            auth_fail(400, $msg);
+        }
+
+
         if (
             $email !== '' &&
             !filter_var(
@@ -474,11 +497,22 @@ try {
         // ----------------------------------------------------
         // Minimum password length
         // ----------------------------------------------------
-        if (strlen($new) < 8) {
+        $newLength = strlen($new);
+
+        if ($newLength < LIMIT_PASSWORD_MIN) {
 
             auth_fail(
                 400,
-                'New password must be at least 8 characters.'
+                'New password must be at least ' . LIMIT_PASSWORD_MIN . ' characters.'
+            );
+        }
+
+
+        if ($newLength > LIMIT_PASSWORD_MAX) {
+
+            auth_fail(
+                400,
+                'New password must be at most ' . LIMIT_PASSWORD_MAX . ' characters.'
             );
         }
 

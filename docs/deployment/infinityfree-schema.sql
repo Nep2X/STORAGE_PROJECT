@@ -1,0 +1,104 @@
+-- =====================================================
+-- InfinityFree import copy of schema.sql
+-- Removed: CREATE DATABASE and USE (InfinityFree DB is prefixed).
+-- Import this file into the live database via phpMyAdmin.
+-- =====================================================
+SET NAMES utf8mb4;
+
+-- =====================================================
+-- Delivery Monitoring (NEPNEP_PROJECT) - database setup
+-- I-run sa phpMyAdmin > SQL tab (isang beses sa bagong computer)
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS drivers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    contact VARCHAR(20),
+    status ENUM('Available','On Route','Offline') NOT NULL DEFAULT 'Available'
+);
+
+CREATE TABLE IF NOT EXISTS customers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    contact VARCHAR(20),
+    address VARCHAR(255),
+    lat DECIMAL(10,7) NULL,
+    lng DECIMAL(10,7) NULL
+);
+
+CREATE TABLE IF NOT EXISTS deliveries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    del_number VARCHAR(20) NOT NULL UNIQUE,
+    customer_name VARCHAR(100) NOT NULL,
+    address VARCHAR(255),
+    contact VARCHAR(20),
+    del_date DATE,
+    driver_name VARCHAR(100),
+    vehicle VARCHAR(50),
+    item_desc VARCHAR(255),
+    quantity INT DEFAULT 1,
+    remarks TEXT,
+    status ENUM('Pending','Processing','Out for Delivery','Delivered','Cancelled')
+        NOT NULL DEFAULT 'Pending',
+    proof_image VARCHAR(255) NULL,
+    delivered_at DATETIME NULL,
+    rider_notes TEXT NULL, dest_lat DECIMAL(10,7) NULL, dest_lng DECIMAL(10,7) NULL, geo_tried TINYINT(1) NOT NULL DEFAULT 0,
+    INDEX idx_driver_status (driver_name, status),
+    INDEX idx_del_date (del_date)
+);
+
+CREATE TABLE IF NOT EXISTS delivery_stops (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    delivery_id INT NOT NULL,
+    stop_order INT NOT NULL DEFAULT 1,
+    customer_name VARCHAR(100) NOT NULL,
+    address VARCHAR(255) NULL,
+    contact VARCHAR(20) NULL,
+    item_desc VARCHAR(255) NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    dest_lat DECIMAL(10,7) NULL,
+    dest_lng DECIMAL(10,7) NULL,
+    status ENUM('Pending','Delivered','Cancelled') NOT NULL DEFAULT 'Pending',
+    proof_image VARCHAR(255) NULL,
+    delivered_at DATETIME NULL,
+    rider_notes TEXT NULL,
+    INDEX idx_delivery (delivery_id, stop_order)
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NULL,
+    contact_number VARCHAR(20) NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('Admin','Employee','Driver','Rider') NOT NULL DEFAULT 'Employee',
+    driver_id INT UNSIGNED NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    failed_attempts INT NOT NULL DEFAULT 0,
+    locked_until DATETIME NULL,
+    last_login DATETIME NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS rider_locations (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    driver_id INT NOT NULL,
+    latitude DECIMAL(10,7) NOT NULL,
+    longitude DECIMAL(10,7) NOT NULL,
+    accuracy FLOAT NULL,
+    reported_at DATETIME NOT NULL,
+    delivery_id INT NULL,
+    INDEX idx_driver_time (driver_id, reported_at)
+);
+
+CREATE TABLE IF NOT EXISTS delivery_events (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    delivery_id INT NOT NULL,
+    status VARCHAR(30) NOT NULL,
+    note VARCHAR(500) NULL,
+    user_id INT UNSIGNED NULL,
+    username VARCHAR(50) NULL,
+    created_at DATETIME NOT NULL,
+    INDEX idx_delivery (delivery_id, id)
+);

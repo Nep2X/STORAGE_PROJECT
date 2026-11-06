@@ -506,8 +506,8 @@ function addStopRow() {
     <b class="xsTitle"></b>
     <select class="xsCustomer" required></select>
     <small class="xsAddress"></small>
-        <input type="text" class="xsItem" placeholder="Item description" required>
-        <input type="number" class="xsQty" min="1" placeholder="Quantity" required>
+        <input type="text" class="xsItem" maxlength="120" placeholder="Item description" required>
+        <input type="number" class="xsQty" min="1" max="999" placeholder="Quantity" required>
         <button type="button" class="btnOutline xsRemove">Remove</button>`;
     fillSelect(row.querySelector(".xsCustomer"), customers.map((c) => c.name), "Select customer");
     extraStops.appendChild(row);

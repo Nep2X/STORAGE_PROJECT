@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/auth1.php';
+require_once __DIR__ . '/limits.php';
 require_login(ROLES_STAFF);
 header('Content-Type: application/json');
 
@@ -43,6 +44,9 @@ try {
                 // Buong edit (galing sa modal)
                 $newName = trim($input['name']);
                 if ($newName === '') fail(400, 'Missing field: name');
+                $newContact = trim((string)($input['contact'] ?? ''));
+                if ($msg = limit_error('Driver name', $newName, LIMIT_NAME)) fail(400, $msg);
+                if ($msg = limit_error('Contact number', $newContact, LIMIT_CONTACT)) fail(400, $msg);
                 $status = in_array($input['status'] ?? '', $STATUSES) ? $input['status'] : 'Available';
 
                 $stmt = $pdo->prepare("SELECT name FROM drivers WHERE id = ?");
@@ -53,7 +57,7 @@ try {
                 $pdo->beginTransaction();
 
                 $stmt = $pdo->prepare("UPDATE drivers SET name=?, contact=?, status=? WHERE id=?");
-                $stmt->execute([$newName, $input['contact'] ?? null, $status, $id]);
+                $stmt->execute([$newName, $newContact !== '' ? $newContact : null, $status, $id]);
 
                 // Kapag pinalitan ang pangalan, sumunod ang mga delivery at ang user account
                 if ($oldName !== $newName) {

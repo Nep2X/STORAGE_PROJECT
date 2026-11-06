@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/auth1.php';
+require_once __DIR__ . '/limits.php';
 require_login(ROLES_STAFF);
 header('Content-Type: application/json');
 date_default_timezone_set('Asia/Manila');
@@ -18,6 +19,26 @@ function fail($code, $msg) {
     http_response_code($code);
     echo json_encode(['ok' => false, 'error' => $msg]);
     exit;
+}
+
+// Suriin ang haba ng mga fillable na text bago mag-save.
+// Tinatawag ito sa POST at sa buong edit (PUT) ng delivery.
+function check_delivery_limits(array $input): void {
+    foreach ([
+        ['Contact number', 'contactNumber', LIMIT_CONTACT],
+        ['Vehicle', 'vehicle', LIMIT_VEHICLE],
+        ['Item / description', 'itemDesc', LIMIT_ITEM],
+        ['Remarks', 'remarks', LIMIT_NOTES],
+    ] as [$label, $field, $max]) {
+        $value = trim((string)($input[$field] ?? ''));
+        if ($msg = limit_error($label, $value, $max)) {
+            fail(422, $msg);
+        }
+    }
+
+    if ($msg = qty_error((int)($input['quantity'] ?? 1))) {
+        fail(422, $msg);
+    }
 }
 
 try {
@@ -81,7 +102,7 @@ try {
                 foreach (['delNumber', 'customerName', 'delAddress', 'contactNumber', 'delDate', 'driverAssign', 'vehicle', 'itemDesc', 'quantity', 'status'] as $f) {
                     if (trim((string)($input[$f] ?? '')) === '') fail(400, "Please fill in all required fields (missing: $f).");
                 }
-                if ((int)$input['quantity'] < 1) fail(400, 'Quantity must be at least 1.');
+                check_delivery_limits($input);
                 $status = in_array($input['status'] ?? '', $STATUSES) ? $input['status'] : 'Pending';
                 $driver = trim($input['driverAssign'] ?? '') ?: null;
     
@@ -91,11 +112,14 @@ try {
                                 // ---- Dagdag na customer (isang batch, parehong area lang) ----
                                 $extras = [];
                                 foreach ((array)($input['extraCustomers'] ?? []) as $e) {
-                                    $extras[] = [
+                                    $extra = [
                                         'name' => trim((string)($e['customerName'] ?? '')),
                                         'item' => trim((string)($e['itemDesc'] ?? '')),
                                         'qty'  => (int)($e['quantity'] ?? 0),
                                     ];
+                                    if ($msg = limit_error('Item / description', $extra['item'], LIMIT_ITEM)) fail(422, $msg);
+                                    if ($msg = qty_error($extra['qty'])) fail(422, $msg);
+                                    $extras[] = $extra;
                                 }
                                 $stopRows = [];
                                 if ($extras) {
@@ -131,7 +155,7 @@ try {
                                             'address' => $c['address'],
                                             'lat'     => $c['lat'],
                                             'lng'     => $c['lng'],
-                                            'item'    => $i === 0 ? ($input['itemDesc'] ?? null) : $extras[$i - 1]['item'],
+                                            'item'    => $i === 0 ? (trim((string)($input['itemDesc'] ?? '')) ?: null) : $extras[$i - 1]['item'],
                                             'qty'     => $i === 0 ? (int)(($input['quantity'] ?? 1) ?: 1) : $extras[$i - 1]['qty'],
                                         ];
                                     }
@@ -154,11 +178,11 @@ try {
                 );
                 $stmt->execute([
                     trim($input['delNumber']), trim($input['customerName']),
-                    $input['delAddress'] ?? null, $input['contactNumber'] ?? null,
+                    $input['delAddress'] ?? null, trim((string)($input['contactNumber'] ?? '')) ?: null,
                     ($input['delDate'] ?? '') ?: null,
-                    $driver, $input['vehicle'] ?? null,
-                    $input['itemDesc'] ?? null, (int)(($input['quantity'] ?? 1) ?: 1),
-                    $input['remarks'] ?? null, $status,
+                    $driver, trim((string)($input['vehicle'] ?? '')) ?: null,
+                    trim((string)($input['itemDesc'] ?? '')) ?: null, (int)(($input['quantity'] ?? 1) ?: 1),
+                    trim((string)($input['remarks'] ?? '')) ?: null, $status,
                 ]);
                 $newId = $pdo->lastInsertId();
                 log_delivery_event($pdo, (int)$newId, $status, $stopRows ? 'Delivery created with ' . count($stopRows) . ' customers' : 'Delivery created');
@@ -206,6 +230,8 @@ try {
                         $status = in_array($input['status'] ?? '', $STATUSES) ? $input['status'] : 'Pending';
                         $driver = trim($input['driverAssign'] ?? '') ?: null;
 
+                        check_delivery_limits($input);
+
                         // Bawal i-mark na Delivered kung walang proof photo (rider upload)
                         if ($status === 'Delivered' && empty($old['proof_image'])) {
                             fail(409, 'Cannot mark as Delivered without a proof photo. The rider must upload it from the Rider page.');
@@ -224,11 +250,11 @@ try {
                         );
                         $stmt->execute([
                             trim($input['delNumber']), trim($input['customerName']),
-                            $input['delAddress'] ?? null, $input['contactNumber'] ?? null,
+                            $input['delAddress'] ?? null, trim((string)($input['contactNumber'] ?? '')) ?: null,
                             ($input['delDate'] ?? '') ?: null,
-                            $driver, $input['vehicle'] ?? null,
-                            $input['itemDesc'] ?? null, (int)(($input['quantity'] ?? 1) ?: 1),
-                            $input['remarks'] ?? null, $status, $id,
+                            $driver, trim((string)($input['vehicle'] ?? '')) ?: null,
+                            trim((string)($input['itemDesc'] ?? '')) ?: null, (int)(($input['quantity'] ?? 1) ?: 1),
+                            trim((string)($input['remarks'] ?? '')) ?: null, $status, $id,
                         ]);
                     } elseif (isset($input['status']) && in_array($input['status'], $STATUSES)) {
                         // Status lang

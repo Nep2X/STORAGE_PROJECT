@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/auth1.php';
+require_once __DIR__ . '/limits.php';
 
 $me = require_login(['Admin']);
 header('Content-Type: application/json; charset=utf-8');
@@ -22,8 +23,12 @@ function fail($code, $msg) {
 }
 
 function checkPassword($password) {
-    if (strlen((string)$password) < 8) {
-        fail(400, 'Password must be at least 8 characters.');
+    $length = strlen((string)$password);
+    if ($length < LIMIT_PASSWORD_MIN) {
+        fail(400, 'Password must be at least ' . LIMIT_PASSWORD_MIN . ' characters.');
+    }
+    if ($length > LIMIT_PASSWORD_MAX) {
+        fail(400, 'Password must be at most ' . LIMIT_PASSWORD_MAX . ' characters.');
     }
 }
 
@@ -127,9 +132,13 @@ try {
             $role = $input['role'] ?? '';
             $contact = trim($input['contact_number'] ?? '');
 
-            if (!preg_match('/^[A-Za-z0-9_.-]{3,30}$/', $username)) {
-                fail(400, 'Username must be 3-30 characters (letters, numbers, . _ -).');
+            if (!preg_match('/^[A-Za-z0-9_.-]{3,' . LIMIT_USERNAME . '}$/', $username)) {
+                fail(400, 'Username must be 3-' . LIMIT_USERNAME . ' characters (letters, numbers, . _ -).');
             }
+
+            if ($msg = limit_error('Full name', $name, LIMIT_NAME)) fail(400, $msg);
+            if ($msg = limit_error('Email', $email, LIMIT_EMAIL)) fail(400, $msg);
+            if ($msg = limit_error('Contact number', $contact, LIMIT_CONTACT)) fail(400, $msg);
 
             checkPassword($password);
 
@@ -223,6 +232,10 @@ try {
             $email = trim($input['email'] ?? ($target['email'] ?? ''));
             $contact = trim($input['contact_number'] ?? ($target['contact_number'] ?? ''));
             $role = $input['role'] ?? $target['role'];
+
+            if ($msg = limit_error('Full name', $name, LIMIT_NAME)) fail(400, $msg);
+            if ($msg = limit_error('Email', $email, LIMIT_EMAIL)) fail(400, $msg);
+            if ($msg = limit_error('Contact number', $contact, LIMIT_CONTACT)) fail(400, $msg);
             $active = isset($input['is_active'])
                 ? (int)(bool)$input['is_active']
                 : (int)$target['is_active'];
