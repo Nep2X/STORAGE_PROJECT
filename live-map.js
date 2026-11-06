@@ -131,9 +131,11 @@ function applyMapStyle(style) {
     if (style === "topo") {
         loadTopoStyle().then((s) => {
             if (token !== topoToken) return;   // may bagong pinili habang naglo-load
-            topoLayer = L.maplibreGL({ style: s }).addTo(map);
+            topoLayer = L.maplibreGL({
+                style: s,
+                attributionControl: { customAttribution: TOPO_ATTRIBUTION },
+            }).addTo(map);
             topoAttribution = TOPO_ATTRIBUTION;
-            map.attributionControl.addAttribution(topoAttribution);
             document.documentElement.setAttribute("data-map-style", style);
             syncStyleButtons(style);
         }).catch(() => {

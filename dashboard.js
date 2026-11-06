@@ -113,8 +113,9 @@ function renderStats(data) {
 
     const rateFoot = $id("kpiRateFoot");
     if (rateFoot) {
+        const cancelled = Number(c["Cancelled"]) || 0;
         rateFoot.textContent = total
-            ? `${num(delivered)} of ${num(total)} deliveries completed`
+            ? `${num(delivered)} of ${num(total)} completed${cancelled ? ` · ${num(cancelled)} cancelled` : ""}`
             : "No deliveries yet";
     }
 

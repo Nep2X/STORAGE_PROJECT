@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/auth1.php';
+require_once __DIR__ . '/limits.php';
 $user = require_login(array_merge(ROLES_RIDER, ['Admin']));
 header('Content-Type: application/json');
 date_default_timezone_set('Asia/Manila');
@@ -89,6 +90,7 @@ try {
         $id     = (int)($_POST['id'] ?? 0);
         $driver = in_array($user['role'], ROLES_RIDER, true) ? linked_driver_name($pdo, $user) : trim($_POST['driver'] ?? '');
         $notes  = trim($_POST['notes'] ?? '');
+        if ($msg = limit_error('Notes', $notes, LIMIT_NOTES)) fail(422, $msg);
         if (!$id || $driver === '') fail(400, 'Missing delivery or driver.');
 
         if (!isset($_FILES['photo'])) fail(400, 'Proof of delivery photo is required.');

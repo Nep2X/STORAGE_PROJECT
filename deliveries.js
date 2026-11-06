@@ -248,10 +248,8 @@ const busy = new Set(
         delForm.elements.itemDesc.value = del.item_desc ?? "";
         delForm.elements.quantity.value = del.quantity ?? "";
         delForm.elements.remarks.value = del.remarks ?? "";
-        delForm.elements.status.value = del.status;
     } else {
         delForm.elements.delNumber.value = nextDeliveryNumber();
-        delForm.elements.status.value = "Pending";
     }
 }
 
@@ -274,6 +272,10 @@ delForm.addEventListener("submit", async (e) => {
         itemDesc: row.querySelector(".xsItem").value.trim(),
         quantity: row.querySelector(".xsQty").value,
     }));
+    // Walang Status dropdown: bagong delivery = Pending; edit = panatilihin ang dating status.
+    body.status = editingDelId
+        ? (deliveries.find((d) => d.id === editingDelId)?.status ?? "Pending")
+        : "Pending";
     const url = editingDelId ? `${DEL_API}?id=${editingDelId}` : DEL_API;
 
     const res = await fetch(url, {
@@ -499,13 +501,13 @@ function addStopRow() {
     }
     const row = document.createElement("div");
     row.className = "extraStopRow";
-    row.style.cssText = "display:grid;gap:8px;margin:10px 0;padding:10px;border:1px solid var(--border);border-radius:8px;";
+    row.style.cssText = "display:grid;gap:8px;margin:0;padding:12px 0 0;border-top:1px solid var(--border-soft);";
     row.innerHTML = `
     <b class="xsTitle"></b>
     <select class="xsCustomer" required></select>
     <small class="xsAddress"></small>
-        <input type="text" class="xsItem" placeholder="Item description" required>
-        <input type="number" class="xsQty" min="1" placeholder="Quantity" required>
+        <input type="text" class="xsItem" maxlength="120" placeholder="Item description" required>
+        <input type="number" class="xsQty" min="1" max="999" placeholder="Quantity" required>
         <button type="button" class="btnOutline xsRemove">Remove</button>`;
     fillSelect(row.querySelector(".xsCustomer"), customers.map((c) => c.name), "Select customer");
     extraStops.appendChild(row);

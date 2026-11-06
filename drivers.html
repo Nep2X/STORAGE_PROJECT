@@ -52,7 +52,7 @@
 
             <div class="panel">
                 <div class="toolbar">
-                    <input type="text" id="driverSearch" placeholder="Search driver...">
+                    <input type="text" id="driverSearch" placeholder="Search driver..." maxlength="60">
                     <select id="driverStatusFilter" name="driverStatus" aria-label="Filter by driver status">
                         <option value="">Status</option>
                         <option value="Available">Available</option>
@@ -94,10 +94,10 @@
 
                     <form id="driverForm">
                         <label for="drvName">Driver Name</label>
-                        <input type="text" id="drvName" name="name" required>
+                        <input type="text" id="drvName" name="name" maxlength="80" required>
 
                         <label for="drvContact">Contact</label>
-                        <input type="text" id="drvContact" name="contact" placeholder="09XXXXXXXXX">
+                        <input type="text" id="drvContact" name="contact" placeholder="09XXXXXXXXX" maxlength="20">
 
                         <label for="drvStatus">Status</label>
                         <select id="drvStatus" name="status">

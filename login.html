@@ -9,7 +9,7 @@
     <title>Login | Delivery Project</title>
     <style>
         body { min-height: 100vh; display: flex; align-items: center; justify-content: center;
-            background: var(--background); margin: 0; }
+            background: var(--background); margin: 0; padding: 24px 0; box-sizing: border-box; }
         .loginBox { width: 380px; max-width: 92vw; background: var(--white, #fff);
                     border: 1px solid var(--border, #e5e7eb); border-radius: 12px;
                     padding: 32px 28px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); }
@@ -25,20 +25,32 @@
         #loginError { display: none; margin-top: 14px; padding: 10px 12px; border-radius: 8px;
         background: var(--destructive-soft); color: var(--destructive); font-size: 14px; }
         .loginMain { width: 100%; display: flex; justify-content: center; }
+        .loginBox .loginLogo {
+            width: 210px;
+            height: 34px;
+            margin: 0 auto 16px;
+            display: block;
+            border: 0;
+            border-radius: 0;
+            background: var(--foreground);
+            -webkit-mask: url("assets/company-logo.svg") center / contain no-repeat;
+            mask: url("assets/company-logo.svg") center / contain no-repeat;
+        }
+        .showPw input { width: 16px; height: 16px; margin: 0; accent-color: var(--primary); }
     </style>
 </head>
 <body>
 
     <main class="loginMain">
     <form class="loginBox" id="loginForm" autocomplete="on">
-        <h1>Delivery Project</h1>
+        <h1 class="loginLogo" aria-label="Delivery Project"></h1>
         <p class="sub">Delivery Management System</p>
 
         <label for="username">Username</label>
-        <input type="text" id="username" name="username" autocomplete="username" autofocus required>
+        <input type="text" id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" autofocus maxlength="30" required>
 
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" autocomplete="current-password" required>
+        <input type="password" id="password" name="password" autocomplete="current-password" maxlength="72" required>
 
         <label class="showPw"><input type="checkbox" id="showPw"> Show password</label>
 

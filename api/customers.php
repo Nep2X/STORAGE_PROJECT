@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/auth1.php';
+require_once __DIR__ . '/limits.php';
 require_login(ROLES_STAFF);
 header('Content-Type: application/json');
 
@@ -22,12 +23,22 @@ function fail_fields($code, $msg, array $fields) {
 // Kunin at i-validate ang address: Street / Building, Town / City, Province
 function read_address(array $input): array {
     $clean = fn($v) => trim(preg_replace('/\s+/', ' ', (string)$v));
-    if (trim((string)($input['name'] ?? '')) === '' || trim((string)($input['contact'] ?? '')) === '') {
+    $name    = trim((string)($input['name'] ?? ''));
+    $contact = trim((string)($input['contact'] ?? ''));
+
+    if ($name === '' || $contact === '') {
         fail(422, 'Please fill in all required fields (customer name and contact number).');
     }
+    if ($msg = limit_error('Customer name', $name, LIMIT_NAME)) fail_fields(422, $msg, ['name']);
+    if ($msg = limit_error('Contact number', $contact, LIMIT_CONTACT)) fail_fields(422, $msg, ['contact']);
+
     $street   = $clean($input['street'] ?? '');
     $city     = $clean(str_replace(',', ' ', (string)($input['city'] ?? '')));       // kuwit ang naghihiwalay sa mga bahagi
     $province = $clean(str_replace(',', ' ', (string)($input['province'] ?? '')));
+
+    if ($msg = limit_error('Street / building', $street, LIMIT_STREET)) fail_fields(422, $msg, ['street']);
+    if ($msg = limit_error('Town / city', $city, LIMIT_CITY)) fail_fields(422, $msg, ['city']);
+    if ($msg = limit_error('Province', $province, LIMIT_PROVINCE)) fail_fields(422, $msg, ['province']);
 
     $missing = [];
     if (mb_strlen($street) < 3)   $missing[] = 'street';
@@ -42,7 +53,14 @@ function read_address(array $input): array {
         fail_fields(422, 'The address is too long (max 255 characters).', ['street']);
     }
 
-    return ['street' => $street, 'city' => $city, 'province' => $province, 'full' => $full];
+    return [
+        'name'     => $name,
+        'contact'  => $contact !== '' ? $contact : null,
+        'street'   => $street,
+        'city'     => $city,
+        'province' => $province,
+        'full'     => $full,
+    ];
 }
 
 // Hanapin sa mapa (Pilipinas lang): buong address muna, tapos street + city lang.
@@ -108,21 +126,18 @@ try {
             break;
 
         case 'POST':
-            if (empty(trim($input['name'] ?? ''))) fail(400, 'Missing field: name');
-
             $addr = read_address($input);
             $picked = read_coords($input);
             $pt = $picked ?? check_address_or_fail($addr);    // pin kung meron, else geocode
 
             $stmt = $pdo->prepare("INSERT INTO customers (name, contact, address, lat, lng) VALUES (?,?,?,?,?)");
-            $stmt->execute([trim($input['name']), $input['contact'] ?? null, $addr['full'], $pt['lat'], $pt['lng']]);
+            $stmt->execute([$addr['name'], $addr['contact'], $addr['full'], $pt['lat'], $pt['lng']]);
             echo json_encode(['ok' => true, 'id' => $pdo->lastInsertId()]);
             break;
 
         case 'PUT':
             $id = (int)($_GET['id'] ?? 0);
             if (!$id) fail(400, 'Missing id');
-            if (empty(trim($input['name'] ?? ''))) fail(400, 'Missing field: name');
 
             $addr = read_address($input);
             $picked = read_coords($input);
@@ -145,7 +160,7 @@ try {
             }
 
             $stmt = $pdo->prepare("UPDATE customers SET name=?, contact=?, address=?, lat=?, lng=? WHERE id=?");
-            $stmt->execute([trim($input['name']), $input['contact'] ?? null, $addr['full'], $lat, $lng, $id]);
+            $stmt->execute([$addr['name'], $addr['contact'], $addr['full'], $lat, $lng, $id]);
             echo json_encode(['ok' => true]);
             break;
 

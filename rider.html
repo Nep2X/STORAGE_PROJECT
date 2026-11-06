@@ -15,6 +15,45 @@
         .riderWrap select,
         .riderWrap input[type="file"],
         .riderWrap textarea { width: 100%; box-sizing: border-box; padding: 10px; font: inherit; }
+        .riderWrap .proofDrop {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            margin-top: 6px;
+            padding: 22px 16px;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            background: var(--secondary);
+            cursor: pointer;
+            text-align: center;
+            transition: border-color .15s ease, background .15s ease;
+        }
+        .riderWrap .proofDrop:hover { border-color: var(--foreground); }
+        .riderWrap .proofDrop:focus-within { outline: 2px solid var(--ring); outline-offset: 2px; }
+        .riderWrap .proofDrop svg {
+            width: 26px;
+            height: 26px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            color: var(--muted-foreground);
+        }
+        .riderWrap .proofDrop strong { font-size: 14px; color: var(--foreground); }
+        .riderWrap .proofDrop span { font-size: 12px; color: var(--muted-foreground); }
+        .riderWrap .proofDrop .proofInput {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+            border: 0;
+        }
         .riderWrap button[type="submit"] { width: 100%; margin-top: 18px; padding: 12px; }
         #proofPreview { display: none; width: 100%; max-height: 320px; object-fit: contain;
                         margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; }
@@ -110,7 +149,7 @@
             <form id="placeForm">
                 <label for="placeInput">GPS not working? Type the place name</label>
                 <div class="addressSearchWrap">
-                    <input type="text" id="placeInput" placeholder="e.g. Pasig Palengke, Pasig" autocomplete="off">
+                    <input type="text" id="placeInput" placeholder="e.g. Pasig Palengke, Pasig" autocomplete="off" maxlength="60">
                     <div id="placeSuggestions" class="addressSuggestions" hidden></div>
                 </div>
                 <div id="placePreviewMap" hidden aria-label="Preview of the selected address"></div>
@@ -135,13 +174,17 @@
         <form class="panel" id="reportForm">
             <h2>Proof of Delivery</h2>
 
-            <label for="proofInput">Photo</label>
-            <input type="file" id="proofInput" accept="image/*" capture="environment">
+            <label class="proofDrop">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4Z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                <strong>Take or choose a photo</strong>
+                <span>Camera or gallery · JPG or PNG</span>
+                <input type="file" id="proofInput" accept="image/*" capture="environment" class="proofInput">
+            </label>
             <p class="hint">Take a clear photo of the delivered item or the signed receipt.</p>
             <img id="proofPreview" alt="Proof of delivery preview">
 
             <label for="notes">Notes (optional)</label>
-            <textarea id="notes" rows="3" placeholder="e.g. Received by the guard"></textarea>
+            <textarea id="notes" rows="3" placeholder="e.g. Received by the guard" maxlength="500"></textarea>
 
             <button type="submit" class="btnPrimary" id="submitBtn" disabled>Submit Report</button>
             <div id="msg" role="status"></div>
